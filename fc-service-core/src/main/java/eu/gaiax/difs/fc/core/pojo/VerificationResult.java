@@ -3,7 +3,8 @@ package eu.gaiax.difs.fc.core.pojo;
 import java.time.Instant;
 import java.util.List;
 
-public class VerificationResult {
+public class VerificationResult extends eu.gaiax.difs.fc.api.generated.model.VerificationResult
+{
     String id; // credentialSubject (id) of this SD
 
 

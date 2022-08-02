@@ -2,8 +2,14 @@ package eu.gaiax.difs.fc.core.service.validation.impl;
 
 import eu.gaiax.difs.fc.api.generated.model.Participant;
 import eu.gaiax.difs.fc.api.generated.model.SelfDescription;
-import eu.gaiax.difs.fc.api.generated.model.VerificationResult;
+import eu.gaiax.difs.fc.core.pojo.Claim;
+import eu.gaiax.difs.fc.core.pojo.Signature;
+import eu.gaiax.difs.fc.core.pojo.VerificationResult;
+import eu.gaiax.difs.fc.core.pojo.VerificationResultOffering;
+import eu.gaiax.difs.fc.core.pojo.VerificationResultParticipant;
 import eu.gaiax.difs.fc.core.service.validation.ValidationService;
+
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import javax.validation.ValidationException;
@@ -34,7 +40,50 @@ public class ValidationServiceImpl implements ValidationService {
    */
   @Override
   public VerificationResult verifySelfDescription(String json) throws ValidationException {
-    return null;
+    boolean verifyOffering = true;
+    String id = "";
+    String issuer = "";
+    String verificationTimestamp = "";
+    String lifecycleStatus = "";
+    String participantName = "";
+    String participantPublicKey = "";
+    Instant issuedDate = Instant.now();
+    List<Signature> signatures = null;
+    List<Claim> claims = null;
+
+    //TODO: Verify Syntax
+
+    //TODO: Verify Cryptographic
+
+    //TODO: Verify Schema
+
+    //TODO: Extract Claims
+
+    //TODO: Check if API-User is allowed to submit the self-description
+
+    //Decide what to return
+    if (verifyOffering) {
+      return new VerificationResultOffering(
+              id,
+              issuer,
+              verificationTimestamp,
+              lifecycleStatus,
+              issuedDate,
+              signatures,
+              claims
+      );
+    } else {
+      return new VerificationResultParticipant(
+              participantName,
+              id,
+              participantPublicKey,
+              verificationTimestamp,
+              lifecycleStatus,
+              issuedDate,
+              signatures,
+              claims
+      );
+    }
   }
 
   /**
