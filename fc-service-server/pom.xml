@@ -67,11 +67,8 @@
             <groupId>io.micrometer</groupId>
             <artifactId>micrometer-registry-prometheus</artifactId>
         </dependency>
-        <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter</artifactId>
-            <scope>test</scope>
-        </dependency>
+
+
         <dependency>
             <groupId>com.c4-soft.springaddons</groupId>
             <artifactId>spring-security-oauth2-test-addons</artifactId>
