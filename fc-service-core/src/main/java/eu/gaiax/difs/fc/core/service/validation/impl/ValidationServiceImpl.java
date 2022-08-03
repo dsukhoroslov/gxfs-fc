@@ -13,6 +13,9 @@ import eu.gaiax.difs.fc.core.pojo.VerificationResultParticipant;
 import eu.gaiax.difs.fc.core.service.validation.ValidationService;
 
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -20,7 +23,11 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.commons.io.FilenameUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 // TODO: 26.07.2022 Awaiting approval and implementation by Fraunhofer.
 /**
@@ -28,6 +35,8 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public class ValidationServiceImpl implements ValidationService {
+  private static final Path BASE_PATH = Paths.get(".").toAbsolutePath().normalize();
+  private static final String SHACL_DIR = BASE_PATH.toFile().getAbsolutePath() + "/src/test/resources/Validation-Tests/shacl/";
   /**
    * The function validates the Self-Description as JSON and tries to parse the json handed over.
    *
@@ -199,5 +208,56 @@ public class ValidationServiceImpl implements ValidationService {
     }
 
     return true;
+  }
+  /**
+   * Upload a local shacl files to the pre-defined shacl folder in the Remote repository
+   *
+   * @param shaclFile shacl file to be uploaded
+   */
+
+  @Override
+  public void uploadShacl(MultipartFile shaclFile) {
+    String data = SHACL_DIR+shaclFile.getOriginalFilename();
+    try {
+      if(checkShaclExtensions(shaclFile)){
+        Files.copy(shaclFile.getInputStream(), Path.of(data));
+      } else {
+        throw new RuntimeException("is not jsonld");
+      }
+    } catch (Exception e) {
+      throw new RuntimeException("Could not store the file. Error: " + e.getMessage());
+
+    }
+  }
+
+  /**
+   * check if a given shacl file is semantically correct
+   *
+   * @param shaclFile shacl file to be verified semantically
+   */
+
+  public boolean checkShaclSemantics(MultipartFile shaclFile) {
+    //TODO
+    /*
+    check if target class is defined
+    check if path is defined
+     */
+    return true;
+
+  }
+  /**
+   * check if a given shacl file has turtle extension
+   *
+   * @param shaclFile shacl file to be verified for its extension
+   */
+  public boolean checkShaclExtensions(MultipartFile shaclFile) {
+
+    String fileExtension = FilenameUtils.getExtension(shaclFile.getOriginalFilename());
+    if(fileExtension.equals("jsonld")){
+      return true;
+    } else {
+      return false;
+    }
+
   }
 }

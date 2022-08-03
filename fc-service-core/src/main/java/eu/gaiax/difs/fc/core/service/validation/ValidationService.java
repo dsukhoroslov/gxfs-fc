@@ -6,6 +6,7 @@ import eu.gaiax.difs.fc.api.generated.model.VerificationResult;
 import javax.validation.ValidationException;
 
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 /**
  * Validation Self-Description interface.
@@ -37,5 +38,13 @@ public interface ValidationService {
    * @return a Self-Description metadata validation result. If the validation fails, the reason explains the issue.
    */
   SelfDescription validateSelfDescription(String json) throws ValidationException;
-  
-}
+  /**
+   * Upload a local shacl files to the pre-defined shacl folder in the Remote repository
+   *
+   * @param shaclFile shacl file to be uploaded
+   */
+
+  public void uploadShacl(MultipartFile shaclFile) ;
+
+
+  }
