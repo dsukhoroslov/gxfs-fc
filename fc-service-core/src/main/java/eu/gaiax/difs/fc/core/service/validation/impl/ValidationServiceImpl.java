@@ -3,6 +3,7 @@ package eu.gaiax.difs.fc.core.service.validation.impl;
 import com.github.jsonldjava.utils.JsonUtils;
 import eu.gaiax.difs.fc.api.generated.model.Participant;
 import eu.gaiax.difs.fc.api.generated.model.SelfDescription;
+import eu.gaiax.difs.fc.core.exception.ValidationException;
 import eu.gaiax.difs.fc.core.pojo.Claim;
 import eu.gaiax.difs.fc.core.pojo.Signature;
 import eu.gaiax.difs.fc.core.pojo.VerificationResult;
@@ -15,7 +16,6 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import javax.validation.ValidationException;
 import org.springframework.stereotype.Service;
 
 // TODO: 26.07.2022 Awaiting approval and implementation by Fraunhofer.

@@ -1,6 +1,7 @@
 package eu.gaiax.difs.fc.core.pojo;
 
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 
 public class VerificationResult extends eu.gaiax.difs.fc.api.generated.model.VerificationResult
@@ -35,12 +36,12 @@ public class VerificationResult extends eu.gaiax.difs.fc.api.generated.model.Ver
         return lifecycleStatus;
     }
 
-    public Instant getIssuedDate() {
-        return issuedDate;
+    public String getIssuedDate() {
+        return issuedDate.toString();
     }
 
-    public List<Signature> getSignatures() {
-        return signatures;
+    public List<Object> getSignatures() {
+        return new ArrayList<>(signatures);
     }
 
     public List<Claim> getClaims() {
