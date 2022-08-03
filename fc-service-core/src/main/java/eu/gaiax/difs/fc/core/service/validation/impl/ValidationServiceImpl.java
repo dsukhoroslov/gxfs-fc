@@ -3,6 +3,7 @@ package eu.gaiax.difs.fc.core.service.validation.impl;
 import com.github.jsonldjava.utils.JsonUtils;
 import eu.gaiax.difs.fc.api.generated.model.Participant;
 import eu.gaiax.difs.fc.api.generated.model.SelfDescription;
+import eu.gaiax.difs.fc.core.exception.AccessDeniedException;
 import eu.gaiax.difs.fc.core.exception.ValidationException;
 import eu.gaiax.difs.fc.core.pojo.Claim;
 import eu.gaiax.difs.fc.core.pojo.Signature;
@@ -16,6 +17,9 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import org.springframework.stereotype.Service;
 
 // TODO: 26.07.2022 Awaiting approval and implementation by Fraunhofer.
@@ -42,7 +46,7 @@ public class ValidationServiceImpl implements ValidationService {
    * @return a Verification result. If the verification fails, the reason explains the issue.
    */
   @Override
-  public VerificationResult verifySelfDescription(String json) throws ValidationException {
+  public VerificationResult verifySelfDescription(String json) throws ValidationException, AccessDeniedException {
     boolean verifyOffering = true;
     String id = "";
     String issuer = "";
@@ -58,6 +62,7 @@ public class ValidationServiceImpl implements ValidationService {
     Map<String, Object> parsedSD = parseSD(json);
 
     //TODO: Verify Cryptographic FIT-WI
+    signatures = validateCryptographic(parsedSD);
 
     //TODO: Verify Schema FIT-DSAI
 
@@ -122,5 +127,77 @@ public class ValidationServiceImpl implements ValidationService {
     }
 
     return (Map<String, Object>) parsed;
+  }
+
+  List<Signature> validateCryptographic (Map<String, Object> sd) throws AccessDeniedException {
+    List<Signature> signatures = new ArrayList<>();
+    //Validate VP's signature
+    hasSignature(sd);
+
+    //For Each VC: Validate VC's signature
+    List<Map<String, Object>> credentials = (List<Map<String, Object>>) sd.get("verifiableCredential");
+    for (Map<String, Object> credential: credentials) {
+      hasSignature(credential);
+    }
+
+    return signatures;
+  }
+
+  boolean hasSignature (Map<String, Object> cred) {
+    if (cred == null || cred.isEmpty()) {
+      throw new ValidationException("the credential is empty");
+    }
+
+    if(! cred.containsKey("proof")) {
+      throw new ValidationException("no proof found");
+    }
+
+    Map<String,Object>  proofLHM = (Map<String,Object> ) cred.get("proof");
+    if(! proofLHM.containsKey("type") || ! proofLHM.get("type").equals("JsonWebSignature2020")) {
+      throw new ValidationException("wrong type of proof");
+    }
+
+    if(! proofLHM.containsKey("created")) {
+      throw new ValidationException("created timestamp not found");
+    }
+
+    String created = (String) proofLHM.get("created");
+
+    if (created.isEmpty() || created.isBlank()) {
+      throw new ValidationException("created timestamp is empty");
+    }
+
+    String regex_iso8601 = "(\\d{4}-\\d{2}-\\d{2})[A-Z]+(\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?).";
+    Pattern p = Pattern.compile(regex_iso8601);
+    Matcher m = p.matcher(created);
+    if(! m.matches()) {
+      throw new ValidationException("created timestamp is not in ISO8601 Format");
+    }
+
+    if(! proofLHM.containsKey("verificationMethod")) {
+      throw new ValidationException("verificationMethod not found");
+    }
+    String verificationMethod = (String) proofLHM.get("verificationMethod");
+    if (verificationMethod.isEmpty() || verificationMethod.isBlank()) {
+      throw new ValidationException("verificationMethod is empty");
+    }
+
+    if(! proofLHM.containsKey("proofPurpose")) {
+      throw new ValidationException("proofPurpose not found");
+    }
+    String proofPurpose = (String) proofLHM.get("proofPurpose");
+    if (proofPurpose.isEmpty() || proofPurpose.isBlank()) {
+      throw new ValidationException("proofPurpose is empty");
+    }
+
+    if(! proofLHM.containsKey("jws")) {
+      throw new ValidationException("jws not found");
+    }
+    String jws = (String) proofLHM.get("created");
+    if (jws.isEmpty() || jws.isBlank()) {
+      throw new ValidationException("jws is empty");
+    }
+
+    return true;
   }
 }

@@ -10,6 +10,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -62,5 +63,46 @@ class ValidationServiceImplTest {
         String json = readFile(path);
 
         assertThrowsExactly(ValidationException.class, () -> validationService.verifySelfDescription(json));
+    }
+
+    @Test
+    void verifySignature_invalid1() {
+        String path = "/src/test/resources/Signature-Tests/hasInvalidSignature.jsonld";
+        String json = readFile(path);
+
+        Map<String, Object> parsed = validationService.parseSD (json);
+
+        //TODO: Will throw exception when it is checked cryptographically
+        assertDoesNotThrow(() -> validationService.validateCryptographic(parsed));
+    }
+
+    @Test
+    void verifySignature_invalid2() {
+        String path = "/src/test/resources/Signature-Tests/hasNoSignature1.jsonld";
+        String json = readFile(path);
+
+        Map<String, Object> parsed = validationService.parseSD (json);
+
+        assertThrowsExactly(ValidationException.class, () -> validationService.validateCryptographic(parsed));
+    }
+
+    @Test
+    void verifySignature_invalid3() {
+        String path = "/src/test/resources/Signature-Tests/hasNoSignature2.jsonld";
+        String json = readFile(path);
+
+        Map<String, Object> parsed = validationService.parseSD (json);
+
+        assertThrowsExactly(ValidationException.class, () -> validationService.validateCryptographic(parsed));
+    }
+
+    @Test
+    void verifySignature_invalid4() {
+        String path = "/src/test/resources/Signature-Tests/lacksSomeSignatures.jsonld";
+        String json = readFile(path);
+
+        Map<String, Object> parsed = validationService.parseSD (json);
+
+        assertThrowsExactly(ValidationException.class, () -> validationService.validateCryptographic(parsed));
     }
 }
