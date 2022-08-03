@@ -1,5 +1,6 @@
 package eu.gaiax.difs.fc.core.service.validation.impl;
 
+import com.github.jsonldjava.utils.JsonUtils;
 import eu.gaiax.difs.fc.api.generated.model.Participant;
 import eu.gaiax.difs.fc.api.generated.model.SelfDescription;
 import eu.gaiax.difs.fc.core.pojo.Claim;
@@ -9,9 +10,11 @@ import eu.gaiax.difs.fc.core.pojo.VerificationResultOffering;
 import eu.gaiax.difs.fc.core.pojo.VerificationResultParticipant;
 import eu.gaiax.difs.fc.core.service.validation.ValidationService;
 
+import java.io.IOException;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import javax.validation.ValidationException;
 import org.springframework.stereotype.Service;
 
@@ -51,15 +54,16 @@ public class ValidationServiceImpl implements ValidationService {
     List<Signature> signatures = null;
     List<Claim> claims = null;
 
-    //TODO: Verify Syntax
+    //TODO: Verify Syntax FIT-WI
+    Map<String, Object> parsedSD = parseSD(json);
 
-    //TODO: Verify Cryptographic
+    //TODO: Verify Cryptographic FIT-WI
 
-    //TODO: Verify Schema
+    //TODO: Verify Schema FIT-DSAI
 
-    //TODO: Extract Claims
+    //TODO: Extract Claims FIT-DSAI
 
-    //TODO: Check if API-User is allowed to submit the self-description
+    //TODO: Check if API-User is allowed to submit the self-description FIT
 
     //Decide what to return
     if (verifyOffering) {
@@ -105,5 +109,18 @@ public class ValidationServiceImpl implements ValidationService {
     sdMetadata.setStatusTime("2022-05-11T15:30:00Z");
     sdMetadata.setUploadTime("2022-03-01T13:00:00Z");
     return sdMetadata;
+  }
+
+  /*package private functions*/
+
+  Map<String, Object> parseSD (String json) throws ValidationException {
+    Object parsed;
+    try {
+      parsed = JsonUtils.fromString(json);
+    } catch (IOException e) {
+      throw new ValidationException(e.getMessage());
+    }
+
+    return (Map<String, Object>) parsed;
   }
 }
