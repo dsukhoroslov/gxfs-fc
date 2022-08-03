@@ -29,6 +29,9 @@ services:
           '--log-level=DEBUG,io.quarkus:INFO,liquibase:INFO,org.hibernate:INFO,org.infinispan:INFO,org.keycloak.services.scheduled:INFO,org.keycloak.transaction:INFO,io.netty.buffer.PoolThreadCache:INFO,org.keycloak.models.sessions.infinispan:INFO'
       ]
   server:
+    build:
+      context: ..
+      dockerfile: ./fc-service-server/Dockerfile
     container_name: "federated-catalogue-server"
     image: "${CI_REGISTRY}/${SERVER_ARTIFACT}:${SERVER_VERSION}"
     ports:
