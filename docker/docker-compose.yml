@@ -4,17 +4,17 @@ services:
   keycloak:
     container_name: "federated-catalogue-keycloak"
     environment:
-      KEYCLOAK_ADMIN: "admin"
-      KEYCLOAK_ADMIN_PASSWORD: "admin"
-      PROXY_ADDRESS_FORWARDING: "true"
-    image: "quay.io/keycloak/keycloak:17.0.1"
+      KEYCLOAK_ADMIN: "${KEYCLOAK_ADMIN}"
+      KEYCLOAK_ADMIN_PASSWORD: "${KEYCLOAK_ADMIN_PASSWORD}"
+      PROXY_ADDRESS_FORWARDING: "${PROXY_ADDRESS_FORWARDING}"
+    image: "quay.io/keycloak/keycloak:${KEYCLOAK_VERSION}"
     ports:
       - "8080:8080"
     networks:
       - "gaia-x"
     restart: unless-stopped
     extra_hosts:
-      - "auth-server:127.0.0.1"
+      - "auth-server:${AUTH_SERVER_HOST_GATEWAY}"
     volumes:
       - "../keycloak/providers:/opt/keycloak/providers"
       - "../keycloak/realms:/tmp/import"
