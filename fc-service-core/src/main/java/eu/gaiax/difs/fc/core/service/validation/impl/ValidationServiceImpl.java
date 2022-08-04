@@ -234,11 +234,10 @@ public class ValidationServiceImpl implements ValidationService {
      * @param shaclFile shacl file to be uploaded
      */
 
-  @Override
-  public void uploadShacl(MultipartFile shaclFile) {
+  public void uploadJSONLDShacl(MultipartFile shaclFile) {
     String data = SHACL_DIR+shaclFile.getOriginalFilename();
     try {
-      if(checkShaclExtensions(shaclFile)){
+      if(isJSONLD(shaclFile) && isShaclSemanticsValid(shaclFile) && hasOntologyIRI(shaclFile)){
         Files.copy(shaclFile.getInputStream(), Path.of(data));
       } else {
         throw new RuntimeException("is not jsonld");
@@ -248,28 +247,47 @@ public class ValidationServiceImpl implements ValidationService {
 
     }
   }
+  /**
+   * Upload a local shacl files to the pre-defined shacl folder in the Remote repository
+   *
+   * @param shaclFile shacl file to be uploaded
+   */
 
+  public void uploadXMLOrTurtlShacl(MultipartFile shaclFile) {
+    String data = SHACL_DIR+shaclFile.getOriginalFilename();
+    try {
+      if(isXMLOrTurtl(shaclFile) && isShaclSemanticsValid(shaclFile) && hasOntologyIRI(shaclFile)){
+        Files.copy(shaclFile.getInputStream(), Path.of(data));
+      } else if(isJSONLD(shaclFile)) {
+         //TODO convert to turtle and upload the converted file
+      } else {
+
+        throw new RuntimeException("is not turtle or xml");
+      }
+    } catch (Exception e) {
+      throw new RuntimeException("Could not store the file. Error: " + e.getMessage());
+
+    }
+  }
   /**
    * check if a given shacl file is semantically correct
    *
    * @param shaclFile shacl file to be verified semantically
    */
 
-  public boolean checkShaclSemantics(MultipartFile shaclFile) {
-    //TODO
-    /*
-    check if target class is defined
-    check if path is defined
-     */
+  public boolean isShaclSemanticsValid(MultipartFile shaclFile) {
+    //TODO check if target class is defined
+    // TODO check if path is defined
     return true;
 
   }
   /**
-   * check if a given shacl file has turtle extension
+   * check if a given shacl file has JASON-LD extension
    *
    * @param shaclFile shacl file to be verified for its extension
+   * @return          TRUE if shaclFile is JSON-LD
    */
-  public boolean checkShaclExtensions(MultipartFile shaclFile) {
+  public boolean isJSONLD(MultipartFile shaclFile) {
 
     String fileExtension = FilenameUtils.getExtension(shaclFile.getOriginalFilename());
     if(fileExtension.equals("jsonld")){
@@ -278,5 +296,32 @@ public class ValidationServiceImpl implements ValidationService {
       return false;
     }
 
+  }
+  /**
+   * check if a given shacl file has XML or Turtle extension and NOT
+   * JASON-LD
+   *
+   * @param shaclFile shacl file to be verified for its extension
+   * @return          TRUE if shaclFile is XML or Turtle
+   */
+  public boolean isXMLOrTurtl(MultipartFile shaclFile) {
+
+    String fileExtension = FilenameUtils.getExtension(shaclFile.getOriginalFilename());
+    if(!fileExtension.equals("jsonld") && (fileExtension.equals("xml") || fileExtension.equals("ttl"))){
+      return true;
+    } else {
+      return false;
+    }
+  }
+  /**
+   * check if a given shacl file has Ontology IRI
+   *
+   *
+   * @param shaclFile shacl file to be verified for its extension
+   * @return          TRUE if shaclFile is XML or Turtle
+   */
+  public boolean hasOntologyIRI(MultipartFile shaclFile) {
+    //TODO check if they every object ( node shape has predefined)
+    return true;
   }
 }

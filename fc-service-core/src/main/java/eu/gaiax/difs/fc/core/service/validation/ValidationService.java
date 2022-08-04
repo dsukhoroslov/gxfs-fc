@@ -44,7 +44,5 @@ public interface ValidationService {
    * @param shaclFile shacl file to be uploaded
    */
 
-  public void uploadShacl(MultipartFile shaclFile) ;
-
 
   }
