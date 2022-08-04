@@ -38,7 +38,7 @@ public class SelfDescriptionMetadata {
     /**
      * A reference to the self description content.
      */
-    private SelfDescription selfDescription;
+    private SelfDescriptionContent selfDescription;
 
     public SelfDescriptionMetadata() {
     }
@@ -99,11 +99,11 @@ public class SelfDescriptionMetadata {
         this.validators = validators;
     }
 
-    public SelfDescription getSelfDescription() {
+    public SelfDescriptionContent getSelfDescription() {
         return selfDescription;
     }
 
-    public void setSelfDescription(SelfDescription selfDescription) {
+    public void setSelfDescription(SelfDescriptionContent selfDescription) {
         this.selfDescription = selfDescription;
     }
 
