@@ -62,8 +62,6 @@ build-and-push:
     - .docker_login_and_docker_compose_install
     - .rules_for_deploy
   stage: build-and-push
-  tags:
-    - federated-catalogue-service
   script:
     - docker-compose -f docker/docker-compose.yml --env-file docker/.env.$CI_TARGET_ENV build
     - docker-compose -f docker/docker-compose.yml --env-file docker/.env.$CI_TARGET_ENV push
@@ -77,8 +75,6 @@ pull-and-deploy:
   environment:
     name: $CI_TARGET_ENV
   stage: pull-and-deploy
-  tags:
-    - federated-catalogue-service-$CI_TARGET_ENV
   script:
     - docker-compose -f docker/docker-compose.yml --env-file docker/.env.$CI_TARGET_ENV pull
     - docker-compose -f docker/docker-compose.yml --env-file docker/.env.$CI_TARGET_ENV up -d --force-recreate
@@ -94,6 +90,8 @@ pull-and-deploy:
 # See https://docs.gitlab.com/ee/ci/variables/#cicd-variable-precedence
 sast:
   stage: pull-and-deploy
+  extends:
+    - .rules_for_deploy
 include:
 - template: Security/Dependency-Scanning.gitlab-ci.yml  
 - template: Security/SAST.gitlab-ci.yml
