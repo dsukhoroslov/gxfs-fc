@@ -12,6 +12,7 @@ import eu.gaiax.difs.fc.core.pojo.VerificationResultOffering;
 import eu.gaiax.difs.fc.core.pojo.VerificationResultParticipant;
 import eu.gaiax.difs.fc.core.service.validation.ValidationService;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -210,10 +211,28 @@ public class ValidationServiceImpl implements ValidationService {
     return true;
   }
   /**
-   * Upload a local shacl files to the pre-defined shacl folder in the Remote repository
+   * Retrieve the pre-defined shacl shapes files stored in the resources folder of the remote Repository
    *
-   * @param shaclFile shacl file to be uploaded
+   * @return         list of shacl shape files
    */
+
+  public List<File> getShaclFiles() {
+    String shaclFolderPathName = BASE_PATH.toFile().getAbsolutePath() + "/src/test/resources/Validation-Tests/shacl";
+    List<File> shaclFilelistFiles = new ArrayList<>();
+    File shaclFolder = new File(shaclFolderPathName);
+    File[] list = shaclFolder.listFiles();
+    for (File file: list) {
+      if (!file.isDirectory()) {
+        shaclFilelistFiles.add(file.getAbsoluteFile());
+      }
+    }
+    return shaclFilelistFiles;
+  }
+    /**
+     * Upload a local shacl files to the pre-defined shacl folder in the Remote repository
+     *
+     * @param shaclFile shacl file to be uploaded
+     */
 
   @Override
   public void uploadShacl(MultipartFile shaclFile) {
