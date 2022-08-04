@@ -30,7 +30,7 @@ stages:
 .rules_for_deploy:
   rules:
 #    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
-    - if $CI_COMMIT_BRANCH == feature/GAIAXFC-89
+    - if $CI_COMMIT_BRANCH == 'feature/GAIAXFC-89'
       when: on_success
 #    - if: $CI_TARGET_ENV == 'prod'
 #      when: manual
@@ -94,9 +94,6 @@ sast:
   variables:
     MAVEN_REPO_PATH: $CI_PROJECT_DIR/.m2/repository
     COMPILE: "false"
-  artifacts:
-    reports:
-      sast: gl-sast-report.json
 
 include:
 - template: Security/Dependency-Scanning.gitlab-ci.yml  
