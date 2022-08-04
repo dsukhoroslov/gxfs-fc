@@ -1,23 +1,31 @@
-package eu.gaiax.difs.fc.core.graph.storage;
+package eu.gaiax.difs.fc.core.service.graphdb.impl;
 
-import eu.gaiax.difs.fc.core.graph.storage.api.GraphOperations;
+import com.google.gson.Gson;
+import eu.gaiax.difs.fc.core.pojo.SdClaim;
+import eu.gaiax.difs.fc.core.service.graphdb.GraphOperations;
+import eu.gaiax.difs.fc.core.service.graphdb.GraphPerformance;
+import eu.gaiax.difs.fc.core.pojo.GraphQuery;
+import eu.gaiax.difs.fc.core.pojo.SdSchema;
+import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.IOUtils;
+import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Namespace;
-import org.eclipse.rdf4j.rio.*;
+import org.eclipse.rdf4j.rio.RDFFormat;
+import org.eclipse.rdf4j.rio.Rio;
 import org.neo4j.driver.*;
+
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStream;
 import java.net.URL;
 import java.net.URLConnection;
-import org.apache.commons.codec.binary.Base64;
-import org.neo4j.driver.Record;
-import java.lang.String;
-import java.io.*;
 import java.time.Duration;
 import java.time.Instant;
-import org.eclipse.rdf4j.model.Model;
-import org.eclipse.rdf4j.rio.Rio;
-import com.google.gson.Gson;
-
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -192,7 +200,7 @@ public class GraphConnect implements AutoCloseable, GraphOperations, GraphPerfor
 
 
 
-	public String uploadSelfDescription(List<SdClaim> sdClaimList) throws Exception {
+	public String uploadSelfDescription(List<SdClaim> sdClaimList) {
 		/* Pass claim as a pojo object with subject, predicate and object. This is in turn passed on to the function which uploads it to the neo4j database.
 		  Function returns SUCCESS or FAIL  */
 

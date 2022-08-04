@@ -1,21 +1,20 @@
-package eu.gaiax.difs.fc.core.graph.storage;
+package eu.gaiax.difs.fc.core.service.graphdb;
 
-import eu.gaiax.difs.fc.core.graph.storage.GraphConnect;
-import eu.gaiax.difs.fc.core.graph.storage.GraphQuery;
-import eu.gaiax.difs.fc.core.graph.storage.SdClaim;
+import eu.gaiax.difs.fc.core.pojo.GraphQuery;
+import eu.gaiax.difs.fc.core.pojo.SdClaim;
+import eu.gaiax.difs.fc.core.service.graphdb.impl.GraphConnect;
 import org.junit.FixMethodOrder;
 import org.junit.jupiter.api.*;
-
-import java.io.*;
-import java.util.ArrayList;
-import java.util.List;
-
 import org.junit.runners.MethodSorters;
-import org.neo4j.driver.Session;
-import org.testcontainers.containers.BindMode;
 import org.testcontainers.containers.Neo4jContainer;
 import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.utility.MountableFile;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.List;
 
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)

@@ -1,4 +1,4 @@
-package eu.gaiax.difs.fc.core.graph.storage;
+package eu.gaiax.difs.fc.core.service.graphdb;
 
 public interface GraphPerformance {
     public float QueryPerformance();
