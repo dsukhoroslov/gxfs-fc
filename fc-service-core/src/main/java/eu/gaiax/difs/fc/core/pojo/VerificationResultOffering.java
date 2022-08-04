@@ -14,7 +14,7 @@ public class VerificationResultOffering extends VerificationResult {
             String lifecycleStatus,
             Instant issuedDate,
             List<Signature> signatures,
-            List<Claim> claims
+            List<SdClaim> claims
     ) {
         super(id, verificationTimestamp, lifecycleStatus, issuedDate, signatures, claims);
         this.issuer = issuer;
