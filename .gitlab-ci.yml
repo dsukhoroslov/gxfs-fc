@@ -64,8 +64,10 @@ build-and-push:
     - .rules_for_deploy
   stage: build-and-push
   script:
-    - docker-compose -f docker/docker-compose.yml --env-file docker/.env.$CI_TARGET_ENV build
-    - docker-compose -f docker/docker-compose.yml --env-file docker/.env.$CI_TARGET_ENV push
+#    - docker-compose -f docker/docker-compose.yml --env-file docker/.env.$CI_TARGET_ENV build
+#    - docker-compose -f docker/docker-compose.yml --env-file docker/.env.$CI_TARGET_ENV push
+    - docker-compose -f docker/docker-compose.yml --env-file docker/.env build
+    - docker-compose -f docker/docker-compose.yml --env-file docker/.env push
     - docker system prune -af --filter "until=168h"
 
 pull-and-deploy:
@@ -77,8 +79,10 @@ pull-and-deploy:
     name: $CI_TARGET_ENV
   stage: pull-and-deploy
   script:
-    - docker-compose -f docker/docker-compose.yml --env-file docker/.env.$CI_TARGET_ENV pull
-    - docker-compose -f docker/docker-compose.yml --env-file docker/.env.$CI_TARGET_ENV up -d --force-recreate
+#    - docker-compose -f docker/docker-compose.yml --env-file docker/.env.$CI_TARGET_ENV pull
+#    - docker-compose -f docker/docker-compose.yml --env-file docker/.env.$CI_TARGET_ENV up -d --force-recreate
+    - docker-compose -f docker/docker-compose.yml --env-file docker/.env pull
+    - docker-compose -f docker/docker-compose.yml --env-file docker/.env up -d --force-recreate
     - docker system prune -af --filter "until=168h"
     - nohup docker logs federated-catalogue-server -f >> /var/log/federated-catalogue/fc-server.log 2>&1 &
 
