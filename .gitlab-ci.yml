@@ -30,7 +30,7 @@ stages:
 .rules_for_deploy:
   rules:
 #    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
-    - if $CI_COMMIT_BRANCH == 'feature/GAIAXFC-89'
+    - if: $CI_COMMIT_BRANCH == 'feature/GAIAXFC-89'
       when: on_success
 #    - if: $CI_TARGET_ENV == 'prod'
 #      when: manual
