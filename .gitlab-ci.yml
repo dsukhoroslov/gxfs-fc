@@ -38,24 +38,18 @@ stages:
 check:
   stage: check
   when: always
-  tags:
-    - federated-catalogue-service
   script:
     - 'mvn $MAVEN_CLI_OPTS clean validate'
 
 compile:
   stage: compile
   when: on_success
-  tags:
-    - federated-catalogue-service
   script:
     - 'mvn $MAVEN_CLI_OPTS compile'
 
 test:
   stage: test
   when: on_success
-  tags:
-    - federated-catalogue-service
   script:
     - 'mvn $MAVEN_CLI_OPTS test'
 
