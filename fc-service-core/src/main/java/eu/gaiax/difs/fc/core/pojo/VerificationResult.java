@@ -13,9 +13,9 @@ public class VerificationResult extends eu.gaiax.difs.fc.api.generated.model.Ver
     String lifecycleStatus; // is not known when verifying external SDs, or do we search by ID if we have this locally?
     Instant issuedDate;
     List<Signature> signatures; //Signature details unknown
-    List<Claim> claims; // claims of the SD, to be inserted into the Graph-DB
+    List<SdClaim> claims; // claims of the SD, to be inserted into the Graph-DB
 
-    public VerificationResult(String id, String verificationTimestamp, String lifecycleStatus, Instant issuedDate, List<Signature> signatures, List<Claim> claims) {
+    public VerificationResult(String id, String verificationTimestamp, String lifecycleStatus, Instant issuedDate, List<Signature> signatures, List<SdClaim> claims) {
         this.id = id;
         this.verificationTimestamp = verificationTimestamp;
         this.lifecycleStatus = lifecycleStatus;
@@ -44,7 +44,7 @@ public class VerificationResult extends eu.gaiax.difs.fc.api.generated.model.Ver
         return new ArrayList<>(signatures);
     }
 
-    public List<Claim> getClaims() {
+    public List<SdClaim> getClaims() {
         return claims;
     }
 }
