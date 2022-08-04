@@ -89,7 +89,7 @@ public class GraphConnect implements AutoCloseable, GraphOperations, GraphPerfor
 			Result result = session.run(sdQuery.getQuery());
 			String SD_query_op = "";
 			while (result.hasNext()) {
-				Record record = result.next();
+				org.neo4j.driver.Record record = result.next();
 				SD_query_op = new Gson().toJson(record.asMap());
 				Result_list.add(SD_query_op);
 			}
@@ -115,7 +115,7 @@ public class GraphConnect implements AutoCloseable, GraphOperations, GraphPerfor
 			Result result = tx.run(sdQuery.getQuery());
 			String SD_query_op = "";
 			while (result.hasNext()) {
-				Record record = result.next();
+				org.neo4j.driver.Record record = result.next();
 				SD_query_op = new Gson().toJson(record.asMap());
 				Result_list.add(SD_query_op);
 				}
