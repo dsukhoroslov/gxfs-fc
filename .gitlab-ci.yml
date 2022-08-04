@@ -97,7 +97,7 @@ pull-and-deploy:
 # Note that environment variables can be set in several places
 # See https://docs.gitlab.com/ee/ci/variables/#cicd-variable-precedence
 sast:
-  stage: deploy
+  stage: pull-and-deploy
 include:
 - template: Security/Dependency-Scanning.gitlab-ci.yml  
 - template: Security/SAST.gitlab-ci.yml
