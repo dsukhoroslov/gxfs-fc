@@ -13,6 +13,8 @@ cache:
   paths:
     - .m2/repository
 
+image: maven:3.8.4-jdk-11
+
 stages:
   - check
   - compile
