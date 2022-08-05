@@ -44,6 +44,18 @@
             <artifactId>spring-security-oauth2-test-addons</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.topbraid</groupId>
+            <artifactId>shacl</artifactId>
+            <version>1.4.1</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.jena</groupId>
+            <artifactId>jena-shacl</artifactId>
+            <version>4.3.1</version>
+            <scope>compile</scope>
+        </dependency>
     </dependencies>
 
     <build>
