@@ -19,6 +19,7 @@ public interface ValidationService {
    *
    * @param json The json which should be syntactically validated.
    * @return a Participant metadata validation result. If the validation fails, the reason explains the issue.
+   * @throws ValidationException when the validation fails. The message gives a hint why the error happened.
    */
   Participant validateParticipantSelfDescription(String json) throws ValidationException;
 
@@ -27,6 +28,7 @@ public interface ValidationService {
    *
    * @param json The json which should be syntactically validated.
    * @return a Verification result. If the verification fails, the reason explains the issue.
+   * @throws ValidationException when the validation fails. The message gives a hint why the error happened.
    */
   VerificationResult verifySelfDescription(String json) throws ValidationException;
 
@@ -35,7 +37,8 @@ public interface ValidationService {
    *
    * @param json The json which should be syntactically validated.
    * @return a Self-Description metadata validation result. If the validation fails, the reason explains the issue.
+   * @throws ValidationException when the validation fails. The message gives a hint why the error happened.
    */
   SelfDescription validateSelfDescription(String json) throws ValidationException;
-  
+
 }

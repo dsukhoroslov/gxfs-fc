@@ -1,0 +1,96 @@
+{
+  "@graph" : [ {
+    "@id" : "_:b0",
+    "@type" : "sh:ValidationResult",
+    "focusNode" : "ex:Calvin",
+    "resultMessage" : "Predicate <http://example.com/ns#birthDate> is not allowed (closed shape)",
+    "resultPath" : "ex:birthDate",
+    "resultSeverity" : "sh:Violation",
+    "sourceConstraintComponent" : "sh:ClosedConstraintComponent",
+    "sourceShape" : "ex:PersonShape",
+    "value" : "1971-07-07"
+  }, {
+    "@id" : "_:b1",
+    "@type" : "sh:ValidationResult",
+    "focusNode" : "ex:Bob",
+    "resultMessage" : "Property may only have 1 value, but found 2",
+    "resultPath" : "ex:ssn",
+    "resultSeverity" : "sh:Violation",
+    "sourceConstraintComponent" : "sh:MaxCountConstraintComponent",
+    "sourceShape" : "_:b2"
+  }, {
+    "@id" : "_:b3",
+    "@type" : "sh:ValidationResult",
+    "focusNode" : "ex:Calvin",
+    "resultMessage" : "Value must be an instance of ex:Company",
+    "resultPath" : "ex:worksFor",
+    "resultSeverity" : "sh:Violation",
+    "sourceConstraintComponent" : "sh:ClassConstraintComponent",
+    "sourceShape" : "_:b4",
+    "sh:value" : {
+      "@id" : "ex:UntypedCompany"
+    }
+  }, {
+    "@id" : "_:b5",
+    "@type" : "sh:ValidationResult",
+    "focusNode" : "ex:Alice",
+    "resultMessage" : "Value does not match pattern \"^\\d{3}-\\d{2}-\\d{4}$\"",
+    "resultPath" : "ex:ssn",
+    "resultSeverity" : "sh:Violation",
+    "sourceConstraintComponent" : "sh:PatternConstraintComponent",
+    "sourceShape" : "_:b2",
+    "sh:value" : "987-65-432A"
+  }, {
+    "@id" : "_:b6",
+    "@type" : "sh:ValidationReport",
+    "sh:conforms" : false,
+    "result" : [ "_:b1", "_:b5", "_:b3", "_:b0" ]
+  } ],
+  "@context" : {
+    "resultPath" : {
+      "@id" : "http://www.w3.org/ns/shacl#resultPath",
+      "@type" : "@id"
+    },
+    "resultMessage" : {
+      "@id" : "http://www.w3.org/ns/shacl#resultMessage"
+    },
+    "value" : {
+      "@id" : "http://www.w3.org/ns/shacl#value",
+      "@type" : "http://www.w3.org/2001/XMLSchema#date"
+    },
+    "focusNode" : {
+      "@id" : "http://www.w3.org/ns/shacl#focusNode",
+      "@type" : "@id"
+    },
+    "sourceShape" : {
+      "@id" : "http://www.w3.org/ns/shacl#sourceShape",
+      "@type" : "@id"
+    },
+    "sourceConstraintComponent" : {
+      "@id" : "http://www.w3.org/ns/shacl#sourceConstraintComponent",
+      "@type" : "@id"
+    },
+    "resultSeverity" : {
+      "@id" : "http://www.w3.org/ns/shacl#resultSeverity",
+      "@type" : "@id"
+    },
+    "conforms" : {
+      "@id" : "http://www.w3.org/ns/shacl#conforms",
+      "@type" : "http://www.w3.org/2001/XMLSchema#boolean"
+    },
+    "result" : {
+      "@id" : "http://www.w3.org/ns/shacl#result",
+      "@type" : "@id"
+    },
+    "ex" : "http://example.com/ns#",
+    "rdf" : "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
+    "owl" : "http://www.w3.org/2002/07/owl#",
+    "sh" : "http://www.w3.org/ns/shacl#",
+    "tosh" : "http://topbraid.org/tosh#",
+    "xsd" : "http://www.w3.org/2001/XMLSchema#",
+    "rdfs" : "http://www.w3.org/2000/01/rdf-schema#",
+    "dash" : "http://datashapes.org/dash#",
+    "graphql" : "http://datashapes.org/graphql#",
+    "swa" : "http://topbraid.org/swa#"
+  }
+}
