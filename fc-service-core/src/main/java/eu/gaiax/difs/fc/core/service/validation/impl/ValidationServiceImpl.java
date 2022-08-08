@@ -5,7 +5,7 @@ import eu.gaiax.difs.fc.api.generated.model.Participant;
 import eu.gaiax.difs.fc.api.generated.model.SelfDescription;
 import eu.gaiax.difs.fc.core.exception.AccessDeniedException;
 import eu.gaiax.difs.fc.core.exception.ValidationException;
-import eu.gaiax.difs.fc.core.pojo.Claim;
+import eu.gaiax.difs.fc.core.pojo.SdClaim;
 import eu.gaiax.difs.fc.core.pojo.Signature;
 import eu.gaiax.difs.fc.core.pojo.VerificationResult;
 import eu.gaiax.difs.fc.core.pojo.VerificationResultOffering;
@@ -60,7 +60,7 @@ public class ValidationServiceImpl implements ValidationService {
     String participantPublicKey = "";
     Instant issuedDate = Instant.now();
     List<Signature> signatures = null;
-    List<Claim> claims = null;
+    List<SdClaim> claims = null;
 
     //TODO: Verify Syntax FIT-WI
     Map<String, Object> parsedSD = parseSD(json);
