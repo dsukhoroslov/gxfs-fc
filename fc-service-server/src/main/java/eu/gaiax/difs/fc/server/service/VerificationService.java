@@ -1,5 +1,4 @@
 package eu.gaiax.difs.fc.server.service;
-
 import eu.gaiax.difs.fc.api.generated.model.VerificationResult;
 import eu.gaiax.difs.fc.server.generated.controller.VerificationApiDelegate;
 import java.util.ArrayList;
@@ -9,12 +8,13 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+
 /**
  * Implementation of the {@link eu.gaiax.difs.fc.server.generated.controller.VerificationApiDelegate} interface.
  */
 @Slf4j
 @Service
-public class VerificationService implements VerificationApiDelegate {
+public class VerificationService implements VerificationApiDelegate{
   // TODO: 18.07.2022 Need to replace mocked Data with business logic
 
   /**
@@ -62,4 +62,5 @@ public class VerificationService implements VerificationApiDelegate {
         .headers(responseHeaders)
         .body(page);
   }
+
 }

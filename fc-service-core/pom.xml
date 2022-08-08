@@ -21,6 +21,19 @@
             <groupId>eu.gaiax.difs.fc</groupId>
             <artifactId>fc-service-api</artifactId>
         </dependency>
+        <!-- https://mvnrepository.com/artifact/org.apache.jena/apache-jena-libs -->
+        <dependency>
+            <groupId>org.apache.jena</groupId>
+            <artifactId>apache-jena-libs</artifactId>
+            <version>4.3.1</version>
+            <type>pom</type>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/org.topbraid/shacl -->
+        <dependency>
+            <groupId>org.topbraid</groupId>
+            <artifactId>shacl</artifactId>
+            <version>1.4.1</version>
+        </dependency>
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-tx</artifactId>
