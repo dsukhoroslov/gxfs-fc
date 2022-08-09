@@ -19,7 +19,6 @@ import java.util.List;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-@Disabled("Not running due to missing docker in CI environment")
 public class GraphTest {
 
     GraphConnect graphGaia;
