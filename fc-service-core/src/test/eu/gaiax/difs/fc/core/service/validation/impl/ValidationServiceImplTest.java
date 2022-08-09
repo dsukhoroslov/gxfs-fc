@@ -10,6 +10,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -104,5 +105,27 @@ class ValidationServiceImplTest {
         Map<String, Object> parsed = validationService.parseSD (json);
 
         assertThrowsExactly(ValidationException.class, () -> validationService.validateCryptographic(parsed));
+    }
+
+    @Test
+    void verifySignature_cleanSD1() {
+        String path = "/src/test/resources/Signature-Tests/hasInvalidSignature.jsonld";
+        String json = readFile(path);
+
+        Map<String, Object> parsed = validationService.parseSD (json);
+
+        //Do proofs exist?
+        assertTrue(parsed.containsKey("proof"));
+        for (Map<String, Object> credential : (ArrayList<Map<String, Object>>) parsed.get("verifiableCredential")) {
+            assertTrue(credential.containsKey("proof"));
+        }
+
+        Map<String, Object> cleaned = validationService.cleanSD (parsed);
+
+        //Are proofs removed?
+        assertFalse(cleaned.containsKey("proof"));
+        for (Map<String, Object> credential : (ArrayList<Map<String, Object>>) cleaned.get("verifiableCredential")) {
+            assertFalse(credential.containsKey("proof"));
+        }
     }
 }

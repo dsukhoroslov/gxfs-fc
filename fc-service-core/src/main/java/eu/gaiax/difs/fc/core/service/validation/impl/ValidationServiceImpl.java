@@ -58,17 +58,19 @@ public class ValidationServiceImpl implements ValidationService {
     List<Signature> signatures = null;
     List<Claim> claims = null;
 
-    //TODO: Verify Syntax FIT-WI
+    //Verify Syntax and parse json
     Map<String, Object> parsedSD = parseSD(json);
 
     //TODO: Verify Cryptographic FIT-WI
     signatures = validateCryptographic(parsedSD);
 
+    //TODO: Check if API-User is allowed to submit the self-description FIT-WI
+
+    parsedSD = cleanSD(parsedSD);
+
     //TODO: Verify Schema FIT-DSAI
 
     //TODO: Extract Claims FIT-DSAI
-
-    //TODO: Check if API-User is allowed to submit the self-description FIT
 
     //Decide what to return
     if (verifyOffering) {
@@ -134,6 +136,7 @@ public class ValidationServiceImpl implements ValidationService {
     //Validate VP's signature
     hasSignature(sd);
 
+
     //For Each VC: Validate VC's signature
     List<Map<String, Object>> credentials = (List<Map<String, Object>>) sd.get("verifiableCredential");
     for (Map<String, Object> credential: credentials) {
@@ -143,7 +146,21 @@ public class ValidationServiceImpl implements ValidationService {
     return signatures;
   }
 
-  boolean hasSignature (Map<String, Object> cred) {
+  Map<String, Object> cleanSD (Map<String, Object> sd) {
+    String credentials_key = "verifiableCredential";
+
+    //TODO remove proofs
+    sd.remove("proof");
+    ArrayList<Map<String, Object>> credentials = (ArrayList<Map<String, Object>>) sd.get(credentials_key);
+    for (Map<String, Object> credential : credentials) {
+      credential.remove("proof");
+    }
+    sd.replace(credentials_key, credentials);
+
+    return sd;
+  }
+
+  void hasSignature (Map<String, Object> cred) {
     if (cred == null || cred.isEmpty()) {
       throw new ValidationException("the credential is empty");
     }
@@ -197,7 +214,5 @@ public class ValidationServiceImpl implements ValidationService {
     if (jws.isEmpty() || jws.isBlank()) {
       throw new ValidationException("jws is empty");
     }
-
-    return true;
   }
 }
