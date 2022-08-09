@@ -16,11 +16,7 @@ variables:
 # This template uses jdk8 for verifying and deploying images
 image: maven:3-jdk-11
 
-# DinD service is required for Testcontainers
-services:
-  - name: docker:20.10.9-dind
-    command: ["--tls=false"]
-    alias: docker
+
 
 # Cache downloaded dependencies and plugins between builds.
 # To keep cache across branches add 'key: "$CI_JOB_NAME"'
@@ -31,6 +27,17 @@ cache:
 stages:
 - test
 - deploy
+
+test_docker:
+  stage: test
+  image: docker
+  services:
+    - name: docker:dind
+      command: [ "--tls=false" ]
+      alias: docker
+  script:
+    - docker version
+    - docker ps
 
 # For merge requests do not `deploy` but only run `verify`.
 # See https://maven.apache.org/guides/introduction/introduction-to-the-lifecycle.html
