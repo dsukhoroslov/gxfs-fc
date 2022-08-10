@@ -23,8 +23,8 @@ public class VerificationResultParticipant extends VerificationResult{
         this.participantPublicKey = participantPublicKey;
     }
 
-    String participantName; // Name of the Participant
-    String participantPublicKey; // The public key of the participant
+    private String participantName; // Name of the Participant
+    private String participantPublicKey; // The public key of the participant
 
     public String getParticipantName() {
         return participantName;

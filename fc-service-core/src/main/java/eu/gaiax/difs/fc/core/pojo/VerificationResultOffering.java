@@ -16,14 +16,6 @@ public class VerificationResultOffering extends VerificationResult {
             List<Signature> signatures,
             List<Claim> claims
     ) {
-        super(id, verificationTimestamp, lifecycleStatus, issuedDate, signatures, claims);
-        this.issuer = issuer;
+        super(id, verificationTimestamp, lifecycleStatus, issuedDate, signatures, claims, issuer);
     }
-    String issuer; // credentialSubject (id) of the participant owning this SD
-
-
-    public String getIssuer() {
-        return issuer;
-    }
-
 }

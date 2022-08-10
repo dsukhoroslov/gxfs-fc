@@ -28,6 +28,8 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public class ValidationServiceImpl implements ValidationService {
+  private static final Pattern iso8601_pattern = Pattern.compile("(\\d{4}-\\d{2}-\\d{2})[A-Z]+(\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?).");
+
   /**
    * The function validates the Self-Description as JSON and tries to parse the json handed over.
    *
@@ -160,6 +162,10 @@ public class ValidationServiceImpl implements ValidationService {
     return sd;
   }
 
+  void isIssuerAllowed (Map<String, Object> sd) throws AccessDeniedException {
+
+  }
+
   void hasSignature (Map<String, Object> cred) {
     if (cred == null || cred.isEmpty()) {
       throw new ValidationException("the credential is empty");
@@ -169,7 +175,7 @@ public class ValidationServiceImpl implements ValidationService {
       throw new ValidationException("no proof found");
     }
 
-    Map<String,Object>  proofLHM = (Map<String,Object> ) cred.get("proof");
+    Map<String,Object> proofLHM = (Map<String,Object> ) cred.get("proof");
     if(! proofLHM.containsKey("type") || ! proofLHM.get("type").equals("JsonWebSignature2020")) {
       throw new ValidationException("wrong type of proof");
     }
@@ -184,9 +190,7 @@ public class ValidationServiceImpl implements ValidationService {
       throw new ValidationException("created timestamp is empty");
     }
 
-    String regex_iso8601 = "(\\d{4}-\\d{2}-\\d{2})[A-Z]+(\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?).";
-    Pattern p = Pattern.compile(regex_iso8601);
-    Matcher m = p.matcher(created);
+    Matcher m = iso8601_pattern.matcher(created);
     if(! m.matches()) {
       throw new ValidationException("created timestamp is not in ISO8601 Format");
     }
