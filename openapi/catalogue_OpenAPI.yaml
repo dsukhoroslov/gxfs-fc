@@ -20,8 +20,8 @@ components:
         implicit:
           authorizationUrl: https://api.gaiax.io/oauth2/authorize
           scopes:
-            read_self-descriptions: 'read the Self-Descriptions'
-            write_self-descriptions: 'Add, delete, and update a Self-Description'
+            read_self-descriptions: 'Read the Self-Descriptions.'
+            write_self-descriptions: 'Add, delete, and update a Self-Description.'
             query: Send queries
   responses:
     NotFound:
@@ -36,14 +36,20 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/Error'
+    Forbidden:
+      description: 'Forbidden. The user does not have the permission to execute this request.'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
     ServerError:
-      description: 'May contain hints how to solve the error or indicate what went wrong at the server. Must not outline any information about the internal structure of the server'
+      description: 'May contain hints how to solve the error or indicate what went wrong at the server. Must not outline any information about the internal structure of the server.'
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/Error'
     ClientError:
-      description: 'May contain hints how to solve the error or indicate what was wrong in the request'
+      description: 'May contain hints how to solve the error or indicate what was wrong in the request.'
       content:
         application/json:
           schema:
@@ -60,7 +66,7 @@ components:
       required:
         - code
         - message
-
+    # Add schema for self-description
     Statements:
       type: object
       properties:
@@ -79,7 +85,7 @@ components:
           $ref: '#/components/schemas/Parameters'
       required:
         - statement
-    Parameters:
+    Parameters: #!! why is this a parameter --> ggf ins Statement packen
       type: object
       properties:
         limit:
@@ -119,9 +125,9 @@ components:
       properties:
         verification-timestamp:
           type: string
-        lifecycle-status:
+        lifecycle-status: #!! is not known when verifying external SDs
           type: string # does the self-description have a lifecycle status in this catalogue?
-        issuer:
+        issuer: #!! Is this the participant?
           type: object # contains the id of the issuers self-description if available  #!! NOT FURTHER SPECIFIED
         issued-date:
           type: string
@@ -131,8 +137,8 @@ components:
             type: object #!! NOT FURTHER SPECIFIED
       required:
         - verification-timestamp
-        - lifecycle-status
-        - issuer #!! Comment on issuer: if available, but still required??
+        - lifecycle-status #!! is not known when verifying external SDs. Remove from required
+        - issuer #!! Comment on issuer: if available, but still required?? Remove from required
         - issued-date
         - signatures
     Data:
@@ -151,6 +157,17 @@ components:
       required:
         - row
         - meta
+    Participants:
+      type: object
+      properties:
+        participants:
+          type: array
+          items:
+            $ref: '#/components/schemas/Participant'
+        count: #!! Added: total count of Participants, for pagination.
+          type: number
+      required:
+        - participants
     Participant:
       type: object
       properties:
@@ -159,14 +176,14 @@ components:
           description: 'Global ID of the participant'
         name:
           type: string
-        public-key:
+        public-key: #!! Can this be changed? If it is changed, are all SDs signed by the old key invalid?
           type: string
         self-description:
           type: string
     User:
       type: object
       properties:
-        id:
+        id: #!! should this be server-generated?
           type: string
           description: 'Internal catalogue user id'
           example: 'ExampleCompany-John-Doe'
@@ -183,20 +200,37 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Role'
-    Role:
+    Role: #!! Changed Role from an object with a single String property to simply a String
+      type: string
+      example: 'Ro-MU-CA'
+    Schema:
       type: object
       properties:
-        id:
-          type: string
-          example: 'Ro-MU-CA'
-    Session: #!! What is a session?
+        ontologies:
+          description: 'Ontologies defining the terms of a schema'
+          type: array
+          items:
+            type: string
+        shapes:
+          description: 'Shapes used to validate instances against the schema. SHACL Shapes Constraint Language.'
+          type: array
+          items:
+            type: string
+        vocabularies:
+          description: 'Controlled vocabularies used in the scema'
+          type: array
+          items:
+            type: string
+    Session:
       type: object
       properties:
         userId:
           type: string
         creationDate:
           type: string
-        status:
+        status: #!! What is a status?
+          type: string
+        seed: #!! We must have a seed to do pagination, user must be able to set it?
           type: string
         roleIds:
           type: array
@@ -207,21 +241,57 @@ components:
       properties:
         sd-hash:
           type: string
+        id: #!! Added id / credentialSubject
+          type: string
         status:
-          type: integer
+          type: string
+          enum:
+            - 'active'
+            - 'eol'
+            - 'deprecated'
+            - 'revoked'
+          example: 'active'
         issuer:
           type: string
-        issue-date:
+        validators:
+          description: 'The credentialSubjects of the parties that validated (parts of) the Self-Description'
+          type: array
+          items:
+            type: string
+        upload-time:
           type: string
-        status-date:
+          example: '2022-03-01T13:00:00Z'
+          description: 'The time stamp (ISO8601) when the SD was uploaded.'
+        status-time:
           type: string
-          description: 'The last time the status changed (for this Catalogue)'
+          example: '2022-05-11T15:30:00Z'
+          description: 'The last time stamp (ISO8601) the status changed (for this Catalogue)'
+  parameters:
+    Offset:
+      name: offset
+      in: query
+      schema:
+        type: integer
+        minimum: 0
+        default: 0
+      required: false
+      description: 'The number of items to skip before starting to collect the result set.'
+    Limit:
+      in: query
+      name: limit
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 1000
+        default: 100
+      required: false
+      description: 'The number of items to return.'
 
 security:
   - oAuthNoScopes:
-    - read_self-descriptions
-    - write_self-descriptions
-    - query
+      - read_self-descriptions
+      - write_self-descriptions
+      - query
 
 tags:
   - name: discovery
@@ -264,16 +334,16 @@ paths:
               schema:
                 type: object
                 properties:
-                    query:
-                      type: string
-                      example: './query'
-                    self-descriptions:
-                      type: string
-                      example: './self-descriptions'
-                    self_description_hash:
-                      type: string
-                      example: './self-descriptions/{self_description_hash}'
-            application/ld+json:
+                  query:
+                    type: string
+                    example: './query'
+                  self-descriptions:
+                    type: string
+                    example: './self-descriptions'
+                  self_description_hash:
+                    type: string
+                    example: './self-descriptions/{self_description_hash}'
+            application/ld+json: # !! warum bieten wir json und json+ld an?
               schema:
                 type: object
                 properties:
@@ -294,10 +364,11 @@ paths:
                     example: './self-descriptions'
                   gax:hasSelfDescriptionHashEndpoint:
                     type: string
-                    example: './self-descriptions/{self_description_hash}'
+                    example: './self-descriptions/{self_description_hash}' # !! Welchen Hash gibt der hier zurück
                   gax:isOperatedBy:
                     type: string
                     example: 'http://example.org/CatalogueProvider'
+
   /verifications/self-descriptions:
     get:
       tags:
@@ -321,22 +392,23 @@ paths:
       summary: 'Send a JSON-LD document to verify with the information from the Catalogue'
       operationId: verify
       requestBody:
-        description: 'JSON-LD document to be verified object to send queries. Use "application/json" for openCypher queries. A Catalogue may also support the other content   types  depending   on   its   supported   query  languages   but   only "application/json" is mandatory'
+        description: 'JSON-LD document to be verified'
         content: {}
       responses:
         200:
-            description: 'Verification result'
-            content:
-              application/json:
-                schema:
-                  $ref: '#/components/schemas/VerificationResult'
+          description: 'Verification result'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VerificationResult'
         400:
           $ref: '#/components/responses/ClientError'
-        408:
-          description: 'Query Timeout: the query took longer than the configured timeout interval. The client needs to rewrite the query so it can be processed faster'
+        408: #!! Should we use async response instead?
+          description: 'Timeout: the verification took longer than the configured timeout interval'
         500:
           $ref: '#/components/responses/ServerError'
-  /sessions: #!! This should be an implementation detail
+
+  /session: #!! Changed to singular, since a user has only 1 session, and the get response is only one session.
     get:
       tags:
         - session
@@ -347,26 +419,48 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Session'
-  /sessions/logout: #!! This should be an implementation detail, logout is SSO-system dependent
-    get:
+    post:
+      tags:
+        - session
+      summary: 'Set the query seed for the session. All properties other than "seed" are ignored.'
+      operationId: setSeed
+      requestBody:
+        description: 'Session with a seed'
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Session'
+      responses:
+        201:
+          description: 'Seed set'
+        400:
+          $ref: '#/components/responses/ClientError'
+        500:
+          $ref: '#/components/responses/ServerError'
+  /session/logout: #!! This should be an implementation detail, logout is SSO-system dependent
+    post: #!! Changed to POST, because GET should never have side-effects-
       tags:
         - session
       responses:
         200:
           description: 'The current session was closed'
+
   /participants:
-    get:
+    get: #!! Needs pagination; Should this really include the entire Participant SD, or only the hash?
       tags:
         - participants
       summary: 'Get the registered participants'
       operationId: listParticipants
+      parameters: #!! Added pagination parameters
+        - $ref: '#/components/parameters/Offset'
+        - $ref: '#/components/parameters/Limit'
       responses:
         200:
           description: 'List of registered participants'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Participant'
+                $ref: '#/components/schemas/Participants' #!! changed to array
         400:
           $ref: '#/components/responses/ClientError'
         500:
@@ -385,6 +479,11 @@ paths:
       responses: #!! Should contain a Location header with the link to the new participant?
         201:
           description: 'Created'
+          headers: #!! Added location header with participant URL
+            location:
+              description: 'URL of the added Participant'
+              schema:
+                type: string
         400:
           $ref: '#/components/responses/ClientError'
         500:
@@ -418,13 +517,20 @@ paths:
         - participants
       summary: 'Update a participant in the catalogue'
       operationId: updateParticipant
-      parameters:
+      parameters: #!! fehlt da nicht irgendwie das update?
         - in: path
           name: participantId
           required: true
           description: 'The participant to update'
           schema:
             type: string
+      requestBody: #!! Added participant as request body
+        description: 'Participant Self-Description'
+        required: true
+        content:
+          application/json-ld:
+            schema:
+              $ref: '#/components/schemas/Participant'
       responses:
         200:
           description: 'Updated Participant'
@@ -472,6 +578,9 @@ paths:
           description: 'The participant to create'
           schema:
             type: string
+        #!! Added pagination parameters
+        - $ref: '#/components/parameters/Offset'
+        - $ref: '#/components/parameters/Limit'
       responses:
         200:
           description: 'Users of the participant'
@@ -480,17 +589,21 @@ paths:
               schema:
                 type: array
                 items:
-                    $ref: '#/components/schemas/User'
+                  $ref: '#/components/schemas/User'
         400:
           $ref: '#/components/responses/ClientError'
         500:
           $ref: '#/components/responses/ServerError'
-  /users:
-    get:
+
+  /users: #!! This may conflict with an SSO setup using an external auth provider
+    get: #!! potentially long list needs pagination
       tags:
         - users
       summary: 'List the registered users'
       operationId: listUsers
+      parameters: #!! Added pagination parameters
+        - $ref: '#/components/parameters/Offset'
+        - $ref: '#/components/parameters/Limit'
       responses:
         200:
           description: 'List of usernames'
@@ -499,7 +612,7 @@ paths:
               schema:
                 type: array
                 items:
-                    $ref: '#/components/schemas/User'
+                  $ref: '#/components/schemas/User'
         400:
           $ref: '#/components/responses/ClientError'
         500:
@@ -512,12 +625,17 @@ paths:
       requestBody:
         description: User Self-Description
         content:
-            application/json:
-             schema:
-               $ref: '#/components/schemas/User'
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
       responses:
         201:
           description: 'Created'
+          headers: #!! Added location header with user URL
+            location:
+              description: 'URL of the added User'
+              schema:
+                type: string
         400:
           $ref: '#/components/responses/ClientError'
         500:
@@ -556,6 +674,13 @@ paths:
           required: true
           schema:
             type: string
+      requestBody:
+        description: 'Updated user data, User ID and Participant ID will be ignored if provided.'
+        required: true
+        content: #!! User ID and Participant ID should be ignored if provided
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
       responses:
         200:
           description: Updated user profile
@@ -607,7 +732,9 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Role'
+                type: array #!! Changed to array, since roles implies plural
+                items:
+                  $ref: '#/components/schemas/Role'
         400:
           $ref: '#/components/responses/ClientError'
         500:
@@ -624,23 +751,28 @@ paths:
           schema:
             type: string
       requestBody:
-        description: 'List of roles which should be assigned to the user'
+        description: 'List of roles which should be assigned to the user. Roles not in the list are removed from the user.'
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Role'
+              type: array #!! Changed to array, since roles implies plural
+              items:
+                $ref: '#/components/schemas/Role'
       responses:
         200:
           description: 'All assigned roles of the user'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Role'
+                type: array #!! Changed to array, since roles implies plural
+                items:
+                  $ref: '#/components/schemas/Role'
         400:
           $ref: '#/components/responses/ClientError'
         500:
           $ref: '#/components/responses/ServerError'
-  /queries:
+
+  /query: #!! Suggestion: rename to query, and allow only a single query. If multiple queries are ever added in the future, add an endpoint queries.
     get:
       tags:
         - query
@@ -648,14 +780,14 @@ paths:
       operationId: querywebsite
       security:
         - oAuthNoScopes:
-          - query
+            - query
       responses:
         200:
-            description: 'HTML document that contains a query field for openCypher queries'
-            content:
-              text/html:
-                schema:
-                  type: string
+          description: 'HTML document that contains a query field for openCypher queries'
+          content:
+            text/html:
+              schema:
+                type: string
         400:
           $ref: '#/components/responses/ClientError'
         500:
@@ -675,30 +807,30 @@ paths:
           required: true
       security:
         - oAuthNoScopes:
-          - query
+            - query
       requestBody:
         description: 'JSON object to send queries. Use "application/json" for openCypher queries. A Catalogue may also support the other content types depending on its supported query languages but only "application/json" is mandatory'
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Statements'
+              $ref: '#/components/schemas/Statement'
           application/sparql-query:
             example: ''
           'sparql*':
             example: ''
       responses:
         200:
-            description: 'successful query'
-            content:
-                 application/json:
-                   schema:
-                     $ref: '#/components/schemas/Results'
-                 application/sparql-results+xml:
-                   example: ''
-                 text/turtle:
-                   example: ''
-                 text/html:
-                   example: ''
+          description: 'successful query'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Results'
+            application/sparql-results+xml:
+              example: ''
+            text/turtle:
+              example: ''
+            text/html:
+              example: ''
         400:
           description: 'Malformed Message: The receveived request cannot be processed, either because its syntax is incorrect or forbidden query clauses are used. For instance, it is not allowed to manipulate data through the query endpoint'
           content:
@@ -709,45 +841,69 @@ paths:
           description: 'Query Timeout: the query took longer than the configured timeout interval. The client needs to rewrite the query so it can be processed faster'
         500:
           $ref: '#/components/responses/ServerError'
+
   /self-descriptions:
     get:
       tags:
         - self-descriptions
-      summary: 'Get the list of Self-Descriptions in the Catalogue'
+      summary: 'Get the list of metadata of Self-Descriptions in the Catalogue'
       operationId: readSelfDescriptions
-      parameters:
-        - name: daterange
+      parameters: #!! Added filter parameters for all(?) metadata fields
+        - name: upload-timerange
           in: query
-          description: 'Range of dates for the Self-Descriptions (when the SD was first known this Catalogue)'
+          description: 'Filter for the time range when the Self-Description was uploaded to the catalogue. The time range has to be specified as start time and end time as ISO8601 timestamp separated by a `/`.'
           required: false
+          example: '2022-03-01T13:00:00Z/2022-05-11T15:30:00Z'
+          schema:
+            type: string
+        - name: status-timerange
+          in: query
+          description: 'Filter for the time range when the status of the Self-Description was last changed in the catalogue. The time range has to be specified as start time and end time as ISO8601 timestamp separated by a `/`.'
+          required: false
+          example: '2022-03-01T13:00:00Z/2022-05-11T15:30:00Z'
           schema:
             type: string
         - name: issuer
           in: query
-          description: 'Filter for the issuer of the Self-Description. This is the unique ID of the Participant that has prepared the Self-Description'
+          description: 'Filter for the issuer of the Self-Description. This is the unique ID of the Participant that has prepared the Self-Description.'
           required: false
           schema:
             type: string
-        - name: offset
+        - name: validator
           in: query
-          schema:
-            type: integer
-            minimum: 0
-            default: 0
+          description: 'Filter for a validator of the Self-Description. This is the unique ID of the Participant that validated (part of) the Self-Description.'
           required: false
-          description: 'The number of items to skip before starting to collect the result set'
-        - in: query
-          name: limit
           schema:
-            type: integer
-            minimum: 1
-            maximum: 1000
-            default: 100
+            type: string
+        - name: status
+          in: query
+          description: 'Filter for the status of the Self-Description.'
           required: false
-          description: 'The number of items to return'
+          schema:
+            type: string
+            default: 'active'
+            enum:
+              - 'active'
+              - 'eol'
+              - 'deprecated'
+              - 'revoked'
+        - name: id
+          in: query
+          description: 'Filter for a id/credentialSubject of the Self-Description.'
+          required: false
+          schema:
+            type: string
+        - name: hash
+          in: query
+          description: 'Filter for a hash of the Self-Description.'
+          required: false
+          schema:
+            type: string
+        - $ref: '#/components/parameters/Offset'
+        - $ref: '#/components/parameters/Limit'
       responses:
         200:
-          description: 'List of self-description in JSON-LD format'
+          description: 'List of meta data of available Self-Descriptions.'
           content:
             application/json:
               schema:
@@ -761,31 +917,50 @@ paths:
     post:
       tags:
         - self-descriptions
-      summary: 'Add a new self-description to the catalogue'
+      summary: 'Add a new Self-Description to the catalogue'
       operationId: addSelfDescription
       security:
         - oAuthNoScopes:
-          - write_self-descriptions
+            - write_self-descriptions
       requestBody:
         description: The new Self-Description
         content:
-          application/json: {}
+          application/ld+json: {}
         required: true
       responses:
         201:
           description: 'Created'
-        405:
-          description: 'Invalid input'
-          content: {}
+          headers:
+            location:
+              description: 'URL of the added Self-Description.'
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Self-Description'
+        202:
+          description: 'The request was accepted but the validation is not finished yet.'
+          headers:
+            location:
+              description: 'The URL of the status page.'
+              schema:
+                type: string
+            retry-after:
+              description: 'The delay the client have to wait before requesting the status page.'
+              schema:
+                type: integer
         400:
           $ref: '#/components/responses/ClientError'
+        403:
+          $ref: '#/components/responses/Forbidden'
         500:
           $ref: '#/components/responses/ServerError'
   /self-descriptions/{self_description_hash}:
     get:
       tags:
         - self-descriptions
-      summary: 'Read a Self-Description by its hash'
+      summary: 'Read a Self-Description by its hash. This returns the content of the self-description.'
       description: 'Returns a single Self-Description'
       operationId: readSelfDescriptionByHash
       parameters:
@@ -797,40 +972,14 @@ paths:
             type: string
       security:
         - oAuthNoScopes:
-          - read_self-descriptions
+            - read_self-descriptions
       responses:
         200:
           description: 'The requested Self-Description'
           content:
-           application/json: {}
+            application/ld+json: {}
         404:
           description: 'Self-Description not found'
-          content: {}
-        400:
-          $ref: '#/components/responses/ClientError'
-        500:
-          $ref: '#/components/responses/ServerError'
-    put:
-      tags:
-        - self-descriptions
-      summary: 'Change the lifecycle state of a self-description'
-      operationId: updateSelfDescription
-      parameters:
-        - name: self_description_hash
-          in: path
-          description: 'Hash of the self-description'
-          required: true
-          schema:
-            type: string
-      requestBody:
-        description: 'Lifecycle update message'
-        content:
-          application/json: {}
-        required: true
-      responses:
-        405:
-          description: 'Invalid input'
-          content: {}
         400:
           $ref: '#/components/responses/ClientError'
         500:
@@ -838,7 +987,7 @@ paths:
     delete:
       tags:
         - self-descriptions
-      summary: 'Delete a self-description'
+      summary: 'Completely delete a self-description'
       operationId: deleteSelfDescription
       parameters:
         - name: self_description_hash
@@ -850,36 +999,158 @@ paths:
       responses:
         200:
           description: 'OK'
-        405:
-          description: 'Invalid input'
-          content: {}
+        400:
+          $ref: '#/components/responses/ClientError'
+        403:
+          $ref: '#/components/responses/Forbidden'
+        500:
+          $ref: '#/components/responses/ServerError'
+  /self-descriptions/{self_description_hash}/revoke:
+    post:
+      tags:
+        - self-descriptions
+      summary: 'Change the lifecycle state of a Self-Description to revoked.'
+      operationId: updateSelfDescription
+      parameters:
+        - name: self_description_hash
+          in: path
+          description: 'Hash of the self-description'
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: 'Revoked'
+          headers:
+            location:
+              description: 'URL of the added Self-Description'
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Self-Description'
+        400:
+          $ref: '#/components/responses/ClientError'
+        403:
+          $ref: '#/components/responses/Forbidden'
+        500:
+          $ref: '#/components/responses/ServerError'
+
+  /schemas:
+    get:
+      tags:
+        - schemas
+      summary: 'Get the full list of schemas.'
+      operationId: getSchemas
+      parameters:
+        - $ref: '#/components/parameters/Offset'
+        - $ref: '#/components/parameters/Limit'
+      responses:
+        200:
+          description: 'All schemas'
+          content:
+            application/json: #!! schema + ld?
+              schema: #!! How can a user see the version/state of a schema? Or does this only give active ones?
+                type: array #!! Is 'type' part of the schema schema, or should we change this to an oject with using type:schema
+                items:
+                  $ref: '#/components/schemas/Schema'
+        400:
+          $ref: '#/components/responses/ClientError'
+        500:
+          $ref: '#/components/responses/ServerError'
+    post:
+      tags:
+        - schemas
+      summary: 'Add a new Schema to the catalogue, or replace an existing schema that has the same IRI'
+      operationId: addSchema
+      security:
+        - oAuthNoScopes:
+            - write_schema
+      requestBody:
+        description: The new Schema
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Schema'
+        required: true
+      responses:
+        201:
+          description: 'Created'
+          headers:
+            location:
+              description: 'URL of the added Schema.'
+              schema:
+                type: string
+        400:
+          $ref: '#/components/responses/ClientError'
+        403:
+          $ref: '#/components/responses/Forbidden'
+        500:
+          $ref: '#/components/responses/ServerError'
+  /schemas/{schemaId}:
+    get:
+      tags:
+        - schemas
+      summary: 'Get a specific schema.'
+      operationId: getSchema
+      parameters:
+        - name: schemaId
+          in: path
+          description: 'Identifier of the Schema'
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: 'A specific Schema'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Schema'
+        400:
+          $ref: '#/components/responses/ClientError'
+        500:
+          $ref: '#/components/responses/ServerError'
+    delete:
+      tags:
+        - schemas
+      summary: 'Delete a Schema'
+      operationId: deleteSchema
+      parameters:
+        - name: schemaId
+          in: path
+          description: 'Identifier of the Schema'
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: 'Deleted Schema'
         400:
           $ref: '#/components/responses/ClientError'
         500:
           $ref: '#/components/responses/ServerError'
   /schemas/latest:
-    get:
+    get: #!! wo kommen neue schema her?
       tags:
         - schemas
-      summary: 'Get the latest schema of all types'
+      summary: 'Get the latest composite schema of all types'
       operationId: getLatestSchemas
       responses:
         200:
           description: 'The latest schemas of all types'
           content:
-            application/json:
+            application/json: #!! schema + ld?
               schema:
-                type: array
+                type: array #!! Is 'type' part of the schema schema, or should we change this to an oject with using type:schema
                 items:
-                  type: object
-        405:
-          description: 'Invalid input'
-          content: {}
+                  $ref: '#/components/schemas/Schema'
         400:
           $ref: '#/components/responses/ClientError'
         500:
           $ref: '#/components/responses/ServerError'
-  /schemas/latest/{type}:
+  /schemas/latest/{type}: #!! What is a schema type?
     get:
       tags:
         - schemas
@@ -896,7 +1167,9 @@ paths:
         200:
           description: 'The latest schema of requested types'
           content:
-            application/json: {}
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Schema'
         405:
           description: 'Invalid input'
           content: {}
@@ -904,6 +1177,7 @@ paths:
           $ref: '#/components/responses/ClientError'
         500:
           $ref: '#/components/responses/ServerError'
+
   /roles:
     get:
       tags:
@@ -912,11 +1186,13 @@ paths:
       operationId: getAllRoles
       responses:
         200:
-          description: 'All roles'
+          description: 'All roles' #!! Liste?
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Role'
+                type: array #!! Changed to array, since roles implies plural
+                items:
+                  $ref: '#/components/schemas/Role'
         400:
           $ref: '#/components/responses/ClientError'
         500:
