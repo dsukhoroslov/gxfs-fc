@@ -1,7 +1,6 @@
 package eu.gaiax.difs.fc.core.service.graphdb;
 
 import eu.gaiax.difs.fc.core.pojo.GraphQuery;
-import eu.gaiax.difs.fc.core.pojo.GraphSchema;
 import eu.gaiax.difs.fc.core.pojo.SdClaim;
 import eu.gaiax.difs.fc.core.service.graphdb.impl.GraphConnect;
 import org.junit.FixMethodOrder;
@@ -9,19 +8,15 @@ import org.junit.jupiter.api.*;
 import org.junit.runners.MethodSorters;
 import org.testcontainers.containers.Neo4jContainer;
 import org.testcontainers.junit.jupiter.Container;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.io.*;
-import java.nio.charset.*;
 import java.util.Map;
-
-import org.apache.commons.io.*;
 
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -119,7 +114,7 @@ public class GraphTest {
 
 
         try {
-            String triple_String="<https://delta-dao.com/.well-known/participantAmazon.json> <gx-participant:registrationNumber> \"LURCSL.B186284\"^^<http://www.w3.org/2001/XMLSchema#string>";
+            String triple_String = "<https://delta-dao.com/.well-known/participantAmazon.json> <gx-participant:registrationNumber> \"LURCSL.B186284\"^^<http://www.w3.org/2001/XMLSchema#string>";
 
             String testurl = container.getHttpUrl();
             List<SdClaim> sdClaimList = new ArrayList<>();
@@ -167,11 +162,11 @@ public class GraphTest {
 
         List<Map<String, Object>> Result_list = new ArrayList<Map<String, Object>>();
         Map<String, Object> map = new HashMap<String, Object>();
-        map.put("n.ns0__country",null);
-        map.put("n.ns0__legalName","AmazonWebServicesEMEASARL");
+        map.put("n.ns0__country", null);
+        map.put("n.ns0__legalName", "AmazonWebServicesEMEASARL");
         Result_list.add(map);
         GraphQuery query = new GraphQuery("match(n{ns0__legalName: 'AmazonWebServicesEMEASARL'}) return n.ns0__country, n.ns0__legalName;");
-        List<Map<String,Object>> response = graphGaia.queryData(query);
+        List<Map<String, Object>> response = graphGaia.queryData(query);
         Assertions.assertEquals(Result_list, response);
         System.out.println(response);
 
