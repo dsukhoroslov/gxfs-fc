@@ -62,11 +62,11 @@
             <type>pom</type>
         </dependency>
 
-        <!-- https://mvnrepository.com/artifact/org.eclipse.rdf4j/rdf4j-rio-api -->
+        <!-- https://mvnrepository.com/artifact/org.apache.jena/jena-arq -->
         <dependency>
-            <groupId>org.eclipse.rdf4j</groupId>
-            <artifactId>rdf4j-rio-api</artifactId>
-            <version>4.1.0-M1</version>
+            <groupId>org.apache.jena</groupId>
+            <artifactId>jena-arq</artifactId>
+            <version>4.5.0</version>
         </dependency>
 
         <dependency>
