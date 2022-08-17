@@ -1,6 +1,7 @@
 package eu.gaiax.difs.fc.core.service.graphdb;
 
 import eu.gaiax.difs.fc.core.pojo.GraphQuery;
+import eu.gaiax.difs.fc.core.pojo.GraphSchema;
 import eu.gaiax.difs.fc.core.pojo.SdClaim;
 import eu.gaiax.difs.fc.core.service.graphdb.impl.GraphConnect;
 import org.junit.FixMethodOrder;
@@ -8,13 +9,19 @@ import org.junit.jupiter.api.*;
 import org.junit.runners.MethodSorters;
 import org.testcontainers.containers.Neo4jContainer;
 import org.testcontainers.junit.jupiter.Container;
-
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.io.*;
+import java.nio.charset.*;
+import java.util.Map;
+
+import org.apache.commons.io.*;
 
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -104,11 +111,37 @@ public class GraphTest {
 
 
     @Test
+    void GraphUploadLiteral() {
+        /*
+         Data hardcoded for claims and upload to Graph . Given set of credentials, connect to graph and upload self description.
+        Instantiate list of claims from file with subject predicate and object in N-triples form and upload to graph.
+        * */
+
+
+        try {
+            String triple_String="<https://delta-dao.com/.well-known/participantAmazon.json> <gx-participant:registrationNumber> \"LURCSL.B186284\"^^<http://www.w3.org/2001/XMLSchema#string>";
+
+            String testurl = container.getHttpUrl();
+            List<SdClaim> sdClaimList = new ArrayList<>();
+            SdClaim sdClaim = new SdClaim("<https://delta-dao.com/.well-known/participantAmazon.json>", "<https://www.w3.org/2018/credentials#credentialSubject>", "\"410 Terry Avenue North\"^^<http://www.w3.org/2001/XMLSchema#string>");
+            sdClaimList.add(sdClaim);
+            Assertions.assertEquals("SUCCESS", graphGaia.uploadSelfDescription(sdClaimList));
+            System.out.println("Completed");
+        } catch (Exception e) {
+            System.out.println(" failed");
+        }
+
+    }
+
+
+    @Test
     @DisplayName("Test for QueryData")
     void testQueryTransactionEndpoint() {
         /*
-         * Query to graph using Query endpoint by instantiating query object and passing query string as parameter. THe result is a list of gson strings */
+         * Query to graph using Query endpoint by instantiating query object and passing query string as parameter. THe result is a list of maps */
         try {
+            String url = container.getBoltUrl();
+            System.out.println(url);
             File rootDirectory = new File("./");
             String rootDirectoryPath = rootDirectory.getCanonicalPath();
             String path = "/src/test/resources/Databases/neo4j/data/Triples/testData2.nt";
@@ -131,11 +164,14 @@ public class GraphTest {
             System.out.println("error " + e);
         }
 
-        List<String> Result_list = new ArrayList<String>();
-        GraphQuery query = new GraphQuery("match(n{ns0__name:'AmazonWebServices'}) return n.ns0__legalName;");
-        String jsonQuery = "{\"n.ns0__legalName\":\"AmazonWebServicesEMEASARL\"}";
-        Result_list.add(jsonQuery);
-        List<String> response = graphGaia.queryData(query);
+
+        List<Map<String, Object>> Result_list = new ArrayList<Map<String, Object>>();
+        Map<String, Object> map = new HashMap<String, Object>();
+        map.put("n.ns0__country",null);
+        map.put("n.ns0__legalName","AmazonWebServicesEMEASARL");
+        Result_list.add(map);
+        GraphQuery query = new GraphQuery("match(n{ns0__legalName: 'AmazonWebServicesEMEASARL'}) return n.ns0__country, n.ns0__legalName;");
+        List<Map<String,Object>> response = graphGaia.queryData(query);
         Assertions.assertEquals(Result_list, response);
         System.out.println(response);
 

@@ -4,6 +4,7 @@ import eu.gaiax.difs.fc.core.pojo.GraphQuery;
 import eu.gaiax.difs.fc.core.pojo.SdClaim;
 
 import java.util.List;
+import java.util.Map;
 
 public interface GraphOperations {
 
@@ -20,12 +21,12 @@ public interface GraphOperations {
 
     /**
      * Query the graph when  Cypher query is passed in query object and this
-     * returns list of string gson as a result.
+     * returns list of Maps with key value pairs as a result.
      *
      * @param sdQuery Query to execute
-     * @return List of json result strings
+     * @return List of Maps
      */
-    public List<String> queryData(GraphQuery sdQuery);
+    public List<Map<String, Object>> queryData(GraphQuery sdQuery);
 
 
 }
