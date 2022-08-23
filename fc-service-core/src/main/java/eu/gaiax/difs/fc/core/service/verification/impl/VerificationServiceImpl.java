@@ -6,7 +6,9 @@ import eu.gaiax.difs.fc.core.exception.VerificationException;
 import eu.gaiax.difs.fc.core.pojo.*;
 import eu.gaiax.difs.fc.core.service.verification.VerificationService;
 
-import java.io.IOException;
+import java.io.*;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.time.ZonedDateTime;
@@ -15,15 +17,29 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.ModelFactory;
+import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.riot.RDFDataMgr;
+import org.apache.jena.riot.RDFFormat;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.Marker;
+import org.slf4j.MarkerFactory;
 import org.springframework.stereotype.Service;
+import org.topbraid.shacl.validation.ValidationUtil;
+import org.topbraid.shacl.vocabulary.SH;
 
-// TODO: 26.07.2022 Awaiting approval and implementation by Fraunhofer.
 /**
  * Implementation of the {@link VerificationService} interface.
  */
 @Service
 public class VerificationServiceImpl implements VerificationService {
   private static final String credentials_key = "verifiableCredential";
+  private static final Logger logger = LoggerFactory.getLogger(VerificationServiceImpl.class);
+  private static final Path BASE_PATH = Paths.get(".").toAbsolutePath().normalize();
+  private static final Marker WTF_MARKER = MarkerFactory.getMarker("WTF");
+
 
   /**
    * The function validates the Self-Description as JSON and tries to parse the json handed over.
@@ -212,4 +228,41 @@ public class VerificationServiceImpl implements VerificationService {
             //TODO
     );
   }
+
+  /**
+   * Validate a datagraph against shaclShape from pre-defined files stored in the file system
+   *
+   * @param dataGraph   string indictates the data graph file path
+   * @param shaclShape string indictates the shacl shapes file path
+   * @return                Serialization for The JSON report Result
+   */
+  public boolean sdValidateAgainstShacl(String dataGraph, String shaclShape) {
+    OutputStream reportOutputStream = null;
+    boolean conforms = false;
+    try {
+      Reader dataGraphReader = new StringReader(dataGraph);
+      Reader shaclShapeReader = new StringReader(shaclShape);
+      Model data = ModelFactory.createDefaultModel();
+      data.read(dataGraphReader, null, "JSONLD");
+      Model shape = ModelFactory.createDefaultModel();
+      shape.read(shaclShapeReader, null, "TURTLE");
+      Resource reportResource = ValidationUtil.validateModel(data, shape, true);
+      conforms = reportResource.getProperty(SH.conforms).getBoolean();
+      logger.trace("Conforms = " + conforms);
+
+      if (!conforms) {
+        String report = BASE_PATH.toFile().getAbsolutePath() + "/src/test/resources/Validation-Tests/report1.jsonld";
+        File reportFile = new File(report);
+        reportFile.createNewFile();
+        reportOutputStream = new FileOutputStream(reportFile);
+        RDFDataMgr.write(reportOutputStream, reportResource.getModel(), RDFFormat.JSONLD);
+      }
+
+    } catch (Throwable t) {
+      logger.error(WTF_MARKER, t.getMessage(), t);
+    }
+
+    return conforms;
+  }
+
 }

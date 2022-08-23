@@ -117,4 +117,28 @@ public class VerificationServiceImplTest {
             assertFalse(credential.containsKey("proof"));
         }
     }
+    @Test
+    void verifyValidationResult() throws IOException {
+
+
+        String dataPath = "Validation-Tests/DataCenterDataGraph.jsonld";
+        String data =  getAccessor(dataPath).getContentAsString();
+
+        String shapePath = "Validation-Tests/physical-resourceShape.ttl";
+        String shape =  getAccessor(shapePath).getContentAsString();
+
+        boolean actual = verificationService.sdValidateAgainstShacl(data, shape);
+        if(actual==false) {
+            String outputReportPath = "Validation-Tests/report1.jsonld";
+            ContentAccessorFile outputContentAccessor=  getAccessor(outputReportPath);
+            Map<String, Object> cred = verificationService.parseSD(outputContentAccessor);
+            ArrayList<Object> map = ( ArrayList<Object>)cred.get("@graph");
+            String resultMessage = "Property needs to have at least 1 value";
+            assertTrue(map.get(0).toString().contains(resultMessage));
+        }else {
+            assertFalse(actual);
+        }
+
+    }
+
 }

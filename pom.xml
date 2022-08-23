@@ -47,6 +47,8 @@
         <keycloak.version>17.0.1</keycloak.version>
         <micrometer.version>1.9.0</micrometer.version>
         <jsonld.version>0.13.4</jsonld.version>
+        <jena.version>4.4.0</jena.version>
+        <topbraid.version>1.4.2</topbraid.version>
         <!-- plugins -->
         <plugin.jib.version>3.2.1</plugin.jib.version>
         <plugin.openapi-generator.version>5.4.0</plugin.openapi-generator.version>
