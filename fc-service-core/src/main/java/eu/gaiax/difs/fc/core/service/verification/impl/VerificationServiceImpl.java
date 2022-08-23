@@ -11,9 +11,7 @@ import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeParseException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import org.springframework.stereotype.Service;
 
@@ -75,7 +73,7 @@ public class VerificationServiceImpl implements VerificationService {
     //TODO: Verify Schema FIT-DSAI
 
     //TODO: Extract Claims FIT-DSAI
-
+    claims = extractClaims(parsedSD);
 
     return new VerificationResultOffering(
             id,
@@ -212,4 +210,39 @@ public class VerificationServiceImpl implements VerificationService {
             //TODO
     );
   }
+  /**
+   * A method that returns a list of claims given a self-description as map
+   *
+   * @param sd map represents a self-description for claims extraction
+   * @return a list of claims.
+   */
+  public List<SdClaim> extractClaims(Map<String, Object> sd) {
+    List<SdClaim> sdClaims = new ArrayList<>();
+    Map<String, Object> subjects = (Map<String, Object>) sd.get("credentialSubject");
+    String subject = subjects.get("id").toString();
+    Map<String, Map<String, Object>> credentialSubject = (Map<String, Map<String, Object>>) sd.get("credentialSubject");
+    Set<String> credentialSubjectKeySets = credentialSubject.keySet();
+    credentialSubjectKeySets.remove("@context");
+    credentialSubjectKeySets.remove("id");
+    String object = "";
+    for (String predicate : credentialSubjectKeySets) {
+      Map<String, Object> m1 = credentialSubject.get(predicate);
+      for (String k1 : m1.keySet()) {
+        if (!k1.contains("@type")) {
+          object = m1.get(k1).toString();
+          if(object.contains("{")) {
+            LinkedHashMap<String, Object> map = (LinkedHashMap<String, Object>)m1.get(k1);
+            object = map.get("@value").toString();
+            sdClaims.add(new SdClaim(subject,predicate,object));
+
+          } else  {
+            sdClaims.add(new SdClaim(subject,predicate,object));
+          }
+
+        }
+      }
+    }
+    return sdClaims;
+  }
+
 }

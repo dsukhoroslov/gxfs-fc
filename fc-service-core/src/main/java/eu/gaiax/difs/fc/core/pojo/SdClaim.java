@@ -11,5 +11,12 @@ public class SdClaim {
   private final String subject;
   private final String predicate;
   private final String object;
+  @Override
+  public String toString()
+  {
+    return "(" +subject + " ," + predicate + " ," + object +")";
+  }
+
+
 
 }

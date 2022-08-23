@@ -117,4 +117,18 @@ public class VerificationServiceImplTest {
             assertFalse(credential.containsKey("proof"));
         }
     }
+    @Test
+    void sdClaimsTest() throws IOException {
+        String path = "Claims-Extraction-Tests/claimsTestsValid.jsonld";
+
+        Map<String, Object> parsed = verificationService.parseSD (getAccessor(path));
+        String expected = "[(https://delta-dao.com/.well-known/serviceMVGPortal.json ,gax-service:providedBy ,https://delta-dao.com/.well-known/participant.json), " +
+                "(https://delta-dao.com/.well-known/serviceMVGPortal.json ,gax-service:name ,EuProGigant Portal), (https://delta-dao.com/.well-known/serviceMVGPortal.json ,gax-service:description ,EuProGigant Minimal Viable Gaia-X Portal), " +
+                "(https://delta-dao.com/.well-known/serviceMVGPortal.json ,gax-service:TermsAndConditions ,https://euprogigant.com/en/terms/), " +
+                "(https://delta-dao.com/.well-known/serviceMVGPortal.json ,gax-service:TermsAndConditions ,contentHash)]";
+        String actual = verificationService.extractClaims(parsed).toString();
+        assertEquals(expected,actual);
+
+    }
+
 }
