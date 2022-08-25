@@ -117,6 +117,7 @@ public class VerificationServiceImplTest {
             assertFalse(credential.containsKey("proof"));
         }
     }
+
     @Test
     void verifyValidationResult() throws IOException {
 
