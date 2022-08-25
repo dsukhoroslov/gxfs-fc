@@ -38,7 +38,7 @@ public class VerificationServiceImpl implements VerificationService {
   private static final String credentials_key = "verifiableCredential";
   private static final Logger logger = LoggerFactory.getLogger(VerificationServiceImpl.class);
   private static final Path BASE_PATH = Paths.get(".").toAbsolutePath().normalize();
-  private static final Marker WTF_MARKER = MarkerFactory.getMarker("WTF");
+  private static final Marker MARKER = MarkerFactory.getMarker("MARKER");
 
 
   /**
@@ -230,13 +230,13 @@ public class VerificationServiceImpl implements VerificationService {
   }
 
   /**
-   * Validate a datagraph against shaclShape from pre-defined files stored in the file system
+   * Method that validates a dataGraph against shaclShape
    *
-   * @param dataGraph   string indictates the data graph file path
-   * @param shaclShape string indictates the shacl shapes file path
-   * @return                Serialization for The JSON report Result
+   * @param dataGraph   string indictates the data graph should be validated
+   * @param shaclShape string indictates the shacl shapes union composite
+   * @return                True if there is no violation or false otherwise
    */
-  public boolean sdValidateAgainstShacl(String dataGraph, String shaclShape) {
+   boolean sdValidateAgainstShacl(String dataGraph, String shaclShape) {
     OutputStream reportOutputStream = null;
     boolean conforms = false;
     try {
@@ -259,7 +259,7 @@ public class VerificationServiceImpl implements VerificationService {
       }
 
     } catch (Throwable t) {
-      logger.error(WTF_MARKER, t.getMessage(), t);
+      logger.error(MARKER, t.getMessage(), t);
     }
 
     return conforms;
