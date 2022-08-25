@@ -236,7 +236,7 @@ public class VerificationServiceImpl implements VerificationService {
    * @param shaclShape string indictates the shacl shapes union composite
    * @return                True if there is no violation or false otherwise
    */
-   boolean sdValidateAgainstShacl(String dataGraph, String shaclShape) {
+   boolean isValidAgainstShacl(String dataGraph, String shaclShape) {
     OutputStream reportOutputStream = null;
     boolean conforms = false;
     try {
