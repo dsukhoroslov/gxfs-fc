@@ -58,7 +58,7 @@ public class VerificationServiceImpl implements VerificationService {
     String lifecycleStatus = "";
     String participantID = "";
     LocalDate issuedDate = null;
-    List<Signature> signatures = new ArrayList<>();
+    List<Validator> validators = new ArrayList<>();
     List<SdClaim> claims = new ArrayList<>();
 
     //Verify Syntax and parse json
@@ -83,7 +83,7 @@ public class VerificationServiceImpl implements VerificationService {
             verificationTimestamp,
             lifecycleStatus,
             issuedDate,
-            signatures,
+            validators,
             claims
     );
   }

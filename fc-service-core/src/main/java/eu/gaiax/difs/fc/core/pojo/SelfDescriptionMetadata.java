@@ -26,7 +26,7 @@ public class SelfDescriptionMetadata extends eu.gaiax.difs.fc.api.generated.mode
   @JsonIgnore
   private ContentAccessor selfDescription;
 
-  public SelfDescriptionMetadata(ContentAccessorDirect contentAccessor, String id, String issuer, List<String> validators) {
+  public SelfDescriptionMetadata(ContentAccessorDirect contentAccessor, String id, String issuer, List<Validator> validators) {
     super(calculateSha256AsHex(contentAccessor.getContentAsString()), id, SelfDescriptionStatus.ACTIVE, issuer, validators, now(), now());
     this.selfDescription = contentAccessor;
   }

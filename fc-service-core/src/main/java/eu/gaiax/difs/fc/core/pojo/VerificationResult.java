@@ -20,17 +20,18 @@ public class VerificationResult extends eu.gaiax.difs.fc.api.generated.model.Ver
   @JsonIgnore
   private List<SdClaim> claims;
   /**
-   * TODO: Signature details unknown, once clear, fix communication with parent.
+   * validators, that signed parts of the SD.
    */
   @JsonIgnore
-  private List<Signature> signatures;
+  private List<Validator> validators;
 
-  public VerificationResult(String id, List<SdClaim> claims, List<Signature> signatures, OffsetDateTime verificationTimestamp, String lifecycleStatus, String issuer, LocalDate issuedDate) {
+  public VerificationResult(String id, List<SdClaim> claims, List<Validator> validators, OffsetDateTime verificationTimestamp, String lifecycleStatus, String issuer, LocalDate issuedDate) {
     super(verificationTimestamp, lifecycleStatus, issuer, issuedDate, null);
     this.id = id;
     this.claims = claims;
-    this.signatures = signatures;
-    List<Object> sigObs = new ArrayList<>(signatures);
+    this.validators = validators;
+    //TODO: Check what parts of the validators should be added to the response
+    List<Object> sigObs = new ArrayList<>(validators);
     List<List<Object>> sigs2 = Arrays.asList(sigObs);
     super.setSignatures(sigs2);
   }
@@ -49,5 +50,13 @@ public class VerificationResult extends eu.gaiax.difs.fc.api.generated.model.Ver
 
   public void setClaims(List<SdClaim> claims) {
     this.claims = claims;
+  }
+
+  public List<Validator> getValidators() {
+    return validators;
+  }
+
+  public void setValidators(List<Validator> validators) {
+    this.validators = validators;
   }
 }
