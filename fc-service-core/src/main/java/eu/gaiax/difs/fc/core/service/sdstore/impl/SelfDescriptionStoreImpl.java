@@ -2,6 +2,7 @@ package eu.gaiax.difs.fc.core.service.sdstore.impl;
 
 import eu.gaiax.difs.fc.core.pojo.ContentAccessor;
 import eu.gaiax.difs.fc.core.service.filestore.impl.FileStoreImpl;
+import eu.gaiax.difs.fc.core.service.graphdb.GraphStore;
 import eu.gaiax.difs.fc.api.generated.model.SelfDescriptionStatus;
 import eu.gaiax.difs.fc.core.exception.ConflictException;
 import eu.gaiax.difs.fc.core.exception.NotFoundException;
@@ -39,6 +40,9 @@ public class SelfDescriptionStoreImpl implements SelfDescriptionStore {
 
   @Autowired
   private SessionFactory sessionFactory;
+
+  @Autowired
+  private GraphStore graphDb;
 
   @Override
   public List<SelfDescriptionMetadata> getAllSelfDescriptions(int offset, int limit) {
@@ -131,13 +135,11 @@ public class SelfDescriptionStoreImpl implements SelfDescriptionStore {
       existingSd.setStatus(SelfDescriptionStatus.DEPRECATED);
       existingSd.setStatusTime(Instant.now());
 
-      // TODO: Claims from existing SD need to be removed from the GraphDB.
-
+      graphDb.deleteClaims(STORE_NAME);
       currentSession.update(existingSd);
     }
 
-    // TODO: Send sdVerificationResults.getClaims() to the GraphDB
-
+    graphDb.addClaims(sdVerificationResults.getClaims(), STORE_NAME);
     currentSession.flush();
   }
 
@@ -158,8 +160,7 @@ public class SelfDescriptionStoreImpl implements SelfDescriptionStore {
     currentSession.update(record);
     currentSession.flush();
 
-    // TODO: Claims from existing SD need to be removed from the GraphDB.
-
+    graphDb.deleteClaims(STORE_NAME);
   }
 
   @Override
@@ -180,8 +181,7 @@ public class SelfDescriptionStoreImpl implements SelfDescriptionStore {
       log.error("Failed to delete self description file with hash {}", hash, ex);
     }
 
-    // TODO: Claims from existing SD need to be removed from the GraphDB if existing SD was active.
-
+    graphDb.deleteClaims(hash);
   }
 
 }
