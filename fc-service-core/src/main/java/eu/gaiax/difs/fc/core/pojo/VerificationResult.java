@@ -6,6 +6,8 @@ import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
+
 
 public class VerificationResult extends eu.gaiax.difs.fc.api.generated.model.VerificationResult {
 
@@ -31,9 +33,7 @@ public class VerificationResult extends eu.gaiax.difs.fc.api.generated.model.Ver
     this.claims = claims;
     this.validators = validators;
     //TODO: Check what parts of the validators should be added to the response
-    List<Object> sigObs = new ArrayList<>(validators);
-    List<List<Object>> sigs2 = Arrays.asList(sigObs);
-    super.setSignatures(sigs2);
+    super.setValidatorDids(validators.stream().map(Validator::getDidURI).collect(Collectors.toList()));
   }
 
   public String getId() {

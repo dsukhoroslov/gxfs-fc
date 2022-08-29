@@ -72,7 +72,7 @@ public class SdMetaRecord implements Serializable {
     issuer = sdMeta.getIssuer();
     uploadTime = sdMeta.getUploadDatetime().toInstant();
     statusTime = sdMeta.getStatusDatetime().toInstant();
-    List<String> validatorsList = sdMeta.getValidators();
+    List<String> validatorsList = sdMeta.getValidatorDids();
     if (validatorsList != null) {
       validators = validatorsList.stream().map(t -> new ValidatorRecord(sdHash, t)).collect(Collectors.toList());
     }
@@ -90,7 +90,7 @@ public class SdMetaRecord implements Serializable {
     sdMeta.setUploadDatetime(uploadTime.atOffset(ZoneOffset.UTC));
     sdMeta.setStatusDatetime(statusTime.atOffset(ZoneOffset.UTC));
     if (validators != null) {
-      sdMeta.setValidators(validators.stream().map(ValidatorRecord::getValidator).collect(Collectors.toList()));
+      sdMeta.setValidatorDids(validators.stream().map(ValidatorRecord::getValidator).collect(Collectors.toList()));
     }
     return sdMeta;
   }

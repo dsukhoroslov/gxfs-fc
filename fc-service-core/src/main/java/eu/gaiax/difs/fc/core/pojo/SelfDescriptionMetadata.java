@@ -8,6 +8,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import eu.gaiax.difs.fc.api.generated.model.SelfDescriptionStatus;
 
 import java.util.List;
+import java.util.stream.Collectors;
+
 
 /**
  * Class for handling the metadata of a Self-Description, and optionally a
@@ -27,7 +29,7 @@ public class SelfDescriptionMetadata extends eu.gaiax.difs.fc.api.generated.mode
   private ContentAccessor selfDescription;
 
   public SelfDescriptionMetadata(ContentAccessorDirect contentAccessor, String id, String issuer, List<Validator> validators) {
-    super(calculateSha256AsHex(contentAccessor.getContentAsString()), id, SelfDescriptionStatus.ACTIVE, issuer, validators, now(), now());
+    super(calculateSha256AsHex(contentAccessor.getContentAsString()), id, SelfDescriptionStatus.ACTIVE, issuer, validators.stream().map(Validator::getDidURI).collect(Collectors.toList()), now(), now());
     this.selfDescription = contentAccessor;
   }
 }
