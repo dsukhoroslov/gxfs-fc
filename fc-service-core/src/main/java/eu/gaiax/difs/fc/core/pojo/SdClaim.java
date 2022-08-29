@@ -9,8 +9,8 @@ package eu.gaiax.difs.fc.core.pojo;
 @lombok.Setter
 public class SdClaim {
 
-  private final String subject;
-  private final String predicate;
-  private final String object;
+	private final String subject;
+	private final String predicate;
+	private final String object;
 
 }
