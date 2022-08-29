@@ -1,9 +1,10 @@
 package eu.gaiax.difs.fc.core.service.graphdb;
 
 import java.io.*;
-import java.time.Duration;
 import java.util.*;
 
+import n10s.graphconfig.GraphConfigProcedures;
+import n10s.rdf.load.RDFLoadProcedures;
 import org.junit.FixMethodOrder;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
@@ -12,10 +13,16 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.runners.MethodSorters;
+import org.neo4j.configuration.GraphDatabaseSettings;
+import org.neo4j.configuration.connectors.BoltConnector;
+import org.neo4j.configuration.helpers.SocketAddress;
+
+import org.neo4j.gds.catalog.GraphExistsProc;
+import org.neo4j.harness.Neo4j;
+import org.neo4j.harness.Neo4jBuilders;
 import org.springframework.core.io.ClassPathResource;
-import org.springframework.core.io.Resource;
-import org.testcontainers.containers.Neo4jContainer;
-import org.testcontainers.junit.jupiter.Container;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
 
 import eu.gaiax.difs.fc.core.pojo.GraphQuery;
 import eu.gaiax.difs.fc.core.pojo.SdClaim;
@@ -25,34 +32,40 @@ import eu.gaiax.difs.fc.core.config.GraphDbConfig;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class GraphTest {
+	private static final List<String> PROCEDURE_LIST = List.of("apoc.trigger.*", "gds.*", "n10s.*", "graph-data-science.*");
 
 	private Neo4jGraphStore graphGaia;
 
-	@Container
-	final static Neo4jContainer<?> container = new Neo4jContainer<>("neo4j:4.4.5")
-			.withNeo4jConfig("dbms.security.procedures.unrestricted", "apoc.*,n10s.*,gds.*,graph-data-science.*")
-			.withEnv("NEO4JLABS_PLUGINS", "[\"apoc\",\"n10s\", \"graph-data-science\"]")
-			.withEnv("NEO4J_dbms_security_procedures_unrestricted", "apoc.*,gds.*,graph-data-science.*")
-			.withEnv("apoc.import.file.enabled", "true")
-			.withEnv("dbms.connector.bolt.listen_address",":7687")
-			.withEnv("apoc.import.file.use_neo4j_config", "false")
-			.withAdminPassword("12345")
-			.withStartupTimeout(Duration.ofMinutes(5));
+	private static Neo4j embeddedDatabaseServer;
 
 	@BeforeAll
-	void setupContainer() throws Exception {
-		container.start();
+	void initializeNeo4j() throws Exception {
+		embeddedDatabaseServer = Neo4jBuilders.newInProcessBuilder()
+				.withDisabledServer()
+				.withConfig(GraphDatabaseSettings.procedure_allowlist, PROCEDURE_LIST)
+				.withConfig(BoltConnector.listen_address, new SocketAddress(7687))
+				.withConfig(GraphDatabaseSettings.procedure_unrestricted, PROCEDURE_LIST)
+				.withProcedure(GraphExistsProc.class)
+				.withProcedure(GraphConfigProcedures.class)
+				.withProcedure(RDFLoadProcedures.class)
+				.build();
+
 		GraphDbConfig graphDbConfig = new GraphDbConfig();
-		graphDbConfig.setUri(container.getBoltUrl());
+		graphDbConfig.setUri(String.valueOf(embeddedDatabaseServer.boltURI()));
 		graphDbConfig.setUser("neo4j");
 		graphDbConfig.setPassword("12345");
 		graphGaia = new Neo4jGraphStore(graphDbConfig);
-
 	}
 
 	@AfterAll
-	void stopContainer() {
-		container.stop();
+	void closeNeo4j() {
+		embeddedDatabaseServer.close();
+	}
+
+	@DynamicPropertySource
+	static void neo4jProperties(DynamicPropertyRegistry registry) {
+		registry.add("org.neo4j.driver.uri", embeddedDatabaseServer::boltURI);
+		registry.add("org.neo4j.driver.authentication.password", () -> "");
 	}
 
 	/**
@@ -90,7 +103,7 @@ public class GraphTest {
 	/**
 	 * Query to graph using Query endpoint by instantiating query object and passing
 	 * query string as parameter. THe result is a list of maps
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	@Test
@@ -128,5 +141,4 @@ public class GraphTest {
 			throw e;
 		}
 	}
-
 }
