@@ -1,15 +1,17 @@
 package eu.gaiax.difs.fc.core.service.graphdb;
 
-import java.io.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import io.zonky.test.db.AutoConfigureEmbeddedDatabase;
 import java.util.*;
 
 import n10s.graphconfig.GraphConfigProcedures;
 import n10s.rdf.load.RDFLoadProcedures;
 import org.junit.FixMethodOrder;
 import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.runners.MethodSorters;
@@ -17,128 +19,94 @@ import org.neo4j.configuration.GraphDatabaseSettings;
 import org.neo4j.configuration.connectors.BoltConnector;
 import org.neo4j.configuration.helpers.SocketAddress;
 
+import org.neo4j.driver.Config;
+import org.neo4j.driver.Driver;
+import org.neo4j.driver.GraphDatabase;
+import org.neo4j.driver.Result;
+import org.neo4j.driver.Session;
+import org.neo4j.driver.springframework.boot.test.autoconfigure.Neo4jTestHarnessAutoConfiguration;
 import org.neo4j.gds.catalog.GraphExistsProc;
+import org.neo4j.gds.catalog.GraphListProc;
+import org.neo4j.gds.catalog.GraphProjectProc;
 import org.neo4j.harness.Neo4j;
 import org.neo4j.harness.Neo4jBuilders;
-import org.springframework.core.io.ClassPathResource;
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 
-import eu.gaiax.difs.fc.core.pojo.GraphQuery;
-import eu.gaiax.difs.fc.core.pojo.SdClaim;
-import eu.gaiax.difs.fc.core.service.graphdb.impl.Neo4jGraphStore;
-import eu.gaiax.difs.fc.core.config.GraphDbConfig;
-
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
+@AutoConfigureEmbeddedDatabase(provider = AutoConfigureEmbeddedDatabase.DatabaseProvider.ZONKY)
+@EnableAutoConfiguration(exclude = {Neo4jTestHarnessAutoConfiguration.class})
 public class GraphTest {
-	private static final List<String> PROCEDURE_LIST = List.of("apoc.trigger.*", "gds.*", "n10s.*", "graph-data-science.*");
+  private static Neo4j embeddedDatabaseServer;
 
-	private Neo4jGraphStore graphGaia;
+  private Driver driver;
 
-	private static Neo4j embeddedDatabaseServer;
+  @BeforeAll
+  void initializeNeo4j() {
+    embeddedDatabaseServer = Neo4jBuilders.newInProcessBuilder()
+        .withDisabledServer()
+        .withConfig(GraphDatabaseSettings.procedure_allowlist, List.of("gds.*", "n10s.*"))
+        .withConfig(BoltConnector.listen_address, new SocketAddress(7687))
+        .withConfig(GraphDatabaseSettings.procedure_unrestricted, List.of("gds.*", "n10s.*"))
 
-	@BeforeAll
-	void initializeNeo4j() throws Exception {
-		embeddedDatabaseServer = Neo4jBuilders.newInProcessBuilder()
-				.withDisabledServer()
-				.withConfig(GraphDatabaseSettings.procedure_allowlist, PROCEDURE_LIST)
-				.withConfig(BoltConnector.listen_address, new SocketAddress(7687))
-				.withConfig(GraphDatabaseSettings.procedure_unrestricted, PROCEDURE_LIST)
-				.withProcedure(GraphExistsProc.class)
-				.withProcedure(GraphConfigProcedures.class)
-				.withProcedure(RDFLoadProcedures.class)
-				.build();
+        // will be user for gds procedure
+        .withProcedure(GraphExistsProc.class) // gds.graph.exists procedure
+        .withProcedure(GraphListProc.class)
+        .withProcedure(GraphProjectProc.class)
+        // will be used for neo-semantics
+        .withProcedure(GraphConfigProcedures.class) // n10s.graphconfig.*
+        .withProcedure(RDFLoadProcedures.class)
 
-		GraphDbConfig graphDbConfig = new GraphDbConfig();
-		graphDbConfig.setUri(String.valueOf(embeddedDatabaseServer.boltURI()));
-		graphDbConfig.setUser("neo4j");
-		graphDbConfig.setPassword("12345");
-		graphGaia = new Neo4jGraphStore(graphDbConfig);
-	}
+        .withFixture("CREATE (SelfDescription1:SelfDescription {sdHash:'test-hash-1', id:'test-sd-1'})")
+        .withFixture("CREATE (SelfDescription2:SelfDescription {sdHash:'test-hash-2', id:'test-sd-2'})")
+        .withFixture("CREATE (Issuer1:Issuer {id:'test-issuer-1', type: 'Provider'})")
+        .withFixture("MATCH (a:SelfDescription), (b:Issuer) WHERE a.id = 'test-sd-1' AND b.id = 'test-issuer-1' CREATE (b)-[r:OWNS]->(a)")
+        .withFixture("MATCH (a:SelfDescription), (b:Issuer) WHERE a.id = 'test-sd-2' AND b.id = 'test-issuer-1' CREATE (b)-[r2:OWNS]->(a)")
+        .build();
+    this.driver = GraphDatabase.driver(embeddedDatabaseServer.boltURI(), Config.builder().withoutEncryption().build());
+  }
 
-	@AfterAll
-	void closeNeo4j() {
-		embeddedDatabaseServer.close();
-	}
+  @AfterAll
+  void closeNeo4j() {
+    embeddedDatabaseServer.close();
+  }
 
-	@DynamicPropertySource
-	static void neo4jProperties(DynamicPropertyRegistry registry) {
-		registry.add("org.neo4j.driver.uri", embeddedDatabaseServer::boltURI);
-		registry.add("org.neo4j.driver.authentication.password", () -> "");
-	}
+  @DynamicPropertySource
+  static void neo4jProperties(DynamicPropertyRegistry registry) {
+    registry.add("org.neo4j.driver.uri", embeddedDatabaseServer::boltURI);
+    registry.add("org.neo4j.driver.authentication.password", () -> "");
+  }
 
-	/**
-	 * Data hardcoded for claims and upload to Graph . Given set of credentials,
-	 * connect to graph and upload self description. Instantiate list of claims from
-	 * file with subject predicate and object in N-triples form and upload to graph.
-	 */
-	@Test
-	void simpleGraphUpload() throws Exception {
-		List<SdClaim> sdClaimList = new ArrayList<>();
-		SdClaim sdClaim = new SdClaim("<https://delta-dao.com/.well-known/participantCompany.json>",
-				"<https://www.w3.org/2018/credentials#credentialSubject>",
-				"<https://delta-dao.com/.well-known/participantCompany.json>");
-		sdClaimList.add(sdClaim);
-		Assertions.assertEquals("SUCCESS", graphGaia.uploadSelfDescription(sdClaimList));
+  @Test
+  public void testInitSemanticsGraphConfig() {
+    try (Session session = driver.session()) {
+      Result results = session.run(
+          "CALL n10s.graphconfig.init() yield param, value with param, value where param = 'classLabel' return param, value ");
+      assertTrue(results.hasNext());
+      assertEquals("Class", results.next().get("value").asString());
 
-	}
+      results = session.run(
+          "CALL n10s.graphconfig.show() yield param, value with param, value where param = 'classLabel' return param, value ");
+      assertTrue(results.hasNext());
+      assertEquals("Class", results.next().get("value").asString());
+    }
+  }
 
-	/**
-	 * Data hardcoded for claims and upload to Graph . Given set of credentials,
-	 * connect to graph and upload self description. Instantiate list of claims from
-	 * file with subject predicate and object in N-triples form and upload to graph.
-	 */
-	@Test
-	void testLiteralGraphUpload() {
-		String tripleString = "<https://delta-dao.com/.well-known/participantCompany.json> <gx-participant:registrationNumber> \"LURCSL.B186284\"^^<http://www.w3.org/2001/XMLSchema#string>";
-		List<SdClaim> sdClaimList = new ArrayList<>();
-		SdClaim sdClaim = new SdClaim("<https://delta-dao.com/.well-known/participantCompany.json>",
-				"<https://www.w3.org/2018/credentials#credentialSubject>",
-				"\"410 Terry Avenue North\"^^<http://www.w3.org/2001/XMLSchema#string>");
-		sdClaimList.add(sdClaim);
-		Assertions.assertEquals("SUCCESS", graphGaia.uploadSelfDescription(sdClaimList));
-	}
+  @Test
+  void testIfGraphExists() {
+    try (Session session = driver.session()) {
+      session.run("CALL gds.graph.project('sds', 'SelfDescription', 'OWNS')");
+      assertEquals(1, session.run("CALL gds.graph.list()").list().size());
+      assertTrue(session.run("CALL gds.graph.exists('sds')").next().get("exists").asBoolean());
+    }
+  }
 
-	/**
-	 * Query to graph using Query endpoint by instantiating query object and passing
-	 * query string as parameter. THe result is a list of maps
-	 *
-	 * @throws Exception
-	 */
-	@Test
-	@DisplayName("Test for QueryData")
-	void testQueryTransactionEndpoint() throws Exception {
-		List<SdClaim> sdClaimList = loadTestClaims();
-		Assertions.assertEquals("SUCCESS", graphGaia.uploadSelfDescription(sdClaimList));
-
-		List<Map<String, String>> resultList = new ArrayList<Map<String, String>>();
-		Map<String, String> map = new HashMap<String, String>();
-		map.put("n.ns0__country", null);
-		map.put("n.ns0__legalName", "CompanyWebServicesEMEASARL");
-		resultList.add(map);
-		GraphQuery query = new GraphQuery(
-				"match(n{ns0__legalName: 'CompanyWebServicesEMEASARL'}) return n.ns0__country, n.ns0__legalName;");
-		List<Map<String, String>> response = graphGaia.queryData(query);
-		Assertions.assertEquals(resultList, response);
-
-	}
-
-	private List<SdClaim> loadTestClaims() throws Exception {
-		try (InputStream is = new ClassPathResource("Databases/neo4j/data/Triples/testData2.nt")
-				.getInputStream()) {
-			BufferedReader br = new BufferedReader(new InputStreamReader(is));
-			String strLine;
-			List<SdClaim> sdClaimList = new ArrayList<>();
-			while ((strLine = br.readLine()) != null) {
-				String[] split = strLine.split("\\s+");
-				SdClaim sdClaim = new SdClaim(split[0], split[1], split[2]);
-				sdClaimList.add(sdClaim);
-
-			}
-			return sdClaimList;
-		} catch (Exception e) {
-			throw e;
-		}
-	}
+  @Test
+  void testCreationOfGraphNodes() {
+    try (Session session = driver.session()) {
+      assertThat(session.run("MATCH (m:SelfDescription) RETURN m").stream()).hasSize(2);
+    }
+  }
 }
