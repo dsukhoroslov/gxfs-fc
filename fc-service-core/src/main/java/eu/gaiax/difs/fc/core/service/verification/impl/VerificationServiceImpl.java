@@ -4,6 +4,8 @@ import com.github.jsonldjava.utils.JsonUtils;
 import eu.gaiax.difs.fc.api.generated.model.VerificationResult;
 import eu.gaiax.difs.fc.core.exception.VerificationException;
 import eu.gaiax.difs.fc.core.pojo.*;
+import eu.gaiax.difs.fc.core.service.schemastore.SchemaStore;
+import eu.gaiax.difs.fc.core.service.schemastore.impl.SchemaStoreImpl;
 import eu.gaiax.difs.fc.core.service.sdstore.impl.ContentAccessorFile;
 import eu.gaiax.difs.fc.core.service.verification.VerificationService;
 
@@ -78,14 +80,15 @@ public class VerificationServiceImpl implements VerificationService {
   @Override
   public VerificationResultOffering verifyOfferingSelfDescription(ContentAccessor payload) throws VerificationException {
     String id = "";
-    String shaclValidationReport = "";
     OffsetDateTime verificationTimestamp = OffsetDateTime.now();
     String lifecycleStatus = "";
     String participantID = "";
     LocalDate issuedDate = null;
     List<Signature> signatures = new ArrayList<>();
     List<SdClaim> claims = new ArrayList<>();
-
+    String validationReport = "";
+    SchemaStoreImpl ShemaStore = new SchemaStoreImpl();
+    ContentAccessor ShaclShapeCompositeSchema = ShemaStore.getCompositeSchema(SchemaStore.SchemaType.SHAPE);
     //Verify Syntax and parse json
     Map<String, Object> parsedSD = parseSD(payload);
 
@@ -99,7 +102,12 @@ public class VerificationServiceImpl implements VerificationService {
 
     //TODO: Verify Schema FIT-DSAI
 
-    //TODO: Extract Claims FIT-DSAI
+    if (isValidAgainstShacl(payload,ShaclShapeCompositeSchema)){
+      //TODO: Extract Claims FIT-DSAI
+    }else {
+      throw new VerificationException("the self description is violating the shacl shape schema for this reason: "+validationReport);
+    }
+
 
 
     return new VerificationResultOffering(
