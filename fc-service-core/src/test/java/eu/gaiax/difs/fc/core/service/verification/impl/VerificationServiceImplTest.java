@@ -123,12 +123,12 @@ public class VerificationServiceImplTest {
 
 
         String dataPath = "Validation-Tests/DataCenterDataGraph.jsonld";
-        String data =  getAccessor(dataPath).getContentAsString();
+       // String data =  getAccessor(dataPath).getContentAsString();
 
         String shapePath = "Validation-Tests/physical-resourceShape.ttl";
-        String shape =  getAccessor(shapePath).getContentAsString();
+        //String shape =  getAccessor(shapePath).getContentAsString();
 
-        boolean actual = verificationService.isValidAgainstShacl(data, shape);
+        boolean actual = verificationService.isValidAgainstShacl(getAccessor(dataPath), getAccessor(shapePath));
         if(actual==false) {
             String outputReportPath = "Validation-Tests/report1.jsonld";
             ContentAccessorFile outputContentAccessor=  getAccessor(outputReportPath);

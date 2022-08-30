@@ -4,6 +4,7 @@ import com.github.jsonldjava.utils.JsonUtils;
 import eu.gaiax.difs.fc.api.generated.model.VerificationResult;
 import eu.gaiax.difs.fc.core.exception.VerificationException;
 import eu.gaiax.difs.fc.core.pojo.*;
+import eu.gaiax.difs.fc.core.service.sdstore.impl.ContentAccessorFile;
 import eu.gaiax.difs.fc.core.service.verification.VerificationService;
 
 import java.io.*;
@@ -36,6 +37,8 @@ import org.topbraid.shacl.vocabulary.SH;
 @Service
 public class VerificationServiceImpl implements VerificationService {
   private static final String credentials_key = "verifiableCredential";
+  private static final String sd_format = "JSONLD";
+  private static final String shapes_format = "TURTLE";
   private static final Logger logger = LoggerFactory.getLogger(VerificationServiceImpl.class);
   private static final Path BASE_PATH = Paths.get(".").toAbsolutePath().normalize();
   private static final Marker MARKER = MarkerFactory.getMarker("MARKER");
@@ -70,6 +73,7 @@ public class VerificationServiceImpl implements VerificationService {
   @Override
   public VerificationResultOffering verifyOfferingSelfDescription(ContentAccessor payload) throws VerificationException {
     String id = "";
+    String shaclValidationReport = "";
     OffsetDateTime verificationTimestamp = OffsetDateTime.now();
     String lifecycleStatus = "";
     String participantID = "";
@@ -135,6 +139,7 @@ public class VerificationServiceImpl implements VerificationService {
     }
 
     return (Map<String, Object>) parsed;
+
   }
 
   List<Signature> validateCryptographic (Map<String, Object> sd) throws VerificationException {
@@ -232,20 +237,20 @@ public class VerificationServiceImpl implements VerificationService {
   /**
    * Method that validates a dataGraph against shaclShape
    *
-   * @param dataGraph   string indictates the data graph should be validated
-   * @param shaclShape string indictates the shacl shapes union composite
+   * @param sd   ContentAccessor of a self-Description sd to be validated
+   * @param shaclShape ContentAccessor of a union schemas of type SHACL
    * @return                True if there is no violation or false otherwise
    */
-   boolean isValidAgainstShacl(String dataGraph, String shaclShape) {
+   boolean isValidAgainstShacl(ContentAccessor sd, ContentAccessor shaclShape) {
     OutputStream reportOutputStream = null;
     boolean conforms = false;
     try {
-      Reader dataGraphReader = new StringReader(dataGraph);
-      Reader shaclShapeReader = new StringReader(shaclShape);
+      Reader dataGraphReader = new StringReader(sd.getContentAsString());
+      Reader shaclShapeReader = new StringReader(shaclShape.getContentAsString());
       Model data = ModelFactory.createDefaultModel();
-      data.read(dataGraphReader, null, "JSONLD");
+      data.read(dataGraphReader, null, sd_format);
       Model shape = ModelFactory.createDefaultModel();
-      shape.read(shaclShapeReader, null, "TURTLE");
+      shape.read(shaclShapeReader, null, shapes_format);
       Resource reportResource = ValidationUtil.validateModel(data, shape, true);
       conforms = reportResource.getProperty(SH.conforms).getBoolean();
       logger.trace("Conforms = " + conforms);
