@@ -5,9 +5,9 @@ import eu.gaiax.difs.fc.core.pojo.SdClaim;
 import java.util.List;
 
 /**
-* Defines the required functions to add, update and delete active claims extracted from self-descriptions
-* @author nacharya
-*/
+ * Defines the required functions to add, update and delete active claims extracted from self-descriptions
+ * @author nacharya
+ */
 public interface GraphStore {
 
 
@@ -26,6 +26,8 @@ public interface GraphStore {
      * @param credentialSubject contains a self-description unique identifier
      */
     void deleteClaims(String credentialSubject);
+
+
 
 }
 
