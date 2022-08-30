@@ -14,7 +14,5 @@ public class SemanticValidationResult {
         this.conforms = conforms;
         this.validationReport = validationReport;
     }
-
-
 }
-}
+
