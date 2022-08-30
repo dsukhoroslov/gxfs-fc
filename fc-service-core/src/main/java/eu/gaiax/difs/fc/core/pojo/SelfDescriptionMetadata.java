@@ -29,16 +29,16 @@ public class SelfDescriptionMetadata extends SelfDescription {
   @JsonIgnore
   private ContentAccessor selfDescription;
 
-  public SelfDescriptionMetadata(ContentAccessorDirect contentAccessor, String id, String issuer, List<String> validators) {
+  public SelfDescriptionMetadata(ContentAccessor contentAccessor, String id, String issuer, List<String> validators) {
     super(calculateSha256AsHex(contentAccessor.getContentAsString()), id, SelfDescriptionStatus.ACTIVE, issuer, validators, now(), now());
     this.selfDescription = contentAccessor;
   }
 
-  public SelfDescriptionMetadata(ContentAccessorDirect contentAccessorDirect, VerificationResultParticipant verificationResult) {
-    super(calculateSha256AsHex(contentAccessorDirect.getContentAsString()), verificationResult.getId(), SelfDescriptionStatus.ACTIVE,
+  public SelfDescriptionMetadata(ContentAccessor contentAccessor, VerificationResultParticipant verificationResult) {
+    super(calculateSha256AsHex(contentAccessor.getContentAsString()), verificationResult.getId(), SelfDescriptionStatus.ACTIVE,
          verificationResult.getIssuer(),Collections.<String>emptyList(),verificationResult.getVerificationTimestamp(),
         verificationResult.getVerificationTimestamp());
 
-    this.selfDescription = contentAccessorDirect;
+    this.selfDescription = contentAccessor;
   }
 }
