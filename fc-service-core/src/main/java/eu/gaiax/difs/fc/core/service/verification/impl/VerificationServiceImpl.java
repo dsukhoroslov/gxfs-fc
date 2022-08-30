@@ -221,7 +221,7 @@ public class VerificationServiceImpl implements VerificationService {
    * @param sd map represents a self-description for claims extraction
    * @return a list of claims.
    */
-  public List<SdClaim> extractClaims(Map<String, Object> sd) {
+   List<SdClaim> extractClaims(Map<String, Object> sd) {
     List<SdClaim> sdClaims = new ArrayList<>();
     Map<String, Object> subjects = (Map<String, Object>) sd.get("credentialSubject");
     String subject = subjects.get("id").toString();
