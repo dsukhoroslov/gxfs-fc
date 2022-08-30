@@ -31,10 +31,15 @@ public class VerificationServiceImpl implements VerificationService {
    */
   @Override
   public VerificationResultParticipant verifyParticipantSelfDescription(ContentAccessor payload) throws VerificationException {
+    Map<String, Object> parsed = parseSD(payload);
+    String id = (String) parsed.get("id");
+    String name = (String) parsed.get("holder");
+    Map<String, Object> proof = (Map<String, Object>) parsed.get("proof");
+    String key = (String) proof.get("verificationMethod");
     return new VerificationResultParticipant(
-            "name",
-            "id",
-            "key",
+            name,
+            id,
+            key,
             OffsetDateTime.now(),
             "lifecycle",
             LocalDate.MIN,
@@ -56,19 +61,19 @@ public class VerificationServiceImpl implements VerificationService {
     String lifecycleStatus = "";
     String participantID = "";
     LocalDate issuedDate = null;
-    List<Signature> signatures = null;
-    List<SdClaim> claims = null;
+    List<Signature> signatures = new ArrayList<>();
+    List<SdClaim> claims = new ArrayList<>();
 
     //Verify Syntax and parse json
     Map<String, Object> parsedSD = parseSD(payload);
 
     //TODO: Verify Cryptographic FIT-WI
     participantID = getParticipantIDFromSD(parsedSD);
-    signatures = validateCryptographic(parsedSD);
+//    signatures = validateCryptographic(parsedSD);
 
     //TODO: Check if API-User is allowed to submit the self-description FIT-WI
 
-    parsedSD = cleanSD(parsedSD);
+//    parsedSD = cleanSD(parsedSD);
 
     //TODO: Verify Schema FIT-DSAI
 
