@@ -17,7 +17,4 @@ public class SdClaim {
   {
     return "(" +subject + " ," + predicate + " ," + object +")";
   }
-
-
-
 }

@@ -22,6 +22,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class VerificationServiceImpl implements VerificationService {
   private static final String credentials_key = "verifiableCredential";
+  private static final String credential_subject = "credentialSubject";
 
   /**
    * The function validates the Self-Description as JSON and tries to parse the json handed over.
@@ -222,8 +223,9 @@ public class VerificationServiceImpl implements VerificationService {
    * @return a list of claims.
    */
    List<SdClaim> extractClaims(Map<String, Object> sd) {
+
     List<SdClaim> sdClaims = new ArrayList<>();
-    Map<String, Object> subjects = (Map<String, Object>) sd.get("credentialSubject");
+    Map<String, Object> subjects = (Map<String, Object>) sd.get(credential_subject);
     String subject = subjects.get("id").toString();
     Map<String, Map<String, Object>> credentialSubject = (Map<String, Map<String, Object>>) sd.get("credentialSubject");
     Set<String> credentialSubjectKeySets = credentialSubject.keySet();
