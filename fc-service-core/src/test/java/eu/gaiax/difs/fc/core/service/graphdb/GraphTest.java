@@ -11,7 +11,6 @@ import org.springframework.core.io.ClassPathResource;
 import org.testcontainers.containers.Neo4jContainer;
 import org.testcontainers.junit.jupiter.Container;
 
-import eu.gaiax.difs.fc.core.pojo.OpenCypherQuery;
 import eu.gaiax.difs.fc.core.pojo.SdClaim;
 import eu.gaiax.difs.fc.core.service.graphdb.impl.Neo4jGraphStore;
 import eu.gaiax.difs.fc.core.config.GraphDbConfig;
@@ -21,7 +20,7 @@ import eu.gaiax.difs.fc.core.config.GraphDbConfig;
 @Disabled
 public class GraphTest {
 
-	private Neo4jGraphStore graphGaia;
+	private Neo4jGraphStore graphDB;
 
 	@Container
 	final static Neo4jContainer<?> container = new Neo4jContainer<>("neo4j:4.4.5")
@@ -41,7 +40,8 @@ public class GraphTest {
 		graphDbConfig.setUri(container.getBoltUrl());
 		graphDbConfig.setUser("neo4j");
 		graphDbConfig.setPassword("12345");
-		graphGaia = new Neo4jGraphStore(graphDbConfig);
+		graphDB = new Neo4jGraphStore(graphDbConfig);
+		graphDB.initialiseGraph();
 
 	}
 
@@ -62,7 +62,7 @@ public class GraphTest {
 				"<https://www.w3.org/2018/credentials#credentialSubject>",
 				"<https://delta-dao.com/.well-known/participantCompany.json>");
 		sdClaimList.add(sdClaim);
-		graphGaia.addClaims(sdClaimList, "<https://delta-dao.com/.well-known/participantCompany.json>" );
+		graphDB.addClaims(sdClaimList, "<https://delta-dao.com/.well-known/participantCompany.json>" );
 		Assertions.assertEquals("SUCCESS","SUCCESS" );
 
 	}
@@ -80,7 +80,7 @@ public class GraphTest {
 				"<https://www.w3.org/2018/credentials#credentialSubject>",
 				"\"410 Terry Avenue North\"^^<http://www.w3.org/2001/XMLSchema#string>");
 		sdClaimList.add(sdClaim);
-		graphGaia.addClaims(sdClaimList,"<https://delta-dao.com/.well-known/participantCompany.json>" );
+		graphDB.addClaims(sdClaimList,"<https://delta-dao.com/.well-known/participantCompany.json>" );
 		Assertions.assertEquals("SUCCESS","SUCCESS" );
 	}
 
