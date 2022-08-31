@@ -127,7 +127,5 @@ public class VerificationServiceImplTest {
                 "(https://delta-dao.com/.well-known/serviceMVGPortal.json ,gax-service:TermsAndConditions ,contentHash)]";
         String actual = verificationService.extractClaims(parsed).toString();
         assertEquals(expected,actual);
-
     }
-
 }
