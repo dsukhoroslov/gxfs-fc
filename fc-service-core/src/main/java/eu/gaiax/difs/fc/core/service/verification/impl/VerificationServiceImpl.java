@@ -6,7 +6,6 @@ import eu.gaiax.difs.fc.core.exception.VerificationException;
 import eu.gaiax.difs.fc.core.pojo.*;
 import eu.gaiax.difs.fc.core.service.schemastore.SchemaStore;
 import eu.gaiax.difs.fc.core.service.schemastore.impl.SchemaStoreImpl;
-import eu.gaiax.difs.fc.core.service.sdstore.impl.ContentAccessorFile;
 import eu.gaiax.difs.fc.core.service.verification.VerificationService;
 
 import java.io.*;
@@ -86,9 +85,9 @@ public class VerificationServiceImpl implements VerificationService {
     LocalDate issuedDate = null;
     List<Signature> signatures = new ArrayList<>();
     List<SdClaim> claims = new ArrayList<>();
-    String validationReport = "";
     SchemaStoreImpl ShemaStore = new SchemaStoreImpl();
     ContentAccessor ShaclShapeCompositeSchema = ShemaStore.getCompositeSchema(SchemaStore.SchemaType.SHAPE);
+    String validationReport = validationAgainstShacl(payload,ShaclShapeCompositeSchema).getValidationReport();
     //Verify Syntax and parse json
     Map<String, Object> parsedSD = parseSD(payload);
 
@@ -102,7 +101,7 @@ public class VerificationServiceImpl implements VerificationService {
 
     //TODO: Verify Schema FIT-DSAI
 
-    if (isValidAgainstShacl(payload,ShaclShapeCompositeSchema)){
+    if (validationAgainstShacl(payload,ShaclShapeCompositeSchema).isConforms()){
       //TODO: Extract Claims FIT-DSAI
     }else {
       throw new VerificationException("the self description is violating the shacl shape schema for this reason: "+validationReport);
@@ -252,10 +251,11 @@ public class VerificationServiceImpl implements VerificationService {
    *
    * @param sd   ContentAccessor of a self-Description sd to be validated
    * @param shaclShape ContentAccessor of a union schemas of type SHACL
-   * @return                True if there is no violation or false otherwise
+   * @return                SemanticValidationResult object
    */
-   boolean isValidAgainstShacl(ContentAccessor sd, ContentAccessor shaclShape) {
+   SemanticValidationResult validationAgainstShacl(ContentAccessor sd, ContentAccessor shaclShape) {
     OutputStream reportOutputStream = null;
+    String validationReport = "";
     boolean conforms = false;
     try {
       Reader dataGraphReader = new StringReader(sd.getContentAsString());
@@ -269,6 +269,7 @@ public class VerificationServiceImpl implements VerificationService {
       logger.trace("Conforms = " + conforms);
 
       if (!conforms) {
+        validationReport = reportResource.toString();
         String report = BASE_PATH.toFile().getAbsolutePath() + "/src/test/resources/Validation-Tests/report1.jsonld";
         File reportFile = new File(report);
         reportFile.createNewFile();
@@ -279,8 +280,10 @@ public class VerificationServiceImpl implements VerificationService {
     } catch (Throwable t) {
       logger.error(MARKER, t.getMessage(), t);
     }
-
-    return conforms;
+     return new SemanticValidationResult(
+             conforms,
+             validationReport
+     );
   }
 
 }

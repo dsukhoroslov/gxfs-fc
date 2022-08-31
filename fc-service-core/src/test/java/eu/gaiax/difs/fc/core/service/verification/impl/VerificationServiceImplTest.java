@@ -127,7 +127,7 @@ public class VerificationServiceImplTest {
         String shapePath = "Validation-Tests/physical-resourceShape.ttl";
         //String shape =  getAccessor(shapePath).getContentAsString();
 
-        boolean actual = verificationService.isValidAgainstShacl(getAccessor(dataPath), getAccessor(shapePath));
+        boolean actual = verificationService.validationAgainstShacl(getAccessor(dataPath), getAccessor(shapePath)).isConforms();
         if(actual==false) {
             String outputReportPath = "Validation-Tests/report1.jsonld";
             ContentAccessorFile outputContentAccessor=  getAccessor(outputReportPath);
