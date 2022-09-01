@@ -48,7 +48,9 @@
         <micrometer.version>1.9.0</micrometer.version>
         <embedded.postgres.version>2.0.1</embedded.postgres.version>
         <embedded.postgres.test.version>2.1.2</embedded.postgres.test.version>
-        <jsonld.version>0.13.4</jsonld.version>
+        <vc.version>1.0.0</vc.version>
+        <key-format.version>1.5.0</key-format.version>
+        <did.version>1.0.0</did.version>
         <!-- plugins -->
         <plugin.jib.version>3.2.1</plugin.jib.version>
         <plugin.openapi-generator.version>5.4.0</plugin.openapi-generator.version>

@@ -78,11 +78,6 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>com.github.jsonld-java</groupId>
-            <artifactId>jsonld-java</artifactId>
-            <version>${jsonld.version}</version>
-        </dependency>
-        <dependency>
             <groupId>org.neo4j.test</groupId>
             <artifactId>neo4j-harness</artifactId>
             <version>4.4.10</version>
@@ -120,20 +115,20 @@
 			<artifactId>junit-jupiter</artifactId>
 			<scope>test</scope>
 		</dependency>
-        <dependecy>
+        <dependency>
             <groupId>com.danubetech</groupId>
             <artifactId>verifiable-credentials-java</artifactId>
-            <version>1.0.0</version>
+            <version>${vc.version}</version>
         </dependency>
         <dependency>
             <groupId>com.danubetech</groupId>
             <artifactId>key-formats-java</artifactId>
-            <version>1.5.0</version>
+            <version>${key-format.version}</version>
         </dependency>
         <dependency>
             <groupId>decentralized-identity</groupId>
             <artifactId>did-common-java</artifactId>
-            <version>1.0.0</version>
+            <version>${did.version}</version>
         </dependency>
     </dependencies>
 
