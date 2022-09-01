@@ -1,0 +1,169 @@
+{
+    "@context": [
+    "https://www.w3.org/2018/credentials/v1",
+    "https://www.w3.org/2018/credentials/examples/v1"
+    ],
+      "@id": "https://vc.a1.digital.euprogigant.io/sd/participant.json",
+      "@type": [
+        "VerifiableCredential",
+        "LegalPerson"
+      ],
+      "credentialSubject": {
+	    "@context": {
+        "gax-participant": "http://w3id.org/gaia-x/participant#",
+        "sh": "http://www.w3.org/ns/shacl#",
+        "xsd": "http://www.w3.org/2001/XMLSchema#"
+        },
+        "id": "did:web:vc.a1.digital.euprogigant.io",
+        "gax-participant:name": {
+          "@value": "A1 Digital International GmbH",
+          "@type": "xsd:string"
+        },
+        "gax-participant:legalName": {
+          "@value": "Mobilkom Beteiligungsgesellschaft mbH",
+          "@type": "xsd:string"
+        },
+        "gax-participant:registrationNumber": {
+          "@value": "ATBRA.242184d",
+          "@type": "xsd:string"
+        },
+        "gax-participant:leiCode": {
+          "@value": "529900ATXOMZ7X2GCX24",
+          "@type": "xsd:string"
+        },
+        "gax-participant:headquarterAddress": {
+          "@type": "gax-participant:Address",
+          "gax-participant:country": {
+            "@value": "AT",
+            "@type": "xsd:string"
+          },
+          "gax-participant:street-address": {
+            "@value": "Lasallestrasse 9",
+            "@type": "xsd:string"
+          },
+          "gax-participant:postal-code": {
+            "@value": "1020",
+            "@type": "xsd:string"
+          },
+          "gax-participant:locality": {
+            "@value": "Wien",
+            "@type": "xsd:string"
+          }
+        },
+        "gax-participant:legalAddress": {
+          "@type": "gax-participant:Address",
+          "gax-participant:country": {
+            "@value": "AT",
+            "@type": "xsd:string"
+          },
+          "gax-participant:street-address": {
+            "@value": "Lasallestrasse 9",
+            "@type": "xsd:string"
+          },
+          "gax-participant:postal-code": {
+            "@value": "1020",
+            "@type": "xsd:string"
+          },
+          "gax-participant:locality": {
+            "@value": "Wien",
+            "@type": "xsd:string"
+          }
+        },
+        "gax-participant:parentOrganisation": [
+          {
+            "@id": "eupg:a1.group:LegalPerson",
+            "@type": "gax-participant:LegalPerson",
+            "gax-participant:legalName": {
+              "@type": "xsd:string",
+              "@value": "Telekom Austria Aktiengesellschaft"
+            },
+            "gax-participant:registrationNumber": {
+              "@type": "xsd:string",
+              "@value": "ATBRA.144477-000"
+            },
+            "gax-participant:leiCode": {
+              "@value": "529900KCNFQU5OJH7L33",
+              "@type": "xsd:string"
+            },
+            "gax-participant:legalAddress": {
+              "@type": "gax-participant:Address",
+              "gax-participant:country": {
+                "@value": "AT",
+                "@type": "xsd:string"
+              },
+              "gax-participant:street-address": {
+                "@value": "Lasallestrasse 9",
+                "@type": "xsd:string"
+              },
+              "gax-participant:postal-code": {
+                "@value": "1020",
+                "@type": "xsd:string"
+              },
+              "gax-participant:locality": {
+                "@value": "Wien",
+                "@type": "xsd:string"
+              }
+            },
+            "gax-participant:headquarterAddress": {
+              "@type": "gax-participant:Address",
+              "gax-participant:country": {
+                "@type": "xsd:string",
+                "@value": "AT"
+              },
+              "gax-participant:street-address": {
+                "@value": "Lasallestrasse 9",
+                "@type": "xsd:string"
+              },
+              "gax-participant:postal-code": {
+                "@value": "1020",
+                "@type": "xsd:string"
+              },
+              "gax-participant:locality": {
+                "@value": "Wien",
+                "@type": "xsd:string"
+              }
+            }
+          }
+        ],
+        "gax-participant:termsAndConditions": {
+          "gax-participant:url": {
+            "@value": "https://gaia-x.gitlab.io/policy-rules-committee/trust-framework/participant/#legal-person",
+            "@type": "xsd:string"
+          },
+          "gax-participant:hash": {
+            "@value": "36ba819f30a3c4d4a7f16ee0a77259fc92f2e1ebf739713609f1c11eb41499e7aa2cd3a5d2011e073f9ba9c107493e3e8629cc15cd4fc07f67281d7ea9023db0",
+            "@type": "xsd:string"
+          }
+        }
+      },
+      "proof": {
+        "type": "JsonWebKey2020",
+        "created": "2022-06-20T13:37:25.110Z",
+        "proofPurpose": "assertionMethod",
+        "verificationMethod": "did:web:vc.a1.digital.euprogigant.io",
+        "jws": "eyJhbGciOiJQUzI1NiIsImI2NCI6ZmFsc2UsImNyaXQiOlsiYjY0Il19..vdg9BkjbjneHu-vUyqT8GOXwaztcwF-fRWfGwPDF9bu9t0_VahZOewHhDVRtINZ6YleLccX0EjPVYJxPKQ-sYC7yjTahEE2MYSP-iXepwZA7BYoy0Nptb0CNeUp9myZck249f8xpIbzoQvcYBytGs87FujvoxvJPlISGJFumVfAvJeKJTA4VxLU-uRu-9V43byqIkbP_ahtRCcJd79We8Q-LCfgI15vi7V0VZq9hWOp3FhwsX1eELKvJ1876RFKzxRIQgGRMNv8pOMW9FG5KfsJTcniJZ3twTqoX-_lZqyf4R2ksS0vO7eEe3kxj2uvXmSfxCT0oadpfjwT6Qqc_hg"
+      },
+    "complianceCredential": {
+      "@context": [
+        "https://www.w3.org/2018/credentials/v1"
+      ],
+      "@type": [
+        "VerifiableCredential",
+        "ParticipantCredential"
+      ],
+      "id": "https://catalogue.gaia-x.eu/credentials/ParticipantCredential/1655732249081",
+      "issuer": "did:web:compliance.gaia-x.eu",
+      "issuanceDate": "2022-06-20T13:37:29.081Z",
+      "credentialSubject": {
+        "id": "did:web:vc.a1.digital.euprogigant.io",
+        "hash": "323c3776c01631329cbd2176f776a8ebafe7f3bc36a213fe81bcbfcd57382c38"
+      },
+      "proof": {
+        "type": "JsonWebKey2020",
+        "created": "2022-06-20T13:37:29.081Z",
+        "proofPurpose": "assertionMethod",
+        "jws": "eyJhbGciOiJQUzI1NiIsImI2NCI6ZmFsc2UsImNyaXQiOlsiYjY0Il19..BNBO9ig2gdPqq8RHK87iZBZsbhWzClPTXElpd_oR8wQbPVxJ8jQiRiryVcIWJpgPZTK2pyRXzP5hfw-ZH1ccFNQ03Rai2-BCaprBJDPq5zOGvJ0vI5FnjgcmIr-GKT7yyS4s6ms6oszjKkA-j2BklqpXxzPZdnbswWJfCkC2fy6OyM47s_0qk9wRwEFgdt_Wn70KN-XJYh_zN2OqjlGr0WHO1kKYRtiugNFp6d_kCQihZi2LQYaYowEJiWq3teWK0gbT4PeCj21lIuqTMoe7bP9bnHE4-84DAhsW1er4J6XGi-UHrfkK1Nvr21dYY1We-Oe2vnFbMyyUCPWhxXyPug",
+        "verificationMethod": "did:web:compliance.gaia-x.eu"
+      }
+    }
+  }

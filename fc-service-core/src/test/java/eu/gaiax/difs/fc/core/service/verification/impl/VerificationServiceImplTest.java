@@ -1,18 +1,20 @@
 package eu.gaiax.difs.fc.core.service.verification.impl;
 
+import com.danubetech.verifiablecredentials.VerifiablePresentation;
 import eu.gaiax.difs.fc.core.exception.VerificationException;
 import eu.gaiax.difs.fc.core.pojo.ContentAccessorFile;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Map;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -28,10 +30,11 @@ public class VerificationServiceImplTest {
         return accessor;
     }
 
+    //Syntax Validation
     @Test
-    void verifyJSONLDSyntax_valid1() throws IOException {
+    void verifyJSONLDSyntax_valid1() {
         //TODO use ContentAccessorFile
-        String path = "JSON-LD-Tests/validSD.jsonld";
+        String path = "VerificationService/syntax/validSD.jsonld";
 
         assertDoesNotThrow(() -> {
             verificationService.parseSD(getAccessor(path));
@@ -39,8 +42,8 @@ public class VerificationServiceImplTest {
     }
 
     @Test
-    void verifyJSONLDSyntax_valid2() throws IOException {
-        String path = "JSON-LD-Tests/smallExample.jsonld";
+    void verifyJSONLDSyntax_valid2() {
+        String path = "VerificationService/syntax/smallExample.jsonld";
 
         assertDoesNotThrow(() -> {
             verificationService.parseSD(getAccessor(path));
@@ -48,72 +51,134 @@ public class VerificationServiceImplTest {
     }
 
     @Test
-    void verifyJSONLDSyntax_MissingQuote() throws IOException {
-        String path = "JSON-LD-Tests/missingQuote.jsonld";
+    void verifyJSONLDSyntax_MissingQuote() {
+        String path = "VerificationService/syntax/missingQuote.jsonld";
 
-        Exception ex = assertThrowsExactly(VerificationException.class, () -> verificationService.verifyOfferingSelfDescription(getAccessor(path)));
+        Exception ex = assertThrowsExactly(VerificationException.class, () -> verificationService.parseSD(getAccessor(path)));
         assertNotEquals("", ex.getMessage());
+        assertNotNull(ex.getCause());
     }
 
     @Test
-    @Disabled("The test is disabled because the check to throw the exception is not yet implemented")
-    void verifySignature_SignatureDoesNotMatch() throws IOException {
-        String path = "Signature-Tests/hasInvalidSignature.jsonld";
+    void detectParticipantType() throws UnsupportedEncodingException {
+        String path = "VerificationService/sd_type/participantA1digital.jsonld";
+        VerifiablePresentation presentation = verificationService.parseSD(getAccessor(path));
 
-        Map<String, Object> parsed = verificationService.parseSD (getAccessor(path));
+        assertDoesNotThrow(() -> {
+            verificationService.isSDParticipant(presentation);
+        });
+
+        assertTrue(verificationService.isSDParticipant(presentation));
+        assertFalse(verificationService.isSDServiceOffering(presentation));
+    }
+
+    @Test
+    void detectServiceOfferingType() throws UnsupportedEncodingException {
+        String path = "VerificationService/sd_type/serviceAccessController.jsonld";
+        VerifiablePresentation presentation = verificationService.parseSD(getAccessor(path));
+
+        assertDoesNotThrow(() -> {
+            verificationService.isSDParticipant(presentation);
+        });
+
+        assertFalse(verificationService.isSDParticipant(presentation));
+        assertTrue(verificationService.isSDServiceOffering(presentation));
+
+    }
+
+    @Test
+    void detectNoType() throws UnsupportedEncodingException {
+        String path = "VerificationService/sd_type/smallExample.jsonld";
+        VerifiablePresentation presentation = verificationService.parseSD(getAccessor(path));
+
+        assertDoesNotThrow(() -> {
+            verificationService.isSDParticipant(presentation);
+        });
+
+        assertFalse(verificationService.isSDParticipant(presentation));
+        assertFalse(verificationService.isSDServiceOffering(presentation));
+    }
+
+    @Test
+    void verifyValidPEM () throws IOException {
+        assertTrue(verificationService.verifyPEM("https://compliance.gaia-x.eu/.well-known/x509CertificateChain.pem"));
+    }
+
+    @Test
+    void verifySignature_SignatureHasInvalidType() throws IOException {
+        String path = "VerificationService/signature/hasInvalidSignatureType.jsonld";
+
+        VerifiablePresentation parsed = verificationService.parseSD (getAccessor(path));
 
         //TODO: Will throw exception when it is checked cryptographically
-        assertThrowsExactly(VerificationException.class, () -> verificationService.validateCryptographic(parsed));
+        Exception ex = assertThrowsExactly(VerificationException.class, () -> verificationService.checkCryptographic(parsed));
+        assertTrue(ex.getMessage().contains("Unsupported public key RSA and/or algorithm EdDSA"));
     }
 
     @Test
     void verifySignature_SignaturesMissing1() throws IOException {
-        String path = "Signature-Tests/hasNoSignature1.jsonld";
+        String path = "VerificationService/signature/hasNoSignature1.jsonld";
 
-        Map<String, Object> parsed = verificationService.parseSD (getAccessor(path));
+        VerifiablePresentation presentation = verificationService.parseSD (getAccessor(path));
 
-        Exception ex = assertThrowsExactly(VerificationException.class, () -> verificationService.validateCryptographic(parsed));
-        assertEquals("no proof found", ex.getMessage());
+        Exception ex = assertThrowsExactly(VerificationException.class, () -> verificationService.checkCryptographic(presentation));
+        assertEquals("No proof found", ex.getMessage());
     }
 
     @Test
     void verifySignature_SignaturesMissing2() throws IOException {
-        String path = "Signature-Tests/hasNoSignature2.jsonld";
+        String path = "VerificationService/signature/hasNoSignature2.jsonld";
 
-        Map<String, Object> parsed = verificationService.parseSD (getAccessor(path));
+        VerifiablePresentation presentation = verificationService.parseSD (getAccessor(path));
 
-        Exception ex = assertThrowsExactly(VerificationException.class, () -> verificationService.validateCryptographic(parsed));
-        assertEquals("no proof found", ex.getMessage());
+        Exception ex = assertThrowsExactly(VerificationException.class, () -> verificationService.checkCryptographic(presentation));
+        assertEquals("No proof found", ex.getMessage());
     }
 
     @Test
     void verifySignature_SignaturesMissing3() throws IOException {
-        String path = "Signature-Tests/lacksSomeSignatures.jsonld";
+        String path = "VerificationService/signature/lacksSomeSignatures.jsonld";
 
-        Map<String, Object> parsed = verificationService.parseSD (getAccessor(path));
+        VerifiablePresentation presentation = verificationService.parseSD (getAccessor(path));
 
-        Exception ex = assertThrowsExactly(VerificationException.class, () -> verificationService.validateCryptographic(parsed));
-        assertEquals("no proof found", ex.getMessage());
+        Exception ex = assertThrowsExactly(VerificationException.class, () -> verificationService.checkCryptographic(presentation));
+    }
+
+    @Test
+    void verifySignature_InvalidSignature () throws UnsupportedEncodingException {
+        String path = "VerificationService/signature/hasInvalidSignature.jsonld";
+
+        VerifiablePresentation presentation = verificationService.parseSD (getAccessor(path));
+
+        assertThrowsExactly(VerificationException.class, () -> verificationService.checkCryptographic(presentation));
+    }
+
+    @Test
+    @Disabled("We have no access to a correctly signed SD")
+    void verifySignature_ValidSignature () throws UnsupportedEncodingException {
+        String path = "VerificationService/signature/validSignature.jsonld";
+
+        VerifiablePresentation presentation = verificationService.parseSD (getAccessor(path));
+
+        assertThrowsExactly(VerificationException.class, () -> verificationService.checkCryptographic(presentation));
+
     }
 
     @Test
     void cleanSD_removeProofs() throws IOException {
-        String path = "Signature-Tests/hasInvalidSignature.jsonld";
+        String path = "VerificationService/signature/hasInvalidSignatureType.jsonld";
 
-        Map<String, Object> parsed = verificationService.parseSD (getAccessor(path));
+        VerifiablePresentation presentation = verificationService.parseSD (getAccessor(path));
 
-        //Do proofs exist?
-        assertTrue(parsed.containsKey("proof"));
-        for (Map<String, Object> credential : (ArrayList<Map<String, Object>>) parsed.get("verifiableCredential")) {
-            assertTrue(credential.containsKey("proof"));
-        }
+        //Do proof exist?
+        assertNotNull(presentation.getLdProof());
 
-        Map<String, Object> cleaned = verificationService.cleanSD (parsed);
+        Map<String, Object> cleaned = verificationService.cleanSD (presentation);
 
-        //Are proofs removed?
-        assertFalse(cleaned.containsKey("proof"));
-        for (Map<String, Object> credential : (ArrayList<Map<String, Object>>) cleaned.get("verifiableCredential")) {
-            assertFalse(credential.containsKey("proof"));
-        }
+        //Are proof removed?
+        assertNull(presentation.getLdProof());
+        assertNull(presentation.getJsonObject().get("proof"));
     }
+
+
 }

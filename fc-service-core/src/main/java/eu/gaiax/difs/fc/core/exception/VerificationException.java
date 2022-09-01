@@ -17,4 +17,8 @@ public class VerificationException extends ServiceException {
   public VerificationException(String message) {
     super(message);
   }
+
+  public VerificationException(Exception e) {
+    super(e);
+  }
 }

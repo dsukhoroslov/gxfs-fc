@@ -31,9 +31,9 @@
 			"proof": {
 				"type": "JsonWebSignature2020",
 				"created": "2022-02-25T14:58:43Z",
-				"verificationMethod": "https://example.edu/issuers/565049#key-1",
+				"verificationMethod": "did:web:compliance.lab.gaia-x.eu",
 				"proofPurpose": "assertionMethod",
-				"jws": "XXX"
+				"jws": "eyJiNjQiOmZhbHNlLCJjcml0IjpbImI2NCJdLCJhbGciOiJFZERTQSJ9..twmPVhZgmKnnx6EI1xmUt3t_0GJizjambyLxWioG1hzwmDYnadWcQCC600uRpOE5WRIdx14y8uRHIa7AxSo5Cw"
 			}
 		},
 		{
@@ -56,7 +56,7 @@
 				"type": "JsonWebSignature2020",
 				"created": "2022-06-12T19:38:26.853Z",
 				"proofPurpose": "assertionMethod",
-				"jws": "XXX",
+				"jws": "eyJiNjQiOmZhbHNlLCJjcml0IjpbImI2NCJdLCJhbGciOiJFZERTQSJ9..twmPVhZgmKnnx6EI1xmUt3t_0GJizjambyLxWioG1hzwmDYnadWcQCC600uRpOE5WRIdx14y8uRHIa7AxSo5Cw",
 				"verificationMethod": "did:web:compliance.lab.gaia-x.eu"
 			}
 		}
@@ -64,8 +64,8 @@
 	"proof": {
 		"type": "JsonWebSignature2020",
 		"created": "2022-02-25T14:58:43Z",
-		"verificationMethod": "https://example.edu/issuers/565049#key-1",
+		"verificationMethod": "did:web:compliance.lab.gaia-x.eu",
 		"proofPurpose": "assertionMethod",
-		"jws": "XXX"
+		"jws": "eyJiNjQiOmZhbHNlLCJjcml0IjpbImI2NCJdLCJhbGciOiJFZERTQSJ9..twmPVhZgmKnnx6EI1xmUt3t_0GJizjambyLxWioG1hzwmDYnadWcQCC600uRpOE5WRIdx14y8uRHIa7AxSo5Cw"
 	}
 }
