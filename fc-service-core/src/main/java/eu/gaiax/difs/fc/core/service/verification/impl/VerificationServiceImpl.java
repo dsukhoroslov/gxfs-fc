@@ -41,7 +41,6 @@ public class VerificationServiceImpl implements VerificationService {
   private static final String sd_format = "JSONLD";
   private static final String shapes_format = "TURTLE";
   private static final Logger logger = LoggerFactory.getLogger(VerificationServiceImpl.class);
-  private static final Path BASE_PATH = Paths.get(".").toAbsolutePath().normalize();
   private static final Marker MARKER = MarkerFactory.getMarker("MARKER");
 
 
@@ -106,9 +105,6 @@ public class VerificationServiceImpl implements VerificationService {
     }else {
       throw new VerificationException("the self description is violating the shacl shape schema for this reason: "+validationReport);
     }
-
-
-
     return new VerificationResultOffering(
             id,
             participantID,
@@ -269,12 +265,7 @@ public class VerificationServiceImpl implements VerificationService {
       logger.trace("Conforms = " + conforms);
 
       if (!conforms) {
-        validationReport = reportResource.toString();
-        String report = BASE_PATH.toFile().getAbsolutePath() + "/src/test/resources/Validation-Tests/report1.jsonld";
-        File reportFile = new File(report);
-        reportFile.createNewFile();
-        reportOutputStream = new FileOutputStream(reportFile);
-        RDFDataMgr.write(reportOutputStream, reportResource.getModel(), RDFFormat.JSONLD);
+        validationReport = reportResource.getModel().toString();
       }
 
     } catch (Throwable t) {
@@ -285,5 +276,4 @@ public class VerificationServiceImpl implements VerificationService {
              validationReport
      );
   }
-
 }
