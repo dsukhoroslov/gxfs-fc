@@ -250,7 +250,6 @@ public class VerificationServiceImpl implements VerificationService {
    * @return                SemanticValidationResult object
    */
    SemanticValidationResult validationAgainstShacl(ContentAccessor sd, ContentAccessor shaclShape) {
-    OutputStream reportOutputStream = null;
     String validationReport = "";
     boolean conforms = false;
     try {
