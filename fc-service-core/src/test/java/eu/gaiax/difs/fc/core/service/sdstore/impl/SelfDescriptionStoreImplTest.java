@@ -1,6 +1,7 @@
 package eu.gaiax.difs.fc.core.service.sdstore.impl;
 
 import eu.gaiax.difs.fc.core.config.DatabaseConfig;
+import eu.gaiax.difs.fc.core.config.GraphDbConfig;
 import eu.gaiax.difs.fc.api.generated.model.SelfDescriptionStatus;
 import eu.gaiax.difs.fc.core.exception.ConflictException;
 import eu.gaiax.difs.fc.core.exception.NotFoundException;
@@ -9,6 +10,7 @@ import eu.gaiax.difs.fc.core.pojo.ContentAccessorDirect;
 import eu.gaiax.difs.fc.core.pojo.SdFilter;
 import eu.gaiax.difs.fc.core.pojo.SelfDescriptionMetadata;
 import eu.gaiax.difs.fc.core.service.filestore.impl.FileStoreImpl;
+import eu.gaiax.difs.fc.core.service.graphdb.impl.Neo4jGraphStore;
 import eu.gaiax.difs.fc.core.service.sdstore.SelfDescriptionStore;
 import eu.gaiax.difs.fc.core.util.HashUtils;
 import io.zonky.test.db.AutoConfigureEmbeddedDatabase;
@@ -44,7 +46,7 @@ import org.springframework.transaction.annotation.Transactional;
 @SpringBootTest
 @ActiveProfiles("tests-sdstore")
 @ContextConfiguration(classes = {SelfDescriptionStoreImplTest.TestApplication.class, DatabaseConfig.class, //SelfDescriptionStoreImplTest.class, 
-        SelfDescriptionStoreImpl.class, FileStoreImpl.class})
+        SelfDescriptionStoreImpl.class, FileStoreImpl.class, Neo4jGraphStore.class, GraphDbConfig.class})
 @DirtiesContext
 @Transactional
 @Slf4j
