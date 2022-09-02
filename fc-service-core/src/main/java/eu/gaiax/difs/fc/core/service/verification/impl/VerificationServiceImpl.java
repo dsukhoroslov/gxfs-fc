@@ -6,10 +6,9 @@ import eu.gaiax.difs.fc.core.pojo.*;
 import eu.gaiax.difs.fc.core.service.schemastore.SchemaStore;
 import eu.gaiax.difs.fc.core.service.schemastore.impl.SchemaStoreImpl;
 import eu.gaiax.difs.fc.core.service.verification.VerificationService;
-
-import java.io.*;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.io.IOException;
+import java.io.Reader;
+import java.io.StringReader;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.time.ZonedDateTime;
@@ -17,12 +16,9 @@ import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Resource;
-import org.apache.jena.riot.RDFDataMgr;
-import org.apache.jena.riot.RDFFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.Marker;
@@ -83,9 +79,9 @@ public class VerificationServiceImpl implements VerificationService {
     LocalDate issuedDate = null;
     List<Signature> signatures = new ArrayList<>();
     List<SdClaim> claims = new ArrayList<>();
-    SchemaStoreImpl ShemaStore = new SchemaStoreImpl();
-    ContentAccessor ShaclShapeCompositeSchema = ShemaStore.getCompositeSchema(SchemaStore.SchemaType.SHAPE);
-    String validationReport = validationAgainstShacl(payload,ShaclShapeCompositeSchema).getValidationReport();
+    SchemaStore schemaStore = new SchemaStoreImpl();
+    ContentAccessor shaclShapeCompositeSchema = schemaStore.getCompositeSchema(SchemaStore.SchemaType.SHAPE);
+    String validationReport = validationAgainstShacl(payload,shaclShapeCompositeSchema).getValidationReport();
     //Verify Syntax and parse json
     Map<String, Object> parsedSD = parseSD(payload);
 
@@ -99,10 +95,10 @@ public class VerificationServiceImpl implements VerificationService {
 
     //TODO: Verify Schema FIT-DSAI
 
-    if (validationAgainstShacl(payload,ShaclShapeCompositeSchema).isConforms()){
+    if (validationAgainstShacl(payload,shaclShapeCompositeSchema).isConforming()){
       //TODO: Extract Claims FIT-DSAI
     }else {
-      throw new VerificationException("the self description is violating the shacl shape schema for this reason: "+validationReport);
+      throw new VerificationException("the self description is violating the shacl shape schema : "+validationReport);
     }
     return new VerificationResultOffering(
             id,

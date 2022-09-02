@@ -121,12 +121,14 @@ public class VerificationServiceImplTest {
     void verifyValidationResult() throws IOException {
         String dataPath = "Validation-Tests/DataCenterDataGraph.jsonld";
         String shapePath = "Validation-Tests/physical-resourceShape.ttl";
-        boolean actual = verificationService.validationAgainstShacl(getAccessor(dataPath), getAccessor(shapePath)).isConforms();
-        if(actual==false) {
+        boolean validationResult = verificationService.
+                validationAgainstShacl(getAccessor(dataPath),
+                        getAccessor(shapePath)).isConforming();
+        if(validationResult==false) {
             String resultMessage = "Property needs to have at least 1 value";
             assertTrue(verificationService.validationAgainstShacl(getAccessor(dataPath),getAccessor(shapePath)).getValidationReport().contains(resultMessage));
         }else {
-            assertFalse(actual);
+            assertFalse(validationResult);
         }
 
     }
