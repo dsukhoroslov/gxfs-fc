@@ -148,12 +148,12 @@ public class GraphTest {
             String credentialSubject = sdClaimList.get(0).getSubject();
             graphGaia.addClaims(sdClaimList, credentialSubject.substring(1, credentialSubject.length() - 1));
         }
-        OpenCypherQuery queryDelete = new OpenCypherQuery(
+        OpenCypherQuery queryInvalid = new OpenCypherQuery(
                 "MTCH (n:ns0__ServiceOffering) RETURN n LIMIT 25");
         Exception exception = assertThrows(RuntimeException.class, () -> {
-            graphGaia.queryData(queryDelete);
+            graphGaia.queryData(queryInvalid);
         });
-        String expectedMessage = "Not allowed to remove or add nodes!";
+        String expectedMessage = "Enter a valid Cypher Query";
         String actualMessage = exception.getMessage();
         assertTrue(actualMessage.contains(expectedMessage));
     }

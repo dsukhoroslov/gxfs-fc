@@ -147,14 +147,13 @@ public class Neo4jGraphStore implements AutoCloseable, GraphStore, QueryGraph {
 
 
     public boolean validateQuery(String query) {
-        query=query.toLowerCase();
         if (StringUtils.containsIgnoreCase(query,"delete") || StringUtils.containsIgnoreCase(query,"create") || StringUtils.containsIgnoreCase(query,"set") || StringUtils.containsIgnoreCase(query,"remove") || StringUtils.containsIgnoreCase(query,"merge")  ) {
             throw new RuntimeException("Not allowed to remove or add nodes!");
         }
         try {
             var userStatement = CypherParser.parse(query);
-        }catch (Exception e) {
-            throw e;
+        }catch (org.neo4j.cypherdsl.parser.CyperDslParseException e) {
+            throw new RuntimeException("Enter a valid Cypher Query");
         }
         return true;
     }
