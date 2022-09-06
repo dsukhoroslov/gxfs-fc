@@ -5,6 +5,7 @@ import com.danubetech.keyformats.crypto.PublicKeyVerifier;
 import com.danubetech.keyformats.crypto.PublicKeyVerifierFactory;
 import com.danubetech.keyformats.jose.JWK;
 import com.danubetech.keyformats.keytypes.KeyTypeName_for_JWK;
+import com.danubetech.verifiablecredentials.CredentialSubject;
 import com.danubetech.verifiablecredentials.VerifiablePresentation;
 import eu.gaiax.difs.fc.core.exception.VerificationException;
 import eu.gaiax.difs.fc.core.pojo.*;
@@ -178,7 +179,7 @@ public class VerificationServiceImpl implements VerificationService {
       if(type.contains("LegalPerson")) {
         isParticipant = true;
       }
-      if(type.contains("ServiceOfferingExperimental")) { //TODO is this type final?
+      if(type.contains("ServiceOfferingExperimental")) { //TODO is this type final? No Credential subject type
         isServiceOffering = true;
       }
     }
@@ -321,7 +322,7 @@ public class VerificationServiceImpl implements VerificationService {
 
     if(!verifier.verify(presentation)) throw new VerificationException("VPs proof is not valid");
 
-    //TODO Do we have to check the compliance credential too?
+    //TODO Do we have to check the compliance credential too? YES!
     return true; //If this point was reached without an exception, the signature is valid
   }
 
@@ -332,7 +333,15 @@ public class VerificationServiceImpl implements VerificationService {
 
   String getIssuer(VerifiablePresentation presentation) {
     //TODO compare to validators
-    return presentation.getVerifiableCredential().getIssuer().toString();
+    //
+    CredentialSubject credentialSubject = presentation.getVerifiableCredential().getCredentialSubject();
+    String [] subjects = credentialSubject.getClaims().keySet().toArray(new String[0]);
+    for (String subject:subjects) {
+      if (subject.contains("providedBy")) {
+        return (String) credentialSubject.getClaims().get(subject);
+      }
+    }
+    throw new VerificationException("Provided By was not specified");
   }
 
   Map<String, Object> cleanSD (VerifiablePresentation presentation) {
