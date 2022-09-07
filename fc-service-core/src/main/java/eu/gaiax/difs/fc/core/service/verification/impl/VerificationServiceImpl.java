@@ -27,6 +27,7 @@ import org.apache.http.message.BasicNameValuePair;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.time.Instant;
 import java.io.InputStream;
 import java.net.URI;
 import java.net.URL;
@@ -137,6 +138,15 @@ public class VerificationServiceImpl implements VerificationService {
     );
   }
 
+  @Override
+  public boolean checkValidator(Validator validator) {
+    if (validator.getExpirationDate().isBefore(Instant.now())) return false;
+    //check if pubkey is the same
+    //check if pubkey is trusted
+    return true; //if all checks succeeded the validator is valid
+  }
+
+  /*package private functions*/
   VerificationResultOffering verifyOfferingSelfDescription(VerifiablePresentation presentation) throws VerificationException {
     if(!isSDServiceOffering(presentation)) throw new VerificationException("Expected a service offering");
 
