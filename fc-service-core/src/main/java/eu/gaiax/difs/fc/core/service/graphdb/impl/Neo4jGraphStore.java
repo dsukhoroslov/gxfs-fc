@@ -28,10 +28,7 @@ public class Neo4jGraphStore implements GraphStore {
 
 
     /**
-     * Check if subject and predicate have valid uri
-     *
-     * @param sdClaim
-     * @return True or False
+     * {@inheritDoc}
      */
     public boolean validateTripleURI(SdClaim sdClaim) {
         UrlValidator urlValidator = new UrlValidator();
@@ -43,11 +40,7 @@ public class Neo4jGraphStore implements GraphStore {
     }
 
     /**
-     * Check if subject uri matches the credential subject
-     *
-     * @param subject
-     * @param credentialSubject
-     * @return true or false
+     * {@inheritDoc}
      */
     public boolean validateCredentialSubject(String subject, String credentialSubject) {
         if (subject.equals(credentialSubject)) {
@@ -58,11 +51,7 @@ public class Neo4jGraphStore implements GraphStore {
     }
 
     /**
-     * Validate the claims
-     *
-     * @param sdClaim
-     * @param credentialSubject
-     * @return Claims in a valid N-triples string format
+     * {@inheritDoc}
      */
     public String validateClaims(SdClaim sdClaim, String credentialSubject) {
         Boolean tripleCheck = validateTripleURI(sdClaim);
@@ -76,11 +65,7 @@ public class Neo4jGraphStore implements GraphStore {
     }
 
     /**
-     * Process Query results from Neo4j Transaction to Map<string,string>
-     * format
-     *
-     * @param result
-     * @return List of String maps
+     * {@inheritDoc}
      */
     public List<Map<String, String>> processResults(Result result) {
         List<Map<String, String>> resultList = new ArrayList<>();
@@ -136,15 +121,19 @@ public class Neo4jGraphStore implements GraphStore {
      */
     @Override
     public void deleteClaims(String credentialSubject) {
+        String claim = "";
         log.debug("deleteClaims.enter; Beginning claims deletion, subject: {}", credentialSubject);
         String query = "MATCH (n{uri: '" + credentialSubject + "'})\n" +
                 "DELETE n";
         String checkClaim = "match(n) where n.uri ='" + credentialSubject + "' return n;";
         OpenCypherQuery checkQuery = new OpenCypherQuery(checkClaim);
         List<Map<String, String>> result = queryData(checkQuery);
-        Map<String, String> resultCheck = result.get(0);
-        String claim = resultCheck.entrySet().iterator().next().getValue();
-
+        if (result != null && result.isEmpty()) {
+            throw new ServerException("claim with credential subject " + credentialSubject + " not found");
+        } else {
+            Map<String, String> resultCheck = result.get(0);
+            claim = resultCheck.entrySet().iterator().next().getValue();
+        }
         try (Session session = driver.session()) {
             if (claim.equals(credentialSubject)) {
                 session.run(query);
