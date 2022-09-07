@@ -1,15 +1,9 @@
 package eu.gaiax.difs.fc.core.service.graphdb;
 
-import java.io.BufferedReader;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
+import eu.gaiax.difs.fc.core.config.EmbeddedNeo4JConfig;
+import eu.gaiax.difs.fc.core.pojo.OpenCypherQuery;
+import eu.gaiax.difs.fc.core.pojo.SdClaim;
+import eu.gaiax.difs.fc.core.service.graphdb.impl.Neo4jGraphStore;
 import org.junit.FixMethodOrder;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
@@ -24,15 +18,21 @@ import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.boot.autoconfigure.liquibase.LiquibaseAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
-import org.springframework.core.annotation.Order;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import eu.gaiax.difs.fc.core.config.EmbeddedNeo4JConfig;
-import eu.gaiax.difs.fc.core.pojo.OpenCypherQuery;
-import eu.gaiax.difs.fc.core.pojo.SdClaim;
-import eu.gaiax.difs.fc.core.service.graphdb.impl.Neo4jGraphStore;
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
@@ -42,10 +42,10 @@ import eu.gaiax.difs.fc.core.service.graphdb.impl.Neo4jGraphStore;
 @ContextConfiguration(classes = {Neo4jGraphStore.class})
 @Import(EmbeddedNeo4JConfig.class)
 public class GraphTest {
-    
+
     @Autowired
     private Neo4j embeddedDatabaseServer;
-    
+
     @Autowired
     private Neo4jGraphStore graphGaia;
 
@@ -56,8 +56,8 @@ public class GraphTest {
 
 
     /**
-     * Given a credential subject, delete all claims with that subject
-     * Verify if the claim has been deleted by running a query
+     * Given a credential subject, delete all claims with that subject Verify if
+     * the claim has been deleted by running a query
      */
     @Test
     void testCypherDeleteClaim() {
@@ -113,8 +113,8 @@ public class GraphTest {
     /**
      * Given set of credentials connect to graph and upload self description.
      * Instantiate list of claims with subject predicate and object in N-triples
-     * form along with literals and upload to graph. Verify if the claim has been uploaded using
-     * query service
+     * form along with literals and upload to graph. Verify if the claim has
+     * been uploaded using query service
      */
 
     @Test
@@ -135,6 +135,42 @@ public class GraphTest {
                 "MATCH (n:ns1__LegalPerson) WHERE n.ns1__name = \"deltaDAO AG\" RETURN n LIMIT 25");
         List<Map<String, String>> responseDelta = graphGaia.queryData(queryDelta);
         Assertions.assertEquals(resultListDelta, responseDelta);
+    }
+
+    /**
+     * Given set of credentials connect to graph and upload self description.
+     * Instantiate list of claims with subject predicate and object in N-triples
+     * form along with literals and upload to graph.
+     */
+    @Test
+    void testAddClaims() throws Exception {
+        List<SdClaim> sdClaimList = new ArrayList<>();
+        SdClaim sdClaim = new SdClaim("<http://w3id.org/gaia-x/indiv#serviceElasticSearch.json>", "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>", "<http://w3id.org/gaia-x/service#ServiceOffering>");
+        sdClaimList.add(sdClaim);
+        SdClaim sdClaimSecond = new SdClaim("<http://w3id.org/gaia-x/indiv#serviceElasticSearch.json>", "<http://w3id.org/gaia-x/service#providedBy>", "<https://delta-dao.com/.well-known/participant.json>");
+        sdClaimList.add(sdClaimSecond);
+        graphGaia.addClaims(sdClaimList, "http://w3id.org/gaia-x/indiv#serviceElasticSearch.json");
+    }
+
+
+    /**
+     * Given set of credentials connect to graph and upload self description.
+     * Instantiate list of claims with subject predicate and object in N-triples
+     * form which is invalid and try uploading to graphDB
+     */
+    @Test
+    void testAddClaimsException() throws Exception {
+        List<SdClaim> sdClaimList = new ArrayList<>();
+        SdClaim sdClaim = new SdClaim("<htw3id.org/gaia-x/indiv#serviceElasticSearch.json>", "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>", "<http://w3id.org/gaia-x/service#ServiceOffering>");
+        sdClaimList.add(sdClaim);
+        SdClaim sdClaimSecond = new SdClaim("<http://w3id.org/gaia-x/indiv#serviceElasticSearch.json>", "<http://w3id.org/gaia-x/service#providedBy>", "<https://delta-dao.com/.well-known/participant.json>");
+        sdClaimList.add(sdClaimSecond);
+        Exception exception = assertThrows(RuntimeException.class, () -> {
+            graphGaia.addClaims(sdClaimList, "http://w3id.org/gaia-x/indiv#serviceElasticSearch.json");
+        });
+        String expectedMessage = "Enter a valid set of URI for claims <htw3id.org/gaia-x/indiv#serviceElasticSearch.json> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://w3id.org/gaia-x/service#ServiceOffering> .";
+        String actualMessage = exception.getMessage();
+        assertTrue(actualMessage.contains(expectedMessage));
     }
 
 
