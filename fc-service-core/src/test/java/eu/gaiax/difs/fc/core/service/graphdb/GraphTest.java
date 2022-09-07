@@ -174,6 +174,25 @@ public class GraphTest {
     }
 
 
+    /**
+     * Given set of credentials connect to graph and upload self description.
+     * Instantiate list of claims with subject predicate and object in N-triples
+     * form which is invalid and try uploading to graphDB
+     */
+    @Test
+    void testAddClaimsLiteralException() throws Exception {
+        List<SdClaim> sdClaimList = new ArrayList<>();
+        SdClaim sdClaim = new SdClaim("<http://w3id.org/gaia-x/indiv#serviceElasticSearch.json>", "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>", "\"410 Terry Avenue Nort^^<http://www.w3.org/2001/XMLSchema#string>");
+        sdClaimList.add(sdClaim);
+        Exception exception = assertThrows(RuntimeException.class, () -> {
+            graphGaia.addClaims(sdClaimList, "http://w3id.org/gaia-x/indiv#serviceElasticSearch.json");
+        });
+        String expectedMessage = "Enter a valid Literal for claims <http://w3id.org/gaia-x/indiv#serviceElasticSearch.json> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> \"410 Terry Avenue Nort^^<http://www.w3.org/2001/XMLSchema#string> .";
+        String actualMessage = exception.getMessage();
+        assertTrue(actualMessage.contains(expectedMessage));
+    }
+
+
     private List<SdClaim> loadTestClaims(String Path) throws Exception {
         List credentialSubjectList = new ArrayList();
         try (InputStream is = new ClassPathResource(Path)

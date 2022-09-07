@@ -19,7 +19,7 @@
         <neo4j.dsl.parser.version>2022.6.1</neo4j.dsl.parser.version>
         <commons-lang3.version>3.9</commons-lang3.version>
         <neo4j.harness.version>4.4.10</neo4j.harness.version>
-        <apache.jena.version>4.4.0</apache.jena.version>
+        <apache.jena.version>3.16.0</apache.jena.version>
         <commons.validator.version>1.4.1</commons.validator.version>
     </properties>
     <dependencies>
@@ -117,8 +117,9 @@
         </dependency>
         <dependency>
             <groupId>org.apache.jena</groupId>
-            <artifactId>jena-core</artifactId>
+            <artifactId>apache-jena-libs</artifactId>
             <version>${apache.jena.version}</version>
+            <type>pom</type>
         </dependency>
         <dependency>
             <groupId>commons-validator</groupId>

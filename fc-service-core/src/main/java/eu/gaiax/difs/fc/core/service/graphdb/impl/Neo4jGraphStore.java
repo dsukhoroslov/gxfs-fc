@@ -5,7 +5,10 @@ import eu.gaiax.difs.fc.core.pojo.OpenCypherQuery;
 import eu.gaiax.difs.fc.core.pojo.SdClaim;
 import eu.gaiax.difs.fc.core.service.graphdb.GraphStore;
 import lombok.extern.log4j.Log4j2;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.validator.routines.UrlValidator;
+import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.ModelFactory;
 import org.neo4j.driver.Driver;
 import org.neo4j.driver.Result;
 import org.neo4j.driver.Session;
@@ -27,15 +30,36 @@ public class Neo4jGraphStore implements GraphStore {
     private Driver driver;
 
 
+    public boolean evaluateObjectURI(String triples, String object) {
+
+        //Check if Literal or a Fact
+        if (object.startsWith("<") && object.endsWith(">")) {
+            UrlValidator urlValidator = new UrlValidator();
+            if (urlValidator.isValid(object.substring(1, object.length() - 1))) {
+                return true;
+            } else {
+                throw new RuntimeException("Enter a valid set of URI for claims " + triples);
+            }
+        } else {
+            try {
+                Model model = ModelFactory.createDefaultModel()
+                        .read(IOUtils.toInputStream(triples, "UTF-8"), null, "N-TRIPLES");
+                return true;
+            } catch (Exception e) {
+                throw new RuntimeException("Enter a valid Literal for claims " + triples);
+            }
+        }
+    }
+
     /**
      * {@inheritDoc}
      */
     public boolean validateTripleURI(SdClaim sdClaim) {
         UrlValidator urlValidator = new UrlValidator();
-        if (urlValidator.isValid(sdClaim.stripSubject()) && urlValidator.isValid(sdClaim.stripPredicate())) {
+        if (urlValidator.isValid(sdClaim.stripSubject()) && urlValidator.isValid(sdClaim.stripPredicate()) && evaluateObjectURI(sdClaim.asTriple(), sdClaim.getObject())) {
             return true;
         } else {
-            throw new RuntimeException("Enter a valid set of URI for claims "+sdClaim.asTriple());
+            throw new RuntimeException("Enter a valid set of URI for claims " + sdClaim.asTriple());
         }
     }
 
@@ -59,7 +83,7 @@ public class Neo4jGraphStore implements GraphStore {
         if (tripleCheck && subjectCheck) {
             return sdClaim.asTriple();
         } else {
-            log.debug("validation failed for : {}",sdClaim.asTriple());
+            log.debug("validation failed for : {}", sdClaim.asTriple());
             return null;
         }
     }
