@@ -11,7 +11,7 @@ public class Validator {
 
     private String publicKey;
 
-    private Instant expirationDaten;
+    private Instant expirationDate;
 
     private boolean changed = false;
 
