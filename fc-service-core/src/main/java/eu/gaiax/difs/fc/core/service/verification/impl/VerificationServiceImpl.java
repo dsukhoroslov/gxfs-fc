@@ -7,6 +7,7 @@ import eu.gaiax.difs.fc.core.pojo.*;
 import eu.gaiax.difs.fc.core.service.verification.VerificationService;
 
 import java.io.IOException;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.time.ZonedDateTime;
@@ -105,6 +106,14 @@ public class VerificationServiceImpl implements VerificationService {
             new ArrayList<>(),
             new ArrayList<>()
     );
+  }
+
+  @Override
+  public boolean checkValidator(Validator validator) {
+    if (validator.getExpirationDate().isBefore(Instant.now())) return false;
+    //check if pubkey is the same
+    //check if pubkey is trusted
+    return true; //if all checks succeeded the validator is valid
   }
 
   /*package private functions*/

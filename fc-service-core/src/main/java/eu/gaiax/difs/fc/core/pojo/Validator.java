@@ -18,7 +18,7 @@ public class Validator {
     public Validator (String didURI, String publicKey, Instant expirationDaten) {
         this.didURI = didURI;
         this.publicKey = publicKey;
-        this.expirationDaten = expirationDaten;
+        this.expirationDate = expirationDaten;
     }
 
     public void setDidURi (String didURI) {
@@ -31,8 +31,8 @@ public class Validator {
         changed = true;
     }
 
-    public void setExpirationDate (Instant expirationDaten) {
-        this.expirationDaten = expirationDaten;
+    public void setExpirationDate (Instant expirationDate) {
+        this.expirationDate = expirationDate;
         changed = true;
     }
 }
