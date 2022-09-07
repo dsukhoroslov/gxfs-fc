@@ -117,18 +117,23 @@ public class VerificationServiceImpl implements VerificationService {
     String id = getParticipantID(presentation); //parameter validator
 
     Map<String, Object> sd = cleanSD(presentation);
-    List<Map<String, Object>> credentialSubjects = null;
-    //TODO semantic verification and claim extraction
+    List<Map<String, Object>> credentials = (List<Map<String, Object>>) sd.get("verifiableCredential");
+    List<SdClaim> claims = new ArrayList<>();
+    for (Map<String, Object> vc : credentials) {
+      List<Map<String, Object>> credentialSubjects = (List<Map<String, Object>>) vc.get("credentialSubject");
+      List<SdClaim> _claims = null; //TODO semantic verification and claim extraction
+      claims.addAll(_claims);
+    }
 
     return new VerificationResultParticipant(
             "name",
             id,
-            "key",
+            presentation.getLdProof().getVerificationMethod().toString(),
             OffsetDateTime.now(),
-            "lifecycle",
+            "lifecycle", //TODO Where to get this
             LocalDate.MIN,
             new ArrayList<>(),
-            new ArrayList<>()
+            claims
     );
   }
 
@@ -144,17 +149,23 @@ public class VerificationServiceImpl implements VerificationService {
     String issuer = getIssuer(presentation);
 
     Map<String, Object> sd = cleanSD(presentation);
-    List<Map<String, Object>> credentialSubjects = null;
-    //TODO semantic verification and claim extraction
+    List<Map<String, Object>> credentials = (List<Map<String, Object>>) sd.get("verifiableCredential");
+    List<SdClaim> claims = new ArrayList<>();
+
+    for (Map<String, Object> vc : credentials) {
+      List<Map<String, Object>> credentialSubjects = (List<Map<String, Object>>) vc.get("credentialSubject");
+      List<SdClaim> _claims = null; //TODO semantic verification and claim extraction
+      claims.addAll(_claims);
+    }
 
     return new VerificationResultOffering(
             presentation.getId().toString(),
             issuer,
             OffsetDateTime.now(),
-            "",
+            "", //TODO where to get this?
+            LocalDate.parse((String) sd.get("issuanceDate")),
             null,
-            null,
-            null
+            claims
     );
   }
 
