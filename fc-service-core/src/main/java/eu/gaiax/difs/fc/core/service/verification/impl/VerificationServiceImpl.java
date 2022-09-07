@@ -117,7 +117,7 @@ public class VerificationServiceImpl implements VerificationService {
     String id = getParticipantID(presentation); //parameter validator
 
     Map<String, Object> sd = cleanSD(presentation);
-
+    List<Map<String, Object>> credentialSubjects = null;
     //TODO semantic verification and claim extraction
 
     return new VerificationResultParticipant(
