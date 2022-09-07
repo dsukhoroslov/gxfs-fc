@@ -24,6 +24,7 @@ import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.boot.autoconfigure.liquibase.LiquibaseAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.core.annotation.Order;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
@@ -52,6 +53,32 @@ public class GraphTest {
     void closeNeo4j() {
         embeddedDatabaseServer.close();
     }
+
+
+    /**
+     * Given a credential subject, delete all claims with that subject
+     * Verify if the claim has been deleted by running a query
+     */
+    @Test
+    void testCypherDeleteClaim() {
+        List<SdClaim> sdClaimList = new ArrayList<>();
+        SdClaim sdClaimSubject = new SdClaim("<https://delta-dao.com/.well-known/participantCompany.json>",
+                "<https://www.w3.org/2018/credentials#credentialSubject>",
+                "\"410 Terry Avenue North\"^^<http://www.w3.org/2001/XMLSchema#string>");
+        sdClaimList.add(sdClaimSubject);
+        SdClaim sdClaimName = new SdClaim("<https://delta-dao.com/.well-known/participantCompany.json>",
+                "<https://www.w3.org/2018/credentials#Name>",
+                "\"Participant Amazon\"^^<http://www.w3.org/2001/XMLSchema#string>");
+        sdClaimList.add(sdClaimName);
+        graphGaia.addClaims(sdClaimList, "https://delta-dao.com/.well-known/participantCompany.json");
+        List<Map<String, String>> resultList = new ArrayList<Map<String, String>>();
+        graphGaia.deleteClaims("https://delta-dao.com/.well-known/participantCompany.json");
+        OpenCypherQuery query = new OpenCypherQuery(
+                "match(n) where n.uri ='https://delta-dao.com/.well-known/participantCompany.json' return n;");
+        List<Map<String, String>> response = graphGaia.queryData(query);
+        Assertions.assertEquals(resultList, response);
+    }
+
 
     /**
      * Given set of credentials connect to graph and upload self description.
