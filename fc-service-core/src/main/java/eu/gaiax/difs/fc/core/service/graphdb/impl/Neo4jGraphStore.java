@@ -5,6 +5,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.neo4j.cypher.internal.ast.Statement;
+import org.neo4j.cypher.internal.parser.CypherParser;
+import org.neo4j.cypher.internal.util.OpenCypherExceptionFactory;
 import org.neo4j.driver.Driver;
 import org.neo4j.driver.Result;
 import org.neo4j.driver.Session;
@@ -18,6 +21,7 @@ import eu.gaiax.difs.fc.core.pojo.OpenCypherQuery;
 import eu.gaiax.difs.fc.core.pojo.SdClaim;
 import eu.gaiax.difs.fc.core.service.graphdb.GraphStore;
 import lombok.extern.log4j.Log4j2;
+import scala.Option;
 
 @Log4j2
 @Component
@@ -80,12 +84,40 @@ public class Neo4jGraphStore implements GraphStore {
         }
     }
 
+    protected static boolean doesDataManipulation(String query) throws OpenCypherExceptionFactory.SyntaxException {
+        CypherParser parser = new CypherParser();
+        Statement statement = parser.parse(
+                query,
+                new OpenCypherExceptionFactory(Option.empty()),
+                Option.empty()
+        );
+
+        return statement.containsUpdates();
+    }
+
     /**
      * {@inheritDoc}
      */
     @Override
     public List<Map<String, String>> queryData(OpenCypherQuery sdQuery) {
         log.debug("queryData.enter; got query: {}", sdQuery);
+
+        /* Check the query
+         * Will result in a SyntaxException if the query is syntactically wrong.
+         * It is further checked if the query tries to modify any data.
+         */
+        try {
+            if (doesDataManipulation(sdQuery.getQuery())) {
+                log.error("Got a query which tries to modify data");
+                throw new ServerException(
+                        "Queries that modify data are not allowed");
+            }
+
+        } catch (OpenCypherExceptionFactory.SyntaxException e) {
+            log.error("queryData.error", e);
+            throw new ServerException("error querying data " + e.getMessage());
+        }
+
         try (Session session = driver.session(); Transaction tx = session.beginTransaction()) {
             List<Map<String, String>> resultList = new ArrayList<>();
             Result result = tx.run(sdQuery.getQuery());

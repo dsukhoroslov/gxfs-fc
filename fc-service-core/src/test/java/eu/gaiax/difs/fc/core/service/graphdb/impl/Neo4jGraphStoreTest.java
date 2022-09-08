@@ -1,21 +1,16 @@
-package eu.gaiax.difs.fc.core.service.graphdb;
+package eu.gaiax.difs.fc.core.service.graphdb.impl;
 
-import java.io.BufferedReader;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
+import eu.gaiax.difs.fc.core.config.EmbeddedNeo4JConfig;
+import eu.gaiax.difs.fc.core.pojo.OpenCypherQuery;
+import eu.gaiax.difs.fc.core.pojo.SdClaim;
 import org.junit.FixMethodOrder;
 import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.Assertions;
+import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.api.function.Executable;
 import org.junit.runners.MethodSorters;
+import org.neo4j.cypher.internal.util.OpenCypherExceptionFactory;
 import org.neo4j.driver.springframework.boot.test.autoconfigure.Neo4jTestHarnessAutoConfiguration;
 import org.neo4j.harness.Neo4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,10 +23,15 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 
-import eu.gaiax.difs.fc.core.config.EmbeddedNeo4JConfig;
-import eu.gaiax.difs.fc.core.pojo.OpenCypherQuery;
-import eu.gaiax.difs.fc.core.pojo.SdClaim;
-import eu.gaiax.difs.fc.core.service.graphdb.impl.Neo4jGraphStore;
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
@@ -40,7 +40,7 @@ import eu.gaiax.difs.fc.core.service.graphdb.impl.Neo4jGraphStore;
 @ActiveProfiles("tests-sdstore")
 @ContextConfiguration(classes = {Neo4jGraphStore.class})
 @Import(EmbeddedNeo4JConfig.class)
-public class GraphTest {
+public class Neo4jGraphStoreTest {
     
     @Autowired
     private Neo4j embeddedDatabaseServer;
@@ -80,7 +80,7 @@ public class GraphTest {
         OpenCypherQuery queryFull = new OpenCypherQuery(
                 "MATCH (n:ns0__ServiceOffering) RETURN n LIMIT 25");
         List<Map<String, String>> responseFull = graphGaia.queryData(queryFull);
-        Assertions.assertEquals(resultListFull, responseFull);
+        assertEquals(resultListFull, responseFull);
     }
 
     /**
@@ -107,9 +107,52 @@ public class GraphTest {
         OpenCypherQuery queryDelta = new OpenCypherQuery(
                 "MATCH (n:ns1__LegalPerson) WHERE n.ns1__name = \"deltaDAO AG\" RETURN n LIMIT 25");
         List<Map<String, String>> responseDelta = graphGaia.queryData(queryDelta);
-        Assertions.assertEquals(resultListDelta, responseDelta);
+        assertEquals(resultListDelta, responseDelta);
     }
 
+    /**
+     * For the query interface we have to make sure only actual retrieval
+     * queries are sent to the database, i.e. no data queries containing DELETE
+     * or updates e.g. via SET. This is achieved by the doesDataManipulation( )
+     * method.
+     */
+    @Test
+    void testQueryValidation() {
+        // Simple RETURN query. Should pass
+        String queryStr = "MATCH (n) RETURN n.name";
+        assertFalse(Neo4jGraphStore.doesDataManipulation(queryStr));
+
+        // Simple RETURN query containing 'DELETE'/'SET' strings. Should pass
+        queryStr = "MATCH (n) RETURN n.DELETE, n.SET";
+        assertFalse(Neo4jGraphStore.doesDataManipulation(queryStr));
+
+        queryStr = "MATCH (n) WHERE n.name = 'DELETE' OR n.name ='SET' RETURN n";
+        assertFalse(Neo4jGraphStore.doesDataManipulation(queryStr));
+
+        // DELETE query. Should be rejected
+        queryStr = "MATCH (n:Person) DELETE n";
+        assertTrue(Neo4jGraphStore.doesDataManipulation(queryStr));
+
+        // SET query. Should be rejected
+        queryStr =
+                "MATCH (n:Person) " +
+                "WHERE n.firstname = 'Nikhil' " +
+                "SET n.firstname = 'Patrick' " +
+                "RETURN n";
+        assertTrue(Neo4jGraphStore.doesDataManipulation(queryStr));
+
+        // Query with syntax error. Should throw an exception
+        assertThrows(
+                OpenCypherExceptionFactory.SyntaxException.class,
+                new Executable() {
+                    @Override
+                    public void execute() throws Throwable {
+                        Neo4jGraphStore.doesDataManipulation(
+                                "THIS IS NOT A VALID QUERY");
+                    }
+                }
+        );
+    }
 
     private List<SdClaim> loadTestClaims(String Path) throws Exception {
         List credentialSubjectList = new ArrayList();
