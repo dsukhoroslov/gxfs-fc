@@ -6,6 +6,7 @@ import com.danubetech.keyformats.crypto.PublicKeyVerifierFactory;
 import com.danubetech.keyformats.jose.JWK;
 import com.danubetech.keyformats.keytypes.KeyTypeName_for_JWK;
 import com.danubetech.verifiablecredentials.CredentialSubject;
+import com.danubetech.verifiablecredentials.VerifiableCredential;
 import com.danubetech.verifiablecredentials.VerifiablePresentation;
 import eu.gaiax.difs.fc.core.exception.VerificationException;
 import eu.gaiax.difs.fc.core.pojo.*;
@@ -16,6 +17,7 @@ import foundation.identity.jsonld.JsonLDObject;
 import info.weboftrust.ldsignatures.LdProof;
 import info.weboftrust.ldsignatures.verifier.JsonWebSignature2020LdVerifier;
 import info.weboftrust.ldsignatures.verifier.LdVerifier;
+import liquibase.pro.packaged.O;
 import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
@@ -275,7 +277,7 @@ public class VerificationServiceImpl implements VerificationService {
     }
   }
 
-  boolean verifyPEM(String uri) throws IOException {
+  Validator getValidatorFromPEM(String uri, String did) throws IOException {
     //Is the PEM anchor in the registry?
     HttpClient httpclient = HttpClients.createDefault();
     HttpPost httppost = new HttpPost("https://registry.lab.gaia-x.eu/api/v2204/trustAnchor/chain/file");
@@ -289,18 +291,24 @@ public class VerificationServiceImpl implements VerificationService {
     HttpResponse response = httpclient.execute(httppost);
     if(response.getStatusLine().getStatusCode() != 200) throw new VerificationException("The trust anchor is not set in the registry");
 
-    //TODO Check if x509 certificate is valid
-
-    return true;
+    //TODO
+    //https://www.baeldung.com/java-read-pem-file-keys
+    //https://www.bouncycastle.org/docs/docs1.5on/index.html
+    //https://stackoverflow.com/questions/12967016/how-to-check-ssl-certificate-expiration-date-programmatically-in-java
+    
+    return new Validator(
+            did,
+            "",
+            null
+    );
   }
 
-  PublicKeyVerifier getVerifiedVerifier(LdProof proof) throws IOException {
+  Object [] getVerifiedVerifier(LdProof proof) throws IOException {
     URI uri = proof.getVerificationMethod();
     String jwt = proof.getJws();
     JWK jwk;
-    PublicKeyVerifier pubKey = null;
-    String n;
-    String x5u;
+    PublicKeyVerifier pubKey;
+    Validator validator;
 
     if (!proof.getType().equals("JsonWebSignature2020")) throw new UnsupportedOperationException("This proof type is not yet implemented");
 
@@ -323,28 +331,50 @@ public class VerificationServiceImpl implements VerificationService {
         throw new VerificationException(ex);
       }
 
-      n = (String) jwk_map_uncleaned.get("n");
-      x5u = (String) jwk_map_uncleaned.get("x5u");
+      validator = getValidatorFromPEM((String) jwk_map_uncleaned.get("x5u"), uri.toString());
+
+      if(!jwk.getN().equals(validator.getPublicKey()))
+        throw new VerificationException("JWK does not match with provided certificate");
     } else throw new VerificationException("Unknown Verification Method: " + uri);
 
-    if(!jwk.getN().equals(n)) throw new VerificationException("JWK does not match with provided certificate");
-
-    if(!verifyPEM(x5u)) throw new VerificationException("JWK has no trust anchor in registry");
-
-    return pubKey;
+    return new Object[]{pubKey, validator};
   }
 
-  boolean checkCryptographic (VerifiablePresentation presentation) throws JsonLDException, GeneralSecurityException, IOException {
-    LdProof proof = presentation.getLdProof();
+  Validator checkCryptographic (JsonLDObject payload, LdProof proof) throws JsonLDException, GeneralSecurityException, IOException {
     if (proof == null) throw new VerificationException("No proof found");
+    LdVerifier verifier;
+    Validator validator = null; //TODO Cache.getValidator(proof.getVerificationMethod().toString());
+    if (validator == null) {
+      Object [] pkVerifierAndValidator = getVerifiedVerifier(proof);
+      PublicKeyVerifier publicKeyVerifier = (PublicKeyVerifier) pkVerifierAndValidator[0];
+      validator = (Validator) pkVerifierAndValidator[1];
+      verifier = new JsonWebSignature2020LdVerifier(publicKeyVerifier);
+    } else {
+      verifier = getVerifierFromValidator(validator);
+    }
+    if(!verifier.verify(payload)) throw new VerificationException(payload.getClass().getName() + "does not matcht with proof");
 
-    PublicKeyVerifier publicKeyVerifier = getVerifiedVerifier(proof);
-    LdVerifier verifier = new JsonWebSignature2020LdVerifier(publicKeyVerifier);
+    return validator;
+  }
 
-    if(!verifier.verify(presentation)) throw new VerificationException("VPs proof is not valid");
+  private LdVerifier getVerifierFromValidator(Validator validator) {
+    //TODO
+    return null;
+  }
 
-    //TODO Do we have to check the compliance credential too? YES!
-    return true; //If this point was reached without an exception, the signature is valid
+  List<Validator> checkCryptographic (VerifiablePresentation presentation) throws JsonLDException, GeneralSecurityException, IOException {
+    List<Validator> validators = new ArrayList<>();
+
+    validators.add(checkCryptographic(presentation, presentation.getLdProof()));
+
+    List<Map<String, Object>> credentials = (List<Map<String, Object>>) presentation.getJsonObject().get("verifiableCredential");
+    for (Map<String, Object> _credential : credentials) {
+      VerifiableCredential credential = VerifiableCredential.fromMap(_credential);
+      validators.add(checkCryptographic(credential, credential.getLdProof()));
+    }
+
+    //If this point was reached without an exception, the signatures are valid
+    return validators;
   }
 
   String getParticipantID(VerifiablePresentation presentation) {
