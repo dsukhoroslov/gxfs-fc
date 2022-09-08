@@ -7,7 +7,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class VerificationResult extends eu.gaiax.difs.fc.api.generated.model.VerificationResult {
+public abstract class VerificationResult extends eu.gaiax.difs.fc.api.generated.model.VerificationResult {
 
   /**
    * credentialSubject (id) of this SD.
