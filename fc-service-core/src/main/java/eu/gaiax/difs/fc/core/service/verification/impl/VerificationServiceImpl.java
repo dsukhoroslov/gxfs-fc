@@ -120,7 +120,14 @@ public class VerificationServiceImpl implements VerificationService {
     String id = getParticipantID(presentation); //parameter validator
 
     Map<String, Object> sd = cleanSD(presentation);
-    List<Map<String, Object>> credentials = (List<Map<String, Object>>) sd.get("verifiableCredential");
+    Object _vcs = sd.get("verifiableCredential");
+    List<Map<String, Object>> credentials;
+    try {
+      credentials = (List<Map<String, Object>>) _vcs;
+    } catch (Exception e) {
+      credentials = new ArrayList<Map<String, Object>>();
+      credentials.add((Map<String, Object>) _vcs);
+    }
     List<SdClaim> claims = new ArrayList<>();
     for (Map<String, Object> vc : credentials) {
       List<Map<String, Object>> credentialSubjects = (List<Map<String, Object>>) vc.get("credentialSubject");
@@ -161,7 +168,14 @@ public class VerificationServiceImpl implements VerificationService {
     String issuer = getIssuer(presentation);
 
     Map<String, Object> sd = cleanSD(presentation);
-    List<Map<String, Object>> credentials = (List<Map<String, Object>>) sd.get("verifiableCredential");
+    Object _vcs = sd.get("verifiableCredential");
+    List<Map<String, Object>> credentials;
+    try {
+      credentials = (List<Map<String, Object>>) _vcs;
+    } catch (Exception e) {
+      credentials = new ArrayList<Map<String, Object>>();
+      credentials.add((Map<String, Object>) _vcs);
+    }
     List<SdClaim> claims = new ArrayList<>();
 
     for (Map<String, Object> vc : credentials) {
