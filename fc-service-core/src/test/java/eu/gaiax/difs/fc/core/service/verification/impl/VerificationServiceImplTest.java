@@ -180,5 +180,23 @@ public class VerificationServiceImplTest {
         assertNull(presentation.getJsonObject().get("proof"));
     }
 
+    @Test
+    void verifyValidationResult() throws IOException {
+        String dataPath = "VerificationService/Validation-Tests/DataCenterDataGraph.jsonld";
+        String shapePath = "VerificationService/Validation-Tests/physical-resourceShape.ttl";
+        VerifiablePresentation presentation = verificationService.parseSD (getAccessor(dataPath));
+        boolean validationResult = verificationService.
+                validationAgainstShacl(presentation,
+                        getAccessor(shapePath)).isConforming();
+        if(validationResult==false) {
+            String resultMessage = "Property needs to have at least 1 value";
+            assertTrue(verificationService.validationAgainstShacl(presentation,getAccessor(shapePath)).getValidationReport().contains(resultMessage));
+        }else {
+            assertFalse(validationResult);
+        }
+
+    }
+
+
 
 }

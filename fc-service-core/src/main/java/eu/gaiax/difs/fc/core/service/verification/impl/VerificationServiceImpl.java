@@ -10,6 +10,8 @@ import com.danubetech.verifiablecredentials.VerifiableCredential;
 import com.danubetech.verifiablecredentials.VerifiablePresentation;
 import eu.gaiax.difs.fc.core.exception.VerificationException;
 import eu.gaiax.difs.fc.core.pojo.*;
+import eu.gaiax.difs.fc.core.service.schemastore.SchemaStore;
+import eu.gaiax.difs.fc.core.service.schemastore.impl.SchemaStoreImpl;
 import eu.gaiax.difs.fc.core.service.verification.VerificationService;
 import foundation.identity.did.DIDDocument;
 import foundation.identity.jsonld.JsonLDException;
@@ -38,6 +40,20 @@ import java.security.GeneralSecurityException;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.util.*;
+import java.io.IOException;
+import java.io.Reader;
+import java.io.StringReader;
+import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.ModelFactory;
+import org.apache.jena.rdf.model.Resource;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.Marker;
+import org.slf4j.MarkerFactory;
+import org.springframework.stereotype.Service;
+import org.topbraid.shacl.validation.ValidationUtil;
+import org.topbraid.shacl.vocabulary.SH;
+
 
 // TODO: 26.07.2022 Awaiting approval and implementation by Fraunhofer.
 /**
@@ -46,6 +62,10 @@ import java.util.*;
 @Service
 public class VerificationServiceImpl implements VerificationService {
   private static final String credentials_key = "verifiableCredential";
+  private static final String sd_format = "JSONLD";
+  private static final String shapes_format = "TURTLE";
+  private static final Logger logger = LoggerFactory.getLogger(VerificationServiceImpl.class);
+  private static final Marker MARKER = MarkerFactory.getMarker("MARKER");
 
   /**
    * The function validates the Self-Description as JSON and tries to parse the json handed over.
@@ -122,10 +142,17 @@ public class VerificationServiceImpl implements VerificationService {
     Map<String, Object> sd = cleanSD(presentation);
     List<Map<String, Object>> credentials = (List<Map<String, Object>>) sd.get("verifiableCredential");
     List<SdClaim> claims = new ArrayList<>();
-    for (Map<String, Object> vc : credentials) {
-      List<Map<String, Object>> credentialSubjects = (List<Map<String, Object>>) vc.get("credentialSubject");
-      List<SdClaim> _claims = null; //TODO semantic verification and claim extraction
-      claims.addAll(_claims);
+    SchemaStore schemaStore = new SchemaStoreImpl();
+    ContentAccessor shaclShapeCompositeSchema = schemaStore.getCompositeSchema(SchemaStore.SchemaType.SHAPE);
+    String validationReport = validationAgainstShacl(presentation,shaclShapeCompositeSchema).getValidationReport();
+    if (validationAgainstShacl(presentation,shaclShapeCompositeSchema).isConforming()) {
+      for (Map<String, Object> vc : credentials) {
+        List<Map<String, Object>> credentialSubjects = (List<Map<String, Object>>) vc.get("credentialSubject");
+        List<SdClaim> _claims = extractClaims(credentialSubjects); //TODO semantic verification and claim extraction
+        claims.addAll(_claims);
+      }
+    } else {
+      throw new VerificationException("the self description is violating the shacl shape schema : "+validationReport);
     }
 
     return new VerificationResultParticipant(
@@ -406,4 +433,75 @@ public class VerificationServiceImpl implements VerificationService {
 
     return sd;
   }
+
+  /**
+   * Method that validates a dataGraph against shaclShape
+   *
+   * @param sd   ContentAccessor of a self-Description sd to be validated
+   * @param shaclShape ContentAccessor of a union schemas of type SHACL
+   * @return                SemanticValidationResult object
+   */
+  SemanticValidationResult validationAgainstShacl(VerifiablePresentation sd, ContentAccessor shaclShape) {
+    String validationReport = "";
+    boolean conforms = false;
+    try {
+      Reader dataGraphReader = new StringReader(sd.toJson());
+      Reader shaclShapeReader = new StringReader(shaclShape.getContentAsString());
+      Model data = ModelFactory.createDefaultModel();
+      data.read(dataGraphReader, null, sd_format);
+      Model shape = ModelFactory.createDefaultModel();
+      shape.read(shaclShapeReader, null, shapes_format);
+      Resource reportResource = ValidationUtil.validateModel(data, shape, true);
+      conforms = reportResource.getProperty(SH.conforms).getBoolean();
+      logger.trace("Conforms = " + conforms);
+
+      if (!conforms) {
+        validationReport = reportResource.getModel().toString();
+      }
+
+    } catch (Throwable t) {
+      logger.error(MARKER, t.getMessage(), t);
+    }
+    return new SemanticValidationResult(
+            conforms,
+            validationReport
+    );
+  }
+  /**
+   * A method that returns a list of claims given a self-description as map
+   *
+   * @param sd map represents a self-description for claims extraction
+   * @return a list of claims.
+   */
+  List<SdClaim> extractClaims( List<Map<String, Object>> sd) {
+
+    List<SdClaim> sdClaims = new ArrayList<>();
+   // Map<String, Object> subjects = (Map<String, Object>) sd.get(credential_subject);
+    String subject = sd.get("id").toString();
+    Map<String, Map<String, Object>> credentialSubject = (Map<String, Map<String, Object>>) sd.get("credentialSubject");
+    Set<String> credentialSubjectKeySets = credentialSubject.keySet();
+    credentialSubjectKeySets.remove("@context");
+    credentialSubjectKeySets.remove("id");
+    String object = "";
+    for (String predicate : credentialSubjectKeySets) {
+      Map<String, Object> m1 = credentialSubject.get(predicate);
+      for (String k1 : m1.keySet()) {
+        if (!k1.contains("@type")) {
+          object = m1.get(k1).toString();
+          if(object.contains("{")) {
+            LinkedHashMap<String, Object> map = (LinkedHashMap<String, Object>)m1.get(k1);
+            object = map.get("@value").toString();
+            sdClaims.add(new SdClaim(subject,predicate,object));
+
+          } else  {
+            sdClaims.add(new SdClaim(subject,predicate,object));
+          }
+
+        }
+      }
+    }
+    return sdClaims;
+  }
+
+
 }

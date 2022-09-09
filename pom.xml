@@ -57,6 +57,8 @@
         <plugin.maven-compiler.version>3.8.1</plugin.maven-compiler.version>
         <plugin.checkstyle.version>3.1.2</plugin.checkstyle.version>
         <plugin.checkstyle.puppycrawl.version>10.3.1</plugin.checkstyle.puppycrawl.version>
+        <jena.version>4.4.0</jena.version>
+        <topbraid.version>1.4.2</topbraid.version>
         <!-- repoositiry path -->
         <repository.path>gaia-x/data-infrastructure-federation-services/cat/fc-service</repository.path>
         <!--jib-->
