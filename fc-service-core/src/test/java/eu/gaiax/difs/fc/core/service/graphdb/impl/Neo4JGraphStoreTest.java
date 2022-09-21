@@ -1,10 +1,13 @@
-package eu.gaiax.difs.fc.core.service.graphdb;
+package eu.gaiax.difs.fc.core.service.graphdb.impl;
 
 import eu.gaiax.difs.fc.core.config.EmbeddedNeo4JConfig;
+import eu.gaiax.difs.fc.core.exception.ClaimCredentialSubjectException;
+import eu.gaiax.difs.fc.core.exception.ClaimSyntaxError;
+import eu.gaiax.difs.fc.core.exception.ServerException;
 import eu.gaiax.difs.fc.core.pojo.OpenCypherQuery;
 import eu.gaiax.difs.fc.core.pojo.SdClaim;
-import eu.gaiax.difs.fc.core.service.graphdb.impl.Neo4jGraphStore;
 import org.junit.FixMethodOrder;
+import org.junit.Ignore;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -21,18 +24,15 @@ import org.springframework.context.annotation.Import;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
@@ -41,7 +41,7 @@ import java.util.regex.Pattern;
 @ActiveProfiles("tests-sdstore")
 @ContextConfiguration(classes = {Neo4jGraphStore.class})
 @Import(EmbeddedNeo4JConfig.class)
-public class GraphTest {
+public class Neo4JGraphStoreTest {
 
     @Autowired
     private Neo4j embeddedDatabaseServer;
@@ -161,37 +161,201 @@ public class GraphTest {
     @Test
     void testAddClaimsException() throws Exception {
         List<SdClaim> sdClaimList = new ArrayList<>();
-        SdClaim sdClaim = new SdClaim("<htw3id.org/gaia-x/indiv#serviceElasticSearch.json>", "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>", "<http://w3id.org/gaia-x/service#ServiceOffering>");
-        sdClaimList.add(sdClaim);
-        SdClaim sdClaimSecond = new SdClaim("<http://w3id.org/gaia-x/indiv#serviceElasticSearch.json>", "<http://w3id.org/gaia-x/service#providedBy>", "<https://delta-dao.com/.well-known/participant.json>");
-        sdClaimList.add(sdClaimSecond);
-        Exception exception = assertThrows(RuntimeException.class, () -> {
-            graphGaia.addClaims(sdClaimList, "http://w3id.org/gaia-x/indiv#serviceElasticSearch.json");
-        });
-        String expectedMessage = "Enter a valid set of URI for claims <htw3id.org/gaia-x/indiv#serviceElasticSearch.json> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://w3id.org/gaia-x/service#ServiceOffering> .";
-        String actualMessage = exception.getMessage();
-        assertTrue(actualMessage.contains(expectedMessage));
+
+        String credentialSubject = "http://w3id.org/gaia-x/indiv#serviceElasticSearch.json";
+        String wrongCredentialSubject = "http://w3id.org/gaia-x/indiv#serviceElasticSearch";
+
+
+        SdClaim syntacticallyCorrectClaim = new SdClaim(
+                "<http://w3id.org/gaia-x/indiv#serviceElasticSearch.json>",
+                "<http://w3.org/1999/02/22-rdf-syntax-ns#type>",
+                "<http://w3id.org/gaia-x/service#ServiceOffering>"
+        );
+
+        SdClaim claimWBrokenSubject = new SdClaim(
+                "<htw3id.org/gaia-x/indiv#serviceElasticSearch.json>",
+                "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>",
+                "<http://w3id.org/gaia-x/service#ServiceOffering>"
+        );
+
+        SdClaim claimWBrokenPredicate = new SdClaim(
+                "<http://w3id.org/gaia-x/indiv#serviceElasticSearch.json>",
+                "<httw3.org/1999/02/22-rdf-syntax-ns#type>",
+                "<http://w3id.org/gaia-x/service#ServiceOffering>"
+        );
+
+        SdClaim claimWBrokenObjectIRI = new SdClaim(
+                "<http://w3id.org/gaia-x/indiv#serviceElasticSearch.json>",
+                "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>",
+                "<htw3id.org/gaia-x/service#ServiceOffering>"
+        );
+
+        SdClaim claimWBrokenLiteral01 = new SdClaim(
+                "<http://w3id.org/gaia-x/indiv#serviceElasticSearch.json>",
+                "<http://www.w3.org/2000/01/rdf-schema#label>",
+                "\"Fourty two\"^^<http://www.w3.org/2001/XMLSchema#int>"
+        );
+
+        SdClaim claimWBrokenLiteral02 = new SdClaim(
+                "<http://w3id.org/gaia-x/indiv#serviceElasticSearch.json>",
+                "<http://www.w3.org/2000/01/rdf-schema#label>",
+                "\"Missing quotes^^<http://www.w3.org/2001/XMLSchema#string>"
+        );
+
+        SdClaim claimWBlankNodeObject = new SdClaim(
+                "<http://w3id.org/gaia-x/indiv#serviceElasticSearch.json>",
+                "<http://ex.com/some_property>",
+                "_:23"
+        );
+
+        // Everything should work well with the syntactically correct claim
+        // and the correct credential subject
+        assertDoesNotThrow(() -> graphGaia.addClaims(
+                Collections.singletonList(syntacticallyCorrectClaim), credentialSubject));
+
+        // If a wrong credential subject is passed the addition should be
+        // rejected with a server exception
+        Exception exception = assertThrows(
+                ServerException.class,
+                () -> graphGaia.addClaims(
+                        Collections.singletonList(syntacticallyCorrectClaim),
+                        wrongCredentialSubject
+                )
+        );
+        assertTrue(
+                exception.getMessage().contains(ClaimCredentialSubjectException.class.toString()),
+                "Wrong exception was thrown. Expected " +
+                        ClaimCredentialSubjectException.class.getName() +
+                        " to be contained in the error message");
+
+        // If a claim with a broken subject was passed it should be rejected
+        // with a server exception
+        exception = assertThrows(
+                ServerException.class,
+                () -> graphGaia.addClaims(
+                        Collections.singletonList(claimWBrokenSubject),
+                        credentialSubject
+                )
+        );
+        assertTrue(
+                exception.getMessage().contains(ClaimSyntaxError.class.getName()),
+                "Wrong exception was thrown. Expected " +
+                        ClaimSyntaxError.class.getName() +
+                        " to be named in the error message");
+        assertTrue(
+                exception.getMessage().contains("Subject in triple"),
+                "Syntax error should have been found for the triple " +
+                        "subject, but wasn't");
+
+        // If a claim with a broken predicate was passed it should be rejected
+        // with a server exception
+        exception = assertThrows(
+                ServerException.class,
+                () -> graphGaia.addClaims(
+                        Collections.singletonList(claimWBrokenPredicate),
+                        credentialSubject
+                )
+        );
+        assertTrue(
+                exception.getMessage().contains(ClaimSyntaxError.class.getName()),
+                "Wrong exception was thrown. Expected " +
+                        ClaimSyntaxError.class.getName() +
+                        " to be named in the error message"
+        );
+        assertTrue(
+                exception.getMessage().contains("Predicate in triple"),
+                "A syntax error should have been found for the " +
+                        "triple predicate, but wasn't");
+
+        // If a claim with a resource on object position was passed and the URI
+        // of the resource was broken, the claim should be rejected with a
+        // server error
+        exception = assertThrows(
+                ServerException.class,
+                () -> graphGaia.addClaims(
+                        Collections.singletonList(claimWBrokenObjectIRI),
+                        credentialSubject
+                )
+        );
+        assertTrue(
+                exception.getMessage().contains(ClaimSyntaxError.class.getName()),
+                "Wrong exception was thrown. Expected " +
+                        ClaimSyntaxError.class.getName() +
+                        " to be named in the error message"
+        );
+        assertTrue(
+                exception.getMessage().contains("Object in triple"),
+                "A syntax error should have been found for the " +
+                        "triple object, but wasn't"
+        );
+
+        // If a claim with a literal on object position was passed and the
+        // literal was broken, the claim should be rejected with a server error.
+        // 1) Wrong datatype
+        exception = assertThrows(
+                ServerException.class,
+                () -> graphGaia.addClaims(
+                        Collections.singletonList(claimWBrokenLiteral01),
+                        credentialSubject
+                )
+        );
+        assertTrue(
+                exception.getMessage().contains(ClaimSyntaxError.class.getName()),
+                "Wrong exception was thrown. Expected " +
+                        ClaimSyntaxError.class.getName() +
+                        " to be named in the error message"
+        );
+        assertTrue(
+                exception.getMessage().contains("Object in triple"),
+                "A syntax error should have been found for the " +
+                        "triple object, but wasn't"
+        );
+        // 2) Syntax error
+        exception = assertThrows(
+                ServerException.class,
+                () -> graphGaia.addClaims(
+                        Collections.singletonList(claimWBrokenLiteral02),
+                        credentialSubject
+                )
+        );
+        assertTrue(
+                exception.getMessage().contains(ClaimSyntaxError.class.getName()),
+                "Wrong exception was thrown. Expected " +
+                        ClaimSyntaxError.class.getName() +
+                        " to be named in the error message"
+        );
+        assertTrue(
+                exception.getMessage().contains("Object in triple"),
+                "A syntax error should have been found for the " +
+                        "triple object, but wasn't"
+        );
+
+        // Blank nodes
+        // ===========
+        // As far as it was communicated, there should be no blank nodes in a
+        // claim. We explicitly check this for objects. Blank nodes on a
+        // triple's subject position won't make much sense as the credential
+        // subject must not be blank node. Blank nodes on predicate position
+        // don't make sense either and are assumed to not occur.
+        exception = assertThrows(
+                ServerException.class,
+                () -> graphGaia.addClaims(
+                        Collections.singletonList(claimWBlankNodeObject),
+                        credentialSubject
+                )
+        );
+        assertTrue(
+                exception.getMessage().contains(ClaimSyntaxError.class.getName()),
+                "Wrong exception was thrown. Expected " +
+                        ClaimSyntaxError.class.getName() +
+                        " to be named in the error message"
+        );
+        assertTrue(
+                exception.getMessage().contains("Object in triple"),
+                "A syntax error should have been found for the " +
+                        "triple object, but wasn't"
+        );
     }
-
-
-    /**
-     * Given set of credentials connect to graph and upload self description.
-     * Instantiate list of claims with subject predicate and object in N-triples
-     * form which is invalid and try uploading to graphDB
-     */
-    @Test
-    void testAddClaimsLiteralException() throws Exception {
-        List<SdClaim> sdClaimList = new ArrayList<>();
-        SdClaim sdClaim = new SdClaim("<http://w3id.org/gaia-x/indiv#serviceElasticSearch.json>", "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>", "\"410 Terry Avenue Nort^^<http://www.w3.org/2001/XMLSchema#string>");
-        sdClaimList.add(sdClaim);
-        Exception exception = assertThrows(RuntimeException.class, () -> {
-            graphGaia.addClaims(sdClaimList, "http://w3id.org/gaia-x/indiv#serviceElasticSearch.json");
-        });
-        String expectedMessage = "Enter a valid Literal for claims <http://w3id.org/gaia-x/indiv#serviceElasticSearch.json> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> \"410 Terry Avenue Nort^^<http://www.w3.org/2001/XMLSchema#string> .";
-        String actualMessage = exception.getMessage();
-        assertTrue(actualMessage.contains(expectedMessage));
-    }
-
 
     private List<SdClaim> loadTestClaims(String Path) throws Exception {
         List credentialSubjectList = new ArrayList();

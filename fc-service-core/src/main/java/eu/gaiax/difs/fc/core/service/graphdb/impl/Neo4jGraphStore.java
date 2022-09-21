@@ -1,5 +1,7 @@
 package eu.gaiax.difs.fc.core.service.graphdb.impl;
 
+import eu.gaiax.difs.fc.core.exception.ClaimCredentialSubjectException;
+import eu.gaiax.difs.fc.core.exception.ClaimSyntaxError;
 import eu.gaiax.difs.fc.core.exception.ServerException;
 import eu.gaiax.difs.fc.core.pojo.OpenCypherQuery;
 import eu.gaiax.difs.fc.core.pojo.SdClaim;
@@ -7,8 +9,19 @@ import eu.gaiax.difs.fc.core.service.graphdb.GraphStore;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.validator.routines.UrlValidator;
+import org.apache.jena.datatypes.DatatypeFormatException;
+import org.apache.jena.datatypes.RDFDatatype;
+import org.apache.jena.graph.Node;
+import org.apache.jena.graph.NodeFactory;
+import org.apache.jena.graph.Triple;
+import org.apache.jena.query.Dataset;
+import org.apache.jena.rdf.model.Literal;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
+import org.apache.jena.riot.*;
+import org.apache.jena.util.iterator.ExtendedIterator;
+import org.eclipse.rdf4j.rio.ntriples.NTriplesParser;
+import org.eclipse.rdf4j.rio.ntriples.NTriplesParserFactory;
 import org.neo4j.driver.Driver;
 import org.neo4j.driver.Result;
 import org.neo4j.driver.Session;
@@ -17,6 +30,9 @@ import org.neo4j.driver.internal.InternalNode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -29,62 +45,138 @@ public class Neo4jGraphStore implements GraphStore {
     @Autowired
     private Driver driver;
 
+    // Stored to temporarily deviate from the standard Jena behavior of parsing
+    // literals
+    private boolean eagerJenaLiteralValidation;
+    private boolean jenaAcceptanceOfUnknownLiteralDatatypes;
 
-    public boolean evaluateObjectURI(String triples, String object) {
+    /**
+     * {@inheritDoc}
+     */
+    public static boolean validateCredentialSubject(String subject, String credentialSubject) {
+        return subject.equals(credentialSubject);
+    }
 
-        //Check if Literal or a Fact
-        if (object.startsWith("<") && object.endsWith(">")) {
-            UrlValidator urlValidator = new UrlValidator();
-            if (urlValidator.isValid(object.substring(1, object.length() - 1))) {
-                return true;
+    private void switchOnJenaLiteralValidation() {
+        // save the actual settings to not interfere with other modules which
+        // rely on other settings
+        eagerJenaLiteralValidation =
+                org.apache.jena.shared.impl.JenaParameters.enableEagerLiteralValidation;
+        jenaAcceptanceOfUnknownLiteralDatatypes =
+                org.apache.jena.shared.impl.JenaParameters.enableSilentAcceptanceOfUnknownDatatypes;
+
+        // Now switch to picky mode
+        org.apache.jena.shared.impl.JenaParameters.enableEagerLiteralValidation = true;
+        org.apache.jena.shared.impl.JenaParameters.enableSilentAcceptanceOfUnknownDatatypes = false;
+    }
+
+    private void resetJenaLiteralValidation() {
+        org.apache.jena.shared.impl.JenaParameters.enableEagerLiteralValidation =
+                eagerJenaLiteralValidation;
+        org.apache.jena.shared.impl.JenaParameters.enableSilentAcceptanceOfUnknownDatatypes =
+                jenaAcceptanceOfUnknownLiteralDatatypes;
+    }
+
+    private boolean validateRDFTripleSyntax(SdClaim claim) {
+        Model model = ModelFactory.createDefaultModel();
+        try (InputStream in = IOUtils.toInputStream(claim.asTriple(), "UTF-8")) {
+            switchOnJenaLiteralValidation();
+            RDFDataMgr.read(model, in, Lang.NT);
+
+        } catch (IOException e) {
+            // TODO: How to consistently log syntax errors in input data? DEBUG, WARN, ERR?
+            log.debug(e);
+            throw new ClaimSyntaxError("Syntax error in triple " + claim.asTriple());
+
+        } catch (DatatypeFormatException e) {
+            // Only occurs if the value of a literal does not comply with the
+            // literals datatype
+            throw new ClaimSyntaxError(
+                    "Object in triple " +
+                            claim.asTriple() +
+                            " has an invalid value given its datatype"
+            );
+
+        } catch (RiotException e) {
+            throw new ClaimSyntaxError(
+                    "Object in triple " + claim.asTriple() +
+                            " has a syntax error: " + e.getMessage()
+            );
+
+        } finally {
+            resetJenaLiteralValidation();
+        }
+
+        UrlValidator urlValidator = UrlValidator.getInstance();
+        for (ExtendedIterator<Triple> it = model.getGraph().find(); it.hasNext(); ) {
+            Triple triple = it.next();
+
+            Node s = triple.getSubject();
+            if (!s.isURI() || !urlValidator.isValid(s.getURI())) {
+                throw new ClaimSyntaxError(
+                        "Subject in triple " +
+                                claim.asTriple() +
+                                " is not a valid URI");
+            }
+
+            Node p = triple.getPredicate();
+            if (!p.isURI() || !urlValidator.isValid(p.getURI())) {
+                throw new ClaimSyntaxError(
+                        "Predicate in triple " +
+                                claim.asTriple() +
+                                " is not a valid URI");
+            }
+
+            Node o = triple.getObject();
+            if (o.isURI()) {
+                if (!urlValidator.isValid(o.getURI())) {
+                    throw new ClaimSyntaxError(
+                            "Object in triple " +
+                                    claim.asTriple() +
+                                    " is not a valid URI"
+                    );
+                }
+
+            } else if (o.isLiteral()) {
+                // Nothing needs to be done here as literal syntax errors and
+                // datatype errors are already handled by the parser directly.
+                // See the catch blocks after the RDFDataMgr.read( ) call above.
+
             } else {
-                throw new RuntimeException("Enter a valid set of URI for claims " + triples);
-            }
-        } else {
-            try {
-                Model model = ModelFactory.createDefaultModel()
-                        .read(IOUtils.toInputStream(triples, "UTF-8"), null, "N-TRIPLES");
-                return true;
-            } catch (Exception e) {
-                throw new RuntimeException("Enter a valid Literal for claims " + triples);
+                // assuming that blank nodes are not allowed
+                throw new ClaimSyntaxError(
+                        "Object in triple " +
+                                claim.asTriple() +
+                                " is neither a valid literal nor a valid URI"
+                );
             }
         }
+
+        return true;
     }
 
     /**
      * {@inheritDoc}
      */
-    public boolean validateTripleURI(SdClaim sdClaim) {
-        UrlValidator urlValidator = new UrlValidator();
-        if (urlValidator.isValid(sdClaim.stripSubject()) && urlValidator.isValid(sdClaim.stripPredicate()) && evaluateObjectURI(sdClaim.asTriple(), sdClaim.getObject())) {
-            return true;
-        } else {
-            throw new RuntimeException("Enter a valid set of URI for claims " + sdClaim.asTriple());
-        }
-    }
+    protected String validateClaims(SdClaim sdClaim, String credentialSubject) {
+        // Will throw a claim syntax error in case of syntax errors which is
+        // handled by the calling function addClaim
+        validateRDFTripleSyntax(sdClaim);
 
-    /**
-     * {@inheritDoc}
-     */
-    public boolean validateCredentialSubject(String subject, String credentialSubject) {
-        if (subject.equals(credentialSubject)) {
-            return true;
-        } else {
-            return false;
-        }
-    }
+        // If we're here, there are no syntax errors. We now check whether the
+        // credential subject is indeed used in the claim
+        boolean subjectCheck = validateCredentialSubject(
+                sdClaim.stripSubject(), credentialSubject);
 
-    /**
-     * {@inheritDoc}
-     */
-    public String validateClaims(SdClaim sdClaim, String credentialSubject) {
-        Boolean tripleCheck = validateTripleURI(sdClaim);
-        Boolean subjectCheck = validateCredentialSubject(sdClaim.stripSubject(), credentialSubject);
-        if (tripleCheck && subjectCheck) {
+        if (subjectCheck) {
             return sdClaim.asTriple();
+
         } else {
-            log.debug("validation failed for : {}", sdClaim.asTriple());
-            return null;
+            // TODO: How to consistently log syntax errors in input data? DEBUG, WARN, ERR?
+            String msg = "Credential subject validation failed for: " +  sdClaim.asTriple();
+
+            log.debug(msg);
+            throw new ClaimCredentialSubjectException(msg);
         }
     }
 
@@ -136,7 +228,8 @@ public class Neo4jGraphStore implements GraphStore {
             log.debug("addClaims.exit; claims added: {}, results: {}", cnt, rs.list());
         } catch (Exception e) {
             log.error("addClaims.error", e);
-            throw new ServerException("error adding claims: " + e.getMessage());
+            throw new ServerException(
+                    "error adding claims: " + e.getClass() + ": " + e.getMessage());
         }
     }
 
