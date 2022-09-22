@@ -2,6 +2,7 @@ package eu.gaiax.difs.fc.core.service.verification.impl;
 
 import eu.gaiax.difs.fc.core.exception.VerificationException;
 import eu.gaiax.difs.fc.core.pojo.ContentAccessorFile;
+import eu.gaiax.difs.fc.core.pojo.SdClaim;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
@@ -12,6 +13,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -121,11 +123,13 @@ public class VerificationServiceImplTest {
         String path = "Claims-Extraction-Tests/claimsTestsValid.jsonld";
 
         Map<String, Object> parsed = verificationService.parseSD (getAccessor(path));
-        String expected = "[(https://delta-dao.com/.well-known/serviceMVGPortal.json ,gax-service:providedBy ,https://delta-dao.com/.well-known/participant.json), " +
-                "(https://delta-dao.com/.well-known/serviceMVGPortal.json ,gax-service:name ,EuProGigant Portal), (https://delta-dao.com/.well-known/serviceMVGPortal.json ,gax-service:description ,EuProGigant Minimal Viable Gaia-X Portal), " +
-                "(https://delta-dao.com/.well-known/serviceMVGPortal.json ,gax-service:TermsAndConditions ,https://euprogigant.com/en/terms/), " +
-                "(https://delta-dao.com/.well-known/serviceMVGPortal.json ,gax-service:TermsAndConditions ,contentHash)]";
-        String actual = verificationService.extractClaims(parsed).toString();
-        assertEquals(expected,actual);
+        List<SdClaim> expectedClaims = new ArrayList<>();
+        expectedClaims.add(new SdClaim("https://delta-dao.com/.well-known/serviceMVGPortal.json","gax-service:providedBy" ,"https://delta-dao.com/.well-known/participant.json"));
+        expectedClaims.add(new SdClaim("https://delta-dao.com/.well-known/serviceMVGPortal.json" ,"gax-service:name" ,"EuProGigant Portal"));
+        expectedClaims.add(new SdClaim("https://delta-dao.com/.well-known/serviceMVGPortal.json" ,"gax-service:description" ,"EuProGigant Minimal Viable Gaia-X Portal"));
+        expectedClaims.add(new SdClaim("https://delta-dao.com/.well-known/serviceMVGPortal.json","gax-service:TermsAndConditions" ,"https://euprogigant.com/en/terms/"));
+        expectedClaims.add(new SdClaim("https://delta-dao.com/.well-known/serviceMVGPortal.json" ,"gax-service:TermsAndConditions" ,"contentHash"));
+        List<SdClaim> actualClaims = verificationService.extractClaims(parsed);
+        assertTrue(expectedClaims.size() == actualClaims.size() && expectedClaims.containsAll(actualClaims) && actualClaims.containsAll(expectedClaims));
     }
 }

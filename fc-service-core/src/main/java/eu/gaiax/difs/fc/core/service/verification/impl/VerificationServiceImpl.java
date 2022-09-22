@@ -226,7 +226,13 @@ public class VerificationServiceImpl implements VerificationService {
 
     List<SdClaim> sdClaims = new ArrayList<>();
     Map<String, Object> subjects = (Map<String, Object>) sd.get(credential_subject);
+    if(subjects == null ){
+      throw new VerificationException("credential subject not found");
+    }
     String subject = subjects.get("id").toString();
+     if(subject == null ){
+       throw new VerificationException("id is not found");
+     }
     Map<String, Map<String, Object>> credentialSubject = (Map<String, Map<String, Object>>) sd.get("credentialSubject");
     Set<String> credentialSubjectKeySets = credentialSubject.keySet();
     credentialSubjectKeySets.remove("@context");

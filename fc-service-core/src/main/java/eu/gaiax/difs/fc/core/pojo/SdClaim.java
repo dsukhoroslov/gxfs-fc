@@ -1,5 +1,7 @@
 package eu.gaiax.difs.fc.core.pojo;
 
+import java.util.Objects;
+
 /**
  * POJO Class for holding a Claim. A Claim is a triple represented by a subject, predicate, and object.
  */
@@ -13,8 +15,19 @@ public class SdClaim {
   private final String predicate;
   private final String object;
   @Override
-  public String toString()
-  {
-    return "(" +subject + " ," + predicate + " ," + object +")";
+  public boolean equals(Object o){
+    if (this == o)
+      return true;
+    // null check
+    if (o == null)
+      return false;
+    // type check and cast
+    if (getClass() != o.getClass())
+      return false;
+    SdClaim person = (SdClaim) o;
+    // field comparison
+    return Objects.equals(subject, person.subject)
+            && Objects.equals(predicate, person.predicate)
+            && Objects.equals(object, person.object);
   }
 }
