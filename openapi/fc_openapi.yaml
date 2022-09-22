@@ -75,51 +75,18 @@ components:
           $ref: '#/components/schemas/Parameters'
       required:
         - statement
-    Parameters: #!! why is this a parameter --> ggf ins Statement packen -> Julius ok
+    Parameters: 
       type: object
-      properties:
-        limit:
-          type: integer
-          example: 10
-        offset:
-          type: integer
-          example: 5
+      additionalProperties:
+        type: object
+      example:
+        name: "John"
+        limit: 10
+        offset: 5
     Result:
       type: object
-      properties:
-        columns:
-          type: array
-          example: ["column name 1", "column name 2"]
-          items:
-            type: string
-            example: column names
-        data:
-          type: array
-          items:
-            $ref: '#/components/schemas/Data'
-      required:
-        - columns
-        - data
-    Data:
-      type: object
-      properties:
-        row:
-          type: array
-          example:
-            - value1
-            - value2
-          items:
-            type: string
-        meta:
-          type: array
-          example:
-            - meta1
-            - meta2
-          items:
-            type: string
-      required:
-        - row
-        - meta
+      additionalProperties:
+        type: object
     VerificationResult:
       type: object
       properties:
@@ -308,7 +275,7 @@ components:
               type: array
               items: 
                 $ref: '#/components/schemas/UserProfile'
-    OntologySchemas:
+    Results:
       allOf:
         - $ref: '#/components/schemas/ResultPage'
         - type: object
@@ -316,8 +283,8 @@ components:
             items: 
               type: array
               items: 
-                $ref: '#/components/schemas/OntologySchema'
-          
+                $ref: '#/components/schemas/Result'
+
   parameters:
     OffsetParam:
       name: offset
@@ -459,6 +426,8 @@ paths:
                 $ref: '#/components/schemas/SelfDescriptions'
         '400':
           $ref: '#/components/responses/ClientError'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
         '500':
           $ref: '#/components/responses/ServerError'
     post:
@@ -502,8 +471,12 @@ paths:
                 type: integer
         '400':
           $ref: '#/components/responses/ClientError'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
         '403':
           $ref: '#/components/responses/Forbidden'
+        '409':
+          $ref: '#/components/responses/Conflict'
         '500':
           $ref: '#/components/responses/ServerError'
   /self-descriptions/{self_description_hash}:
@@ -533,6 +506,8 @@ paths:
                 type: string
         '400':
           $ref: '#/components/responses/ClientError'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
         '404':
           $ref: '#/components/responses/NotFound'
         '500':
@@ -554,6 +529,8 @@ paths:
           description: OK
         '400':
           $ref: '#/components/responses/ClientError'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
         '403':
           $ref: '#/components/responses/Forbidden'
         '404':
@@ -587,6 +564,8 @@ paths:
                 $ref: '#/components/schemas/SelfDescription'
         '400':
           $ref: '#/components/responses/ClientError'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
         '403':
           $ref: '#/components/responses/Forbidden'
         '404':
@@ -648,7 +627,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Result'
+                $ref: '#/components/schemas/Results'
             application/sparql-results+xml:
               example: ''
             text/turtle:
@@ -680,7 +659,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/OntologySchemas'
+                $ref: '#/components/schemas/OntologySchema'
         '400':
           $ref: '#/components/responses/ClientError'
         '403':
@@ -824,7 +803,7 @@ paths:
         - name: type
           in: query
           description: 'Type of the schema.'
-          required: false
+          required: true
           schema:
             type: string
             enum:

@@ -21,6 +21,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.event.annotation.BeforeTestClass;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
@@ -37,6 +38,7 @@ import io.zonky.test.db.AutoConfigureEmbeddedDatabase.DatabaseProvider;
 
 @SpringBootTest
 @AutoConfigureMockMvc
+@ActiveProfiles("test")
 @ExtendWith(SpringExtension.class)
 @AutoConfigureEmbeddedDatabase(provider = DatabaseProvider.ZONKY)
 public class RolesControllerTest {
@@ -57,8 +59,8 @@ public class RolesControllerTest {
     private RealmResource realmResource;
     @MockBean
     private RolesResource rolesResource;
-
-    private final ObjectMapper objectMapper = new ObjectMapper();
+    @Autowired
+    private  ObjectMapper objectMapper;
 
     @BeforeTestClass
     public void setup() {

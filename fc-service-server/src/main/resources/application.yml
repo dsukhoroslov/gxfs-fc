@@ -30,6 +30,8 @@ spring:
       maximumPoolSize: 25
   liquibase:
     change-log: classpath:/liquibase/master-changelog.xml
+  main:
+    allow-bean-definition-overriding: true    
   mvc:
     log-request-details: true
   security:
@@ -38,6 +40,11 @@ spring:
         jwt:
           issuer-uri: http://key-server:8080/realms/gaia-x
 #          jwk-set-uri: http://key-server:8080/realms/gaia-x/protocol/openid-connect/certs
+
+scheduler:
+  sd:
+    cron:
+      expression: 0 1 0 * * *
 
 openapi:
   gaiaXCatalogue:
@@ -58,6 +65,11 @@ keycloak:
 datastore:
   file-path: target
 
+graphstore:
+  uri: bolt://localhost:7687
+  user: neo4j
+  password: 12345
+
 logging:
   level:
     root: INFO
@@ -65,3 +77,11 @@ logging:
     org.springframework.web: DEBUG
     org.springframework.security: DEBUG
 #    org.springframework.web.client.RestTemplate: DEBUG
+
+federated-catalogue:
+  scope: runtime
+  file-store:
+    sd:
+      location: sdFiles
+    schema:
+      location: schemaFiles

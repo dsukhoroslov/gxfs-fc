@@ -8,7 +8,7 @@ import java.util.Objects;
 @lombok.AllArgsConstructor
 @lombok.EqualsAndHashCode
 @lombok.Getter
-@lombok.Setter
+@lombok.ToString
 public class SdClaim {
 
   private final String subject;
@@ -30,4 +30,12 @@ public class SdClaim {
             && Objects.equals(predicate, person.predicate)
             && Objects.equals(object, person.object);
   }
+  public String stripSubject() {
+    return subject.substring(1, subject.length() - 1);
+  }
+  
+  public String asTriple() {
+    return String.format("%s %s %s . \n", subject, predicate, object );
+  }
+  
 }

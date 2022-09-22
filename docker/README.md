@@ -21,7 +21,9 @@ To see how the FC Service works go to `/docker` folder and start it with docker-
 >cd docker
 >docker-compose up
 ```
-- When all components started you should setup Keycloak which is used as Identity and Access Management layer in the project. Add keycloak host to your local `hosts` file:
+### Keycloak setup
+
+When all components started you should setup Keycloak which is used as Identity and Access Management layer in the project. Add keycloak host to your local `hosts` file:
 
 ```
 127.0.0.1	key-server
@@ -30,6 +32,19 @@ To see how the FC Service works go to `/docker` folder and start it with docker-
 - Open keycloak admin console at `http://key-server:8080/admin`, with `admin/admin` credentials, select `gaia-x` realm. 
 - Go to `Clients` section, select `federated-catalogue` client, go to Credentials tab, Regenerate client Secret, copy it and set to `/docker/.env` file in `FC_CLIENT_SECRET` variable
 - Go to users and create one to work with. Set its username and other attributes, save. Then go to Credentials tab, set its password twice, disable Temporary switch, save. Go to Role Mappings tab, select Ro-MU-CA role and add it to Assigned Roles.
+- Restart federated-catalogue-server container to pick up changes applied at the second step above.
 
-Now you can test FC Service with Demo Portal web app. Go to `http://localhost:8088/parts` in your browser, you should be redirected to Keycloak Login page. Login with user credentials you created above..
+### Neo4j setup
 
+When all components are running you should configure Neo4j.
+
+You should open _http://localhost:7474_ to see the Neo4j connection page. Enter the default credentials:
+
+```
+login       neo4j
+password    neo4j
+```
+
+Then, after the connection, a page with a password change should appear. Set new password as **_12345_** (local configs).
+
+Now you can test FC Service with Demo Portal web app. Go to `http://localhost:8088` in your browser and press Login button. You should be redirected to Keycloak Login page. Use  user credentials you created above..
