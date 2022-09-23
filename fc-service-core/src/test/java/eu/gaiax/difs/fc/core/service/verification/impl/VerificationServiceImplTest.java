@@ -48,6 +48,7 @@ public class VerificationServiceImplTest {
     }
 
     @Test
+    @Disabled("The test is disabled because composite Schema composite is still in progress")
     void verifyJSONLDSyntax_MissingQuote() throws IOException {
         String path = "JSON-LD-Tests/missingQuote.jsonld";
 
