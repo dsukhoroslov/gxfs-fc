@@ -60,7 +60,7 @@
         <!-- repoositiry path -->
         <repository.path>gaia-x/data-infrastructure-federation-services/cat/fc-service</repository.path>
         <!--jib-->
-        <!--ci-registry>${env.CI_REGISTRY}/${repository.path}</ci-registry-->
+        <ci-registry>${env.CI_REGISTRY}/${repository.path}</ci-registry>
     </properties>
 
     <url>https://gitlab.com/${repository.path}</url>

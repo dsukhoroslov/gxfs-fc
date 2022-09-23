@@ -36,7 +36,6 @@ public class VerificationServiceImpl implements VerificationService {
   private static final String sd_format = "JSONLD";
   private static final String shapes_format = "TURTLE";
   private static final Logger logger = LoggerFactory.getLogger(VerificationServiceImpl.class);
-  private static final Marker MARKER = MarkerFactory.getMarker("MARKER");
 
 
   /**
@@ -256,14 +255,14 @@ public class VerificationServiceImpl implements VerificationService {
       shape.read(shaclShapeReader, null, shapes_format);
       Resource reportResource = ValidationUtil.validateModel(data, shape, true);
       conforms = reportResource.getProperty(SH.conforms).getBoolean();
-      logger.trace("Conforms = " + conforms);
+      logger.debug("Conforms = " + conforms);
 
       if (!conforms) {
         validationReport = reportResource.getModel().toString();
       }
 
     } catch (Throwable t) {
-      logger.error(MARKER, t.getMessage(), t);
+      logger.error(t.getMessage(), t);
     }
      return new SemanticValidationResult(
              conforms,

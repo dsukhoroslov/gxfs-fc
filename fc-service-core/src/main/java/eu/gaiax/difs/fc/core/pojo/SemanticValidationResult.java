@@ -6,13 +6,9 @@ package eu.gaiax.difs.fc.core.pojo;
 @lombok.EqualsAndHashCode
 @lombok.Getter
 @lombok.Setter
+@lombok.AllArgsConstructor
 public class SemanticValidationResult {
     private final boolean conforming;
     private final String validationReport;
-
-    public SemanticValidationResult(boolean conforming,String validationReport) {
-        this.conforming = conforming;
-        this.validationReport = validationReport;
-    }
 }
 
