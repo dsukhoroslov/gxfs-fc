@@ -10,30 +10,13 @@ import java.util.Objects;
 @lombok.Getter
 @lombok.ToString
 public class SdClaim {
-
   private final String subject;
   private final String predicate;
   private final String object;
-  @Override
-  public boolean equals(Object o){
-    if (this == o)
-      return true;
-    // null check
-    if (o == null)
-      return false;
-    // type check and cast
-    if (getClass() != o.getClass())
-      return false;
-    SdClaim person = (SdClaim) o;
-    // field comparison
-    return Objects.equals(subject, person.subject)
-            && Objects.equals(predicate, person.predicate)
-            && Objects.equals(object, person.object);
-  }
+
   public String stripSubject() {
     return subject.substring(1, subject.length() - 1);
   }
-  
   public String asTriple() {
     return String.format("%s %s %s . \n", subject, predicate, object );
   }

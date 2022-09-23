@@ -248,7 +248,6 @@ public class VerificationServiceImpl implements VerificationService {
    * @return a list of claims.
    */
    List<SdClaim> extractClaims(Map<String, Object> sd) {
-
     List<SdClaim> sdClaims = new ArrayList<>();
     Map<String, Object> subjects = (Map<String, Object>) sd.get(credential_subject);
     if(subjects == null ){
@@ -258,7 +257,7 @@ public class VerificationServiceImpl implements VerificationService {
      if(subject == null ){
        throw new VerificationException("id is not found");
      }
-    Map<String, Map<String, Object>> credentialSubject = (Map<String, Map<String, Object>>) sd.get("credentialSubject");
+    Map<String, Map<String, Object>> credentialSubject = (Map<String, Map<String, Object>>) sd.get(credential_subject);
     Set<String> credentialSubjectKeySets = credentialSubject.keySet();
     credentialSubjectKeySets.remove("@context");
     credentialSubjectKeySets.remove("id");
