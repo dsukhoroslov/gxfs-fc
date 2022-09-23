@@ -1,7 +1,6 @@
 package eu.gaiax.difs.fc.core.service.verification.impl;
 
 import com.github.jsonldjava.utils.JsonUtils;
-import eu.gaiax.difs.fc.api.generated.model.VerificationResult;
 import eu.gaiax.difs.fc.core.exception.ParserException;
 import eu.gaiax.difs.fc.core.exception.VerificationException;
 import eu.gaiax.difs.fc.core.pojo.*;
@@ -268,7 +267,7 @@ public class VerificationServiceImpl implements VerificationService {
         if (!k1.contains("@type")) {
           object = m1.get(k1).toString();
           if(object.contains("{")) {
-            LinkedHashMap<String, Object> map = (LinkedHashMap<String, Object>)m1.get(k1);
+            Map<String, Object> map = (Map<String, Object>)m1.get(k1);
             object = map.get("@value").toString();
             sdClaims.add(new SdClaim(subject,predicate,object));
 
