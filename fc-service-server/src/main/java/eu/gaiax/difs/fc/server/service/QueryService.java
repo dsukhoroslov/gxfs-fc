@@ -1,14 +1,19 @@
 package eu.gaiax.difs.fc.server.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import eu.gaiax.difs.fc.api.generated.model.Result;
+import eu.gaiax.difs.fc.api.generated.model.Results;
 import eu.gaiax.difs.fc.api.generated.model.Statement;
 import eu.gaiax.difs.fc.core.exception.ServerException;
+import eu.gaiax.difs.fc.core.pojo.OpenCypherQuery;
+import eu.gaiax.difs.fc.core.service.graphdb.GraphStore;
 import eu.gaiax.difs.fc.server.generated.controller.QueryApiDelegate;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
-import java.util.Optional;
+import java.util.List;
+import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
@@ -25,13 +30,16 @@ import org.springframework.util.FileCopyUtils;
 @Slf4j
 @Service
 public class QueryService implements QueryApiDelegate {
-  // TODO : We will add actual service implemented by Fraunhofer for getting result back.
-
   @Autowired
   private ResourceLoader resourceLoader;
 
   @Autowired
   private ObjectMapper jsonMapper;
+
+  @Autowired
+  private GraphStore graphStore;
+
+
 
   /**
    * Get List of results from catalogue for provided {@link Statement}.
@@ -40,16 +48,25 @@ public class QueryService implements QueryApiDelegate {
    * @param statement JSON object to send queries. Use \&quot;application/json\&quot; for openCypher queries.
    *                   A Catalogue may also support the other content types depending on its supported query languages
    *                   but only \&quot;application/json\&quot; is mandatory. (optional)
-   * @return List of {@link Result}
+   * @return List of {@link Results}
    */
   @Override
-  public ResponseEntity<Result> query(String queryLanguage, Statement statement) {
-    log.debug("query.enter; got queryLanguage:{}, got statement:{}", queryLanguage, statement);
-    Optional<Result> result = Optional.of(new Result());
-    log.debug("query.exit; got results:{}", result);
-    return new ResponseEntity<>(result.get(), HttpStatus.OK);
+  public ResponseEntity<Results> query(String queryLanguage, Statement statement) {
+    log.debug("query.enter; got queryLanguage: {}, statement: {}", queryLanguage, statement);
+    if ( !checkIfLimitPresent(statement) ) {
+      addDefaultLimit(statement);
+    }
+    List<Map<String, Object>> queryResultList = graphStore.queryData(new OpenCypherQuery(statement.getStatement(), statement.getParameters()));
+    // TODO: fix totalCount!
+    Results result = new Results(0, queryResultList);
+    log.debug("query.exit; returning results: {}", result);
+    return ResponseEntity.ok(result);
   }
 
+
+  /**
+   * {@inheritDoc}
+   */
   @Override
   public ResponseEntity<String> querywebsite() {
     log.debug("queryPage.enter");
@@ -60,7 +77,7 @@ public class QueryService implements QueryApiDelegate {
       Reader reader = new InputStreamReader(resource.getInputStream());
       page = FileCopyUtils.copyToString(reader);
     } catch (IOException e) {
-      log.error("error in getting file: {}", e);
+      log.error("queryPage; error in getting file: {}", e);
       throw new ServerException(HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase());
     }
     HttpHeaders responseHeaders = new HttpHeaders();
@@ -69,5 +86,32 @@ public class QueryService implements QueryApiDelegate {
     return ResponseEntity.ok()
         .headers(responseHeaders)
         .body(page);
+  }
+
+  /**
+   * Adding default limit for the query if not present
+   * @param statement
+   */
+  private void addDefaultLimit(Statement statement) {
+    String appendLimit = " limit $limit";
+    statement.setStatement(statement.getStatement().concat(appendLimit));
+    if (null == statement.getParameters()) {
+      statement.setParameters(Map.of("limit", 100));
+    } else {
+      statement.getParameters().putIfAbsent("limit", 100);
+    }
+  }
+
+  /**
+   * Check if limit is present or not in query
+   * @param statement
+   * @return boolean match status
+   */
+  private boolean checkIfLimitPresent(Statement statement){
+    String subItem = "limit";
+    String pattern = "(?m)(^|\\s)" + subItem + "(\\s|$)";
+    Pattern p = Pattern.compile(pattern);
+    Matcher m = p.matcher(statement.getStatement().toLowerCase());
+    return m.find();
   }
 }

@@ -14,6 +14,7 @@ import eu.gaiax.difs.fc.core.pojo.VerificationResultOffering;
 import eu.gaiax.difs.fc.core.service.sdstore.SelfDescriptionStore;
 import eu.gaiax.difs.fc.core.service.verification.VerificationService;
 import eu.gaiax.difs.fc.server.generated.controller.SelfDescriptionsApiDelegate;
+import java.net.URI;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -27,6 +28,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Implementation of the {@link eu.gaiax.difs.fc.server.generated.controller.SelfDescriptionsApiDelegate} interface.
@@ -64,6 +67,7 @@ public class SelfDescriptionService implements SelfDescriptionsApiDelegate {
    *        or May contain hints how to solve the error or indicate what went wrong at the server.
    *        Must not outline any information about the internal structure of the server. (status code 500)
    */
+  @Override
   public ResponseEntity<SelfDescriptions> readSelfDescriptions(String uploadTr, String statusTr, String issuer,
                                                                     String validator, SelfDescriptionStatus status, String id,
                                                                     String hash, Integer offset, Integer limit) {
@@ -71,13 +75,15 @@ public class SelfDescriptionService implements SelfDescriptionsApiDelegate {
             + "issuer: {}, validator: {}, status: {}, id: {}, hash: {}, offset: {}, limit: {}",
         uploadTr, statusTr, issuer, validator, status, id, hash, offset, limit);
 
-    List<SelfDescriptionMetadata> selfDescriptions;
+    final SdFilter filter;
     if (isNotNullObjects(id, hash, issuer, validator, uploadTr, statusTr)) {
-      SdFilter filter = setupSdFilter(id, hash, limit, offset, status, issuer, validator, uploadTr, statusTr);
-      selfDescriptions = sdStore.getByFilter(filter);
+      filter = setupSdFilter(id, hash, limit, offset, status, issuer, validator, uploadTr, statusTr);
     } else {
-      selfDescriptions = sdStore.getAllSelfDescriptions(offset, limit);
+      filter = new SdFilter();
+      filter.setLimit(limit);
+      filter.setOffset(offset);
     }
+    final List<SelfDescriptionMetadata> selfDescriptions = sdStore.getByFilter(filter);
     log.debug("readSelfDescriptions.exit; returning: {}", selfDescriptions.size());
     // TODO: set total count
     return ResponseEntity.ok(new SelfDescriptions(0, (List) selfDescriptions));
@@ -119,6 +125,7 @@ public class SelfDescriptionService implements SelfDescriptionsApiDelegate {
    *         Must not outline any information about the internal structure of the server. (status code 500)
    */
   @Override
+  @Transactional
   public ResponseEntity<Void> deleteSelfDescription(String selfDescriptionHash) {
     log.debug("deleteSelfDescription.enter; got hash: {}", selfDescriptionHash);
     // TODO: 27.07.2022 The method is not described in the documentation.
@@ -144,8 +151,9 @@ public class SelfDescriptionService implements SelfDescriptionsApiDelegate {
    *         Must not outline any information about the internal structure of the server. (status code 500)
    */
   @Override
+  @Transactional(propagation = Propagation.REQUIRES_NEW)
   public ResponseEntity<SelfDescription> addSelfDescription(String selfDescription) {
-    log.debug("addSelfDescription.enter; got selfDescription: {}", selfDescription);
+    log.debug("addSelfDescription.enter; got selfDescription: {}", selfDescription.length());
 
     try {
      // TODO: 27.07.2022 Need to change the description and the order of actions in the documentation.
@@ -159,13 +167,10 @@ public class SelfDescriptionService implements SelfDescriptionsApiDelegate {
           verificationResult.getId(), verificationResult.getIssuer(), new ArrayList<>());
 
       checkParticipantAccess(sdMetadata.getIssuer());
-
-      // TODO: 23.08.2022 The docs states that metadata is returned from this method when SD added.
       sdStore.storeSelfDescription(sdMetadata, verificationResult);
 
       log.debug("addSelfDescription.exit; returning self-description by hash: {}", sdMetadata.getSdHash());
-      // TODO: with CREATED we must properly set Location header
-      return new ResponseEntity<>(sdMetadata, HttpStatus.CREATED);
+      return ResponseEntity.created(URI.create("/self-descriptions/" + sdMetadata.getId())).body(sdMetadata);
     } catch (ValidationException exception) {
       log.debug("Self-description isn't parsed due to: " + exception.getMessage(), exception);
       throw new ClientException("Self-description isn't parsed due to: " + exception.getMessage());
@@ -184,6 +189,7 @@ public class SelfDescriptionService implements SelfDescriptionsApiDelegate {
    *         Must not outline any information about the internal structure of the server. (status code 500)
    */
   @Override
+  @Transactional
   public ResponseEntity<SelfDescription> updateSelfDescription(String selfDescriptionHash) {
     log.debug("updateSelfDescription.enter; got hash: {}", selfDescriptionHash);
     // TODO: 27.07.2022 Need to change the description and the order of actions in the documentation
@@ -194,11 +200,8 @@ public class SelfDescriptionService implements SelfDescriptionsApiDelegate {
     checkParticipantAccess(sdMetadata.getIssuer());
 
     if (sdMetadata.getStatus().equals(SelfDescriptionStatus.ACTIVE)) {
-      sdStore.changeLifeCycleStatus(sdMetadata.getSdHash(), SelfDescriptionStatus.DEPRECATED);
+      sdStore.changeLifeCycleStatus(sdMetadata.getSdHash(), SelfDescriptionStatus.REVOKED);
     }
-
-    // TODO: 23.07.2022 Add to the interface / a new interface for working with files
-    //  and include a method for adding a self-description file there + Awaiting GraphDd repository interface.
 
     log.debug("updateSelfDescription.exit; update self-description by hash: {}", selfDescriptionHash);
     return new ResponseEntity<>(sdMetadata, HttpStatus.OK);

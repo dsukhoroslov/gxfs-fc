@@ -1,6 +1,7 @@
 package eu.gaiax.difs.fc.core.service.verification.impl;
 
 import com.github.jsonldjava.utils.JsonUtils;
+import eu.gaiax.difs.fc.core.exception.ParserException;
 import eu.gaiax.difs.fc.core.exception.VerificationException;
 import eu.gaiax.difs.fc.core.pojo.*;
 import eu.gaiax.difs.fc.core.service.schemastore.SchemaStore;
@@ -14,6 +15,7 @@ import java.time.OffsetDateTime;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import org.apache.jena.rdf.model.Model;
@@ -23,6 +25,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.Marker;
 import org.slf4j.MarkerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.topbraid.shacl.validation.ValidationUtil;
 import org.topbraid.shacl.vocabulary.SH;
@@ -30,6 +33,7 @@ import org.topbraid.shacl.vocabulary.SH;
 /**
  * Implementation of the {@link VerificationService} interface.
  */
+@Slf4j
 @Service
 public class VerificationServiceImpl implements VerificationService {
   private static final String credentials_key = "verifiableCredential";
@@ -173,6 +177,28 @@ public class VerificationServiceImpl implements VerificationService {
 
   String getParticipantIDFromSD (Map<String, Object> sd)  {
     //TODO: check if participant ID is matching and extract it from SD
+
+    // TODO: 05.09.2022 Test implementation for passing tests.
+    //  It is required to replace the method when the logic from FH is ready
+    try {
+      if (!sd.isEmpty() && sd.containsKey("verifiableCredential")) {
+        for (Map<String, Object> v : (ArrayList<Map<String, Object>>) sd.get("verifiableCredential")) {
+          if (v.containsKey("credentialSubject")) {
+            Map<String, Object> credentialSubjectNode = (Map<String, Object>) v.get("credentialSubject");
+            if (credentialSubjectNode.containsKey("@type")
+                && Arrays.asList("gax:Provider", "gax:Consumer", "gax:FederationService", "gax:ServiceOffering")
+                .contains(credentialSubjectNode.get("@type").toString())) {
+              String participantId = credentialSubjectNode.get("@id").toString();
+              log.debug("getParticipantIDFromSD.exit; returning participantId {}.", participantId);
+              return participantId;
+            }
+          }
+        }
+      }
+    } catch (Exception exception) {
+      log.error("Self-description doesn't contain information about participant.", exception);
+      throw new ParserException("Self-description doesn't contain information about participant.", exception);
+    }
     return null;
   }
 

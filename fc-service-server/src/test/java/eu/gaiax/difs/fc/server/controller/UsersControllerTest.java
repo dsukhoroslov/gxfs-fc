@@ -1,5 +1,9 @@
 package eu.gaiax.difs.fc.server.controller;
 
+import static eu.gaiax.difs.fc.core.dao.impl.UserDaoImpl.getUsername;
+import static eu.gaiax.difs.fc.core.dao.impl.UserDaoImpl.toUserRepo;
+import static eu.gaiax.difs.fc.server.util.CommonConstants.PARTICIPANT_ADMIN_ROLE;
+import static org.apache.http.HttpStatus.SC_CREATED;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
@@ -7,6 +11,10 @@ import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import eu.gaiax.difs.fc.api.generated.model.Error;
+import eu.gaiax.difs.fc.core.dao.UserDao;
+
+import java.io.ByteArrayInputStream;
 import java.util.List;
 import java.util.UUID;
 
@@ -28,6 +36,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.event.annotation.BeforeTestClass;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
@@ -36,25 +45,22 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import eu.gaiax.difs.fc.api.generated.model.User;
 import eu.gaiax.difs.fc.api.generated.model.UserProfile;
 import eu.gaiax.difs.fc.api.generated.model.UserProfiles;
-import eu.gaiax.difs.fc.core.dao.impl.UserDaoImpl;
 import io.zonky.test.db.AutoConfigureEmbeddedDatabase;
 import io.zonky.test.db.AutoConfigureEmbeddedDatabase.DatabaseProvider;
 
 @SpringBootTest
 @AutoConfigureMockMvc
+@ActiveProfiles("test")
 @ExtendWith(SpringExtension.class)
 @AutoConfigureEmbeddedDatabase(provider = DatabaseProvider.ZONKY)
 public class UsersControllerTest {
+    private final String CATALOGUE_ADMIN_ROLE_WITH_PREFIX = "ROLE_" + PARTICIPANT_ADMIN_ROLE;
 
-    private static final TypeReference<List<?>> LIST_TYPE_REF = new TypeReference<List<?>>() {
-    };
-    
     @Autowired
     private WebApplicationContext context;
     @Autowired
@@ -70,8 +76,10 @@ public class UsersControllerTest {
     private UsersResource usersResource;
     @MockBean
     private UserResource userResource;
-    
-    private final ObjectMapper objectMapper = new ObjectMapper();
+    @Autowired
+    private UserDao userDao;
+    @Autowired
+    private  ObjectMapper objectMapper;
 
     @BeforeTestClass
     public void setup() {
@@ -90,11 +98,11 @@ public class UsersControllerTest {
     }
     
     @Test
-    @WithMockUser(authorities = {"ROLE_Ro-MU-CA"})
+    @WithMockUser(authorities = {CATALOGUE_ADMIN_ROLE_WITH_PREFIX})
     public void addUserShouldReturnCreatedResponse() throws Exception {
         
         User user = getTestUser("unit-test", "user224", "did:example:holder");
-        setupKeycloak(HttpStatus.SC_CREATED, user, UUID.randomUUID().toString());
+        setupKeycloak(SC_CREATED, user, UUID.randomUUID().toString());
 
         String response = mockMvc
             .perform(MockMvcRequestBuilders.post("/users")
@@ -115,7 +123,31 @@ public class UsersControllerTest {
     }
 
     @Test
-    @WithMockUser(authorities = {"ROLE_Ro-MU-CA"})
+    @WithMockUser(authorities = {CATALOGUE_ADMIN_ROLE_WITH_PREFIX})
+    public void addDuplicateSDReturnConflictWithKeycloak() throws Exception {
+        User user = getTestUser("user", "test224", "groupId224");
+        setupKeycloak(HttpStatus.SC_CREATED, user, UUID.randomUUID().toString());
+        when(usersResource.search(getUsername(user))).thenReturn(List.of(toUserRepo(user)));
+        when(usersResource.create(any()))
+            .thenReturn(Response.status(HttpStatus.SC_CONFLICT, "Conflict")
+                    .entity(new ByteArrayInputStream("{ \"errorMessage\" : \"User exists with same username\"}".getBytes()))
+                .build());
+
+        String response = mockMvc.perform(MockMvcRequestBuilders.post("/users")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(user)))
+            .andExpect(status().isConflict())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+
+        Error error = objectMapper.readValue(response, Error.class);
+        assertNotNull(error);
+        assertEquals("User exists with same username", error.getMessage());
+    }
+
+    @Test
+    @WithMockUser(authorities = {CATALOGUE_ADMIN_ROLE_WITH_PREFIX})
     public void getUserShouldReturnSuccessResponse() throws Exception {
         
         User user = getTestUser("unit-test", "user22", "participant one");
@@ -129,7 +161,7 @@ public class UsersControllerTest {
     }
 
     @Test
-    @WithMockUser(authorities = {"ROLE_Ro-MU-CA"})
+    @WithMockUser(authorities = {CATALOGUE_ADMIN_ROLE_WITH_PREFIX})
     public void wrongUserShouldReturnNotFoundResponse() throws Exception {
         
         String userId = "unknown";
@@ -142,7 +174,7 @@ public class UsersControllerTest {
     }
     
     @Test
-    @WithMockUser(authorities = {"ROLE_Ro-MU-CA"})
+    @WithMockUser(authorities = {CATALOGUE_ADMIN_ROLE_WITH_PREFIX})
     public void getUsersShouldReturnCorrectNumber() throws Exception {
         
         User user = getTestUser("unit-test", "user33", "participant one");
@@ -159,7 +191,7 @@ public class UsersControllerTest {
     }
     
     @Test
-    @WithMockUser(authorities = {"ROLE_Ro-MU-CA"})
+    @WithMockUser(authorities = {CATALOGUE_ADMIN_ROLE_WITH_PREFIX})
     public void deleteUserShouldReturnSuccessResponse() throws Exception {
         
         User user = getTestUser("unit-test", "user11", "ebc6f1c2");
@@ -183,7 +215,7 @@ public class UsersControllerTest {
     }
     
     @Test
-    @WithMockUser(authorities = {"ROLE_Ro-MU-CA"})
+    @WithMockUser(authorities = {CATALOGUE_ADMIN_ROLE_WITH_PREFIX})
     public void updateUserShouldReturnSuccessResponse() throws Exception {
         
         User user = getTestUser("unit-test", "user", "participant one");
@@ -199,7 +231,7 @@ public class UsersControllerTest {
     }
     
     @Test
-    @WithMockUser(authorities = {"ROLE_Ro-MU-CA"})
+    @WithMockUser(authorities = {CATALOGUE_ADMIN_ROLE_WITH_PREFIX})
     public void updateUserRolesShouldReturnSuccessResponse() throws Exception {
         
         User user = getTestUser("unit-test", "user", "ebc6f1c2");
@@ -213,19 +245,43 @@ public class UsersControllerTest {
             .andExpect(status().isOk());
     }
 
+    @Test
+    @WithMockUser(authorities = {CATALOGUE_ADMIN_ROLE_WITH_PREFIX})
+    public void updateDuplicatedUserRoleShouldReturnConflictError() throws Exception {
+        User user = getTestUser("unit-test", "user", "ebc6f1c2");
+        String id = "ae366624-8371-401d-b2c4-518d2f308a15";
+        setupKeycloak(HttpStatus.SC_OK, user, id);
+
+        userDao.create(user);
+
+        mockMvc.perform(MockMvcRequestBuilders.put("/users/{userId}/roles", id)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(List.of("ROLE_test"))))
+            .andExpect(status().isOk())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+
+        UserProfile userProfile = userDao.select(id);
+        assertNotNull(userProfile);
+        assertEquals(1, userProfile.getRoleIds().size());
+        assertEquals(List.of("ROLE_test"), userProfile.getRoleIds());
+    }
+
     private void setupKeycloak(int status, User user, String id) {
         when(builder.build()).thenReturn(keycloak);
         when(keycloak.realm("gaia-x")).thenReturn(realmResource);
         when(realmResource.users()).thenReturn(usersResource);
-        when(usersResource.create(any())).thenReturn(Response.status(status).build());
         if (user == null) {
+            when(usersResource.create(any())).thenReturn(Response.status(status).build());
             when(usersResource.delete(any())).thenThrow(new NotFoundException("404 NOT FOUND"));
             when(usersResource.list(any(), any())).thenReturn(List.of());
             when(usersResource.search(any())).thenReturn(List.of());
             when(usersResource.get(any())).thenThrow(new NotFoundException("404 NOT FOUND"));
         } else {
+            when(usersResource.create(any())).thenReturn(Response.status(SC_CREATED).entity(user).build());
             when(usersResource.delete(any())).thenReturn(Response.status(status).build());
-            UserRepresentation userRepo = UserDaoImpl.toUserRepo(user);
+            UserRepresentation userRepo = toUserRepo(user);
             userRepo.setId(id);
             when(usersResource.list(any(), any())).thenReturn(List.of(userRepo));
             when(usersResource.search(userRepo.getUsername())).thenReturn(List.of(userRepo));

@@ -2,15 +2,22 @@ package eu.gaiax.difs.fc.server.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.gaiax.difs.fc.core.pojo.ContentAccessorDirect;
+import eu.gaiax.difs.fc.core.service.filestore.FileStore;
 import eu.gaiax.difs.fc.core.service.schemastore.SchemaStore;
+import java.io.IOException;
 import java.util.Objects;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.event.annotation.AfterTestClass;
 import org.springframework.test.context.event.annotation.BeforeTestClass;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
@@ -24,13 +31,17 @@ import io.zonky.test.db.AutoConfigureEmbeddedDatabase;
 import io.zonky.test.db.AutoConfigureEmbeddedDatabase.DatabaseProvider;
 
 import static eu.gaiax.difs.fc.server.helper.FileReaderHelper.getMockFileDataAsString;
+import static eu.gaiax.difs.fc.server.util.CommonConstants.CATALOGUE_ADMIN_ROLE;
+import static eu.gaiax.difs.fc.server.util.CommonConstants.PARTICIPANT_ADMIN_ROLE;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
 @AutoConfigureMockMvc
+@ActiveProfiles("test")
 @ExtendWith(SpringExtension.class)
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @AutoConfigureEmbeddedDatabase(provider = DatabaseProvider.ZONKY)
 public class SchemaControllerTest {
   @Autowired
@@ -43,7 +54,8 @@ public class SchemaControllerTest {
   private SchemaStore schemaStore;
 
   @Autowired
-  private ObjectMapper objectMapper;
+  @Qualifier("schemaFileStore")
+  private FileStore fileStore;
 
   String SCHEMA_REQUEST = "{\"ontologies\":null,\"shapes\":null,\"vocabularies\":null}";
 
@@ -52,9 +64,13 @@ public class SchemaControllerTest {
     mockMvc = MockMvcBuilders.webAppContextSetup(context).apply(springSecurity()).build();
   }
 
+  @AfterAll
+  public void storageSelfCleaning() throws IOException {
+    fileStore.clearStorage();
+  }
 
   @Test
-  @WithMockUser(roles = {"Ro-MU-CA", "Ro-MU-A"})
+  @WithMockUser(roles = {CATALOGUE_ADMIN_ROLE, PARTICIPANT_ADMIN_ROLE})
   public void getSchemaByIdShouldReturnSuccessResponse() throws Exception {
     String id = schemaStore.addSchema(new ContentAccessorDirect(getMockFileDataAsString("test-schema.ttl")));
     mockMvc.perform(MockMvcRequestBuilders.get("/schemas/" + id)
@@ -73,7 +89,7 @@ public class SchemaControllerTest {
   }
 
   @Test
-  @WithMockUser(roles = {"Ro-MU-CA", "Ro-MU-A"})
+  @WithMockUser(roles = {CATALOGUE_ADMIN_ROLE, PARTICIPANT_ADMIN_ROLE})
   public void getSchemasShouldReturnSuccessResponse() throws Exception {
     mockMvc.perform(MockMvcRequestBuilders.get("/schemas")
             .with(csrf())
@@ -94,7 +110,7 @@ public class SchemaControllerTest {
   }
 
   @Test
-  @WithMockUser(roles = {"Ro-MU-CA", "Ro-MU-A"})
+  @WithMockUser(roles = {CATALOGUE_ADMIN_ROLE, PARTICIPANT_ADMIN_ROLE})
   public void getLatestSchemaShouldReturnSuccessResponse() throws Exception {
     String id = schemaStore.addSchema(new ContentAccessorDirect(getMockFileDataAsString("test-schema.ttl")));
     mockMvc.perform(MockMvcRequestBuilders.get("/schemas/latest?type=SHAPE")
@@ -113,7 +129,7 @@ public class SchemaControllerTest {
   }
 
   @Test
-  @WithMockUser(roles = {"Ro-MU-CA", "Ro-MU-A"})
+  @WithMockUser(roles = {CATALOGUE_ADMIN_ROLE, PARTICIPANT_ADMIN_ROLE})
   public void getLatestSchemaWithoutTypeShouldReturnBadRequest() throws Exception {
     String id = schemaStore.addSchema(new ContentAccessorDirect(getMockFileDataAsString("test-schema.ttl")));
     mockMvc.perform(MockMvcRequestBuilders.get("/schemas/latest")
@@ -124,7 +140,7 @@ public class SchemaControllerTest {
   }
 
   @Test
-  @WithMockUser(roles = {"Ro-MU-CA", "Ro-MU-A"})
+  @WithMockUser(roles = {CATALOGUE_ADMIN_ROLE, PARTICIPANT_ADMIN_ROLE})
   public void getLatestSchemaWithUncorrectedTypeShouldReturnBadRequest() throws Exception {
     mockMvc.perform(MockMvcRequestBuilders.get("/schemas/latest?type=testType")
             .with(csrf())
@@ -153,7 +169,7 @@ public class SchemaControllerTest {
   }
 
   @Test
-  @WithMockUser(roles = {"Ro-MU-A"})
+  @WithMockUser(roles = {PARTICIPANT_ADMIN_ROLE})
   public void addSchemaWithoutRoleAccessShouldReturnForbiddenResponse() throws Exception {
     mockMvc.perform(MockMvcRequestBuilders.post("/schemas")
             .content(SCHEMA_REQUEST)
@@ -164,7 +180,7 @@ public class SchemaControllerTest {
   }
 
   @Test
-  @WithMockUser(roles = {"Ro-MU-CA"})
+  @WithMockUser(roles = {CATALOGUE_ADMIN_ROLE})
   public void addSchemaShouldReturnSuccessResponse() throws Exception {
     ResultActions resultActions = mockMvc.perform(MockMvcRequestBuilders.post("/schemas")
             .content(getMockFileDataAsString("test-schema.ttl"))
@@ -180,7 +196,7 @@ public class SchemaControllerTest {
 
 
   @Test
-  @WithMockUser(roles = {"Ro-MU-A"})
+  @WithMockUser(roles = {PARTICIPANT_ADMIN_ROLE})
   public void deleteSchemasWithDifferentRoleReturnForbiddenResponse() throws Exception {
     mockMvc.perform(MockMvcRequestBuilders.delete("/schemas/schemaID")
             .with(csrf())
@@ -189,7 +205,7 @@ public class SchemaControllerTest {
   }
 
   @Test
-  @WithMockUser(roles = {"Ro-MU-CA"})
+  @WithMockUser(roles = {CATALOGUE_ADMIN_ROLE})
   public void deleteSchemasReturnSuccessResponse() throws Exception {
     String id = schemaStore.addSchema(new ContentAccessorDirect(getMockFileDataAsString("test-schema.ttl")));
     mockMvc.perform(MockMvcRequestBuilders.delete("/schemas/{schemaId}", id)

@@ -9,7 +9,7 @@
         <artifactId>fc-service</artifactId>
         <version>0.0.1-SNAPSHOT</version>
     </parent>
-
+    
     <artifactId>fc-service-core</artifactId>
     <packaging>jar</packaging>
     <name>fc-service-core</name>
@@ -21,8 +21,7 @@
         <neo4j.neosemantics.version>4.4.0.1</neo4j.neosemantics.version>
         <neo4j.gds.version>2.0.5</neo4j.gds.version>
 	</properties>
-
-	<dependencies>
+    <dependencies>
         <dependency>
             <groupId>eu.gaiax.difs.fc</groupId>
             <artifactId>fc-service-api</artifactId>
@@ -127,6 +126,11 @@
 			<artifactId>junit-jupiter</artifactId>
 			<scope>test</scope>
 		</dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <build>

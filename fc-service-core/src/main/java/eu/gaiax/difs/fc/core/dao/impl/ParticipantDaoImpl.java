@@ -2,28 +2,29 @@ package eu.gaiax.difs.fc.core.dao.impl;
 
 import static eu.gaiax.difs.fc.core.util.KeycloakUtils.getErrorMessage;
 
-import eu.gaiax.difs.fc.core.pojo.ParticipantMetaData;
-
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.stream.Collectors;
-
-import javax.ws.rs.core.Response;
-
-import org.apache.http.HttpStatus;
-import org.keycloak.admin.client.Keycloak;
-import org.keycloak.admin.client.resource.GroupsResource;
-import org.keycloak.representations.idm.GroupRepresentation;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
-
 import eu.gaiax.difs.fc.api.generated.model.Participant;
 import eu.gaiax.difs.fc.api.generated.model.UserProfile;
 import eu.gaiax.difs.fc.core.dao.ParticipantDao;
 import eu.gaiax.difs.fc.core.exception.ConflictException;
+import eu.gaiax.difs.fc.core.pojo.PaginatedResults;
+import eu.gaiax.difs.fc.core.pojo.ParticipantMetaData;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
+import javax.ws.rs.core.Response;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.http.HttpStatus;
+import org.keycloak.admin.client.Keycloak;
+import org.keycloak.admin.client.resource.GroupResource;
+import org.keycloak.admin.client.resource.GroupsResource;
+import org.keycloak.admin.client.resource.UsersResource;
+import org.keycloak.representations.idm.GroupRepresentation;
+import org.keycloak.representations.idm.UserRepresentation;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 
 /**
  * Implementation of the {@link ParticipantDao} interface.
@@ -84,7 +85,7 @@ public class ParticipantDaoImpl implements ParticipantDao {
    * @return Optional list of users.
    */
   @Override
-  public Optional<List<UserProfile>> selectUsers(String participantId) {
+  public Optional<PaginatedResults<UserProfile>> selectUsers(String participantId) {
 
     GroupsResource instance = keycloak.realm(realm).groups();
     List<GroupRepresentation> groups = instance.groups(participantId, 0, 1, false);
@@ -92,8 +93,18 @@ public class ParticipantDaoImpl implements ParticipantDao {
       return Optional.empty();
     }
     GroupRepresentation groupRepo = groups.get(0);
-    return Optional.of(instance.group(groupRepo.getId())
-        .members().stream().map(UserDaoImpl::toUserProfile).collect(Collectors.toList()));
+
+    List<UserRepresentation> users;
+    List<UserProfile> profiles = new ArrayList<>();
+    int offset = 0, limit = 100;
+    GroupResource group = instance.group(groupRepo.getId());
+    do {
+      users = group.members(offset, limit, false);
+      users.stream().map(UserDaoImpl::toUserProfile).forEach(ur -> profiles.add(ur));
+      offset += limit;
+    } while (users.size() > 0);
+
+    return Optional.of(new PaginatedResults<>(profiles));
   }
 
   /**
@@ -104,12 +115,21 @@ public class ParticipantDaoImpl implements ParticipantDao {
    */
   @Override
   public Optional<ParticipantMetaData> delete(String participantId) {
+
     GroupsResource instance = keycloak.realm(realm).groups();
     List<GroupRepresentation> groups = instance.groups(participantId, 0, 1, false);
     if (groups.size() == 0) {
       return Optional.empty();
     }
     GroupRepresentation groupRepo = groups.get(0);
+
+    UsersResource resource = keycloak.realm(realm).users();
+    List<UserRepresentation> users;
+    do {
+      users = instance.group(groupRepo.getId()).members();
+      users.stream().forEach(ur -> resource.delete(ur.getId()));
+    } while (users.size() > 0);
+
     instance.group(groupRepo.getId()).remove();
     return Optional.of(toParticipantExt(groupRepo));
   }
@@ -142,10 +162,12 @@ public class ParticipantDaoImpl implements ParticipantDao {
    * @return List of filtered participants.
    */
   @Override
-  public List<ParticipantMetaData> search(Integer offset, Integer limit) {
+  public PaginatedResults<ParticipantMetaData> search(Integer offset, Integer limit) {
     GroupsResource instance = keycloak.realm(realm).groups();
     List<GroupRepresentation> groups = instance.groups(null, offset, limit, false);
-    return groups.stream().map(this::toParticipantExt).collect(Collectors.toList());
+    Map<String, Long> counts = instance.count();
+    long total = counts.get("count");
+    return new PaginatedResults<>(total, groups.stream().map(this::toParticipantExt).collect(Collectors.toList()));
   }
 
   /**
