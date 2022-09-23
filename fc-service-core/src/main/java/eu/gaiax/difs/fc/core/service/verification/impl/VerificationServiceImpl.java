@@ -269,7 +269,7 @@ public class VerificationServiceImpl implements VerificationService {
    * @param shaclShape ContentAccessor of a union schemas of type SHACL
    * @return                SemanticValidationResult object
    */
-   SemanticValidationResult validationAgainstShacl(ContentAccessor sd, ContentAccessor shaclShape) {
+  SemanticValidationResult validationAgainstShacl(ContentAccessor sd, ContentAccessor shaclShape) {
     String validationReport = "";
     boolean conforms = false;
     try {
