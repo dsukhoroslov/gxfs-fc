@@ -52,7 +52,7 @@
         <dependency>
             <groupId>com.vladmihalcea</groupId>
             <artifactId>hibernate-types-55</artifactId>
-        </dependency>        
+        </dependency>
         <dependency>
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
@@ -75,6 +75,18 @@
         <dependency>
             <groupId>com.github.jsonld-java</groupId>
             <artifactId>jsonld-java</artifactId>
+            <version>${jsonld.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.neo4j.test</groupId>
+            <artifactId>neo4j-harness</artifactId>
+            <exclusions>
+                <exclusion>
+                    <artifactId>slf4j-nop</artifactId>
+                    <!-- Since 4.0.1 -->
+                    <groupId>org.slf4j</groupId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.neo4j.driver</groupId>
@@ -83,6 +95,11 @@
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.neo4j.driver</groupId>
+            <artifactId>neo4j-java-driver-test-harness-spring-boot-autoconfigure</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -148,3 +165,5 @@
         </plugins>
     </build>
 </project>
+
+
