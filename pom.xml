@@ -208,6 +208,17 @@
                 <artifactId>proc</artifactId>
                 <version>${neo4j.gds.version}</version>
             </dependency>
+            <dependency>
+                <groupId>org.apache.jena</groupId>
+                <artifactId>apache-jena-libs</artifactId>
+                <version>${jena.version}</version>
+                <type>pom</type>
+            </dependency>
+            <dependency>
+                <groupId>org.topbraid</groupId>
+                <artifactId>shacl</artifactId>
+                <version>${topbraid.version}</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
