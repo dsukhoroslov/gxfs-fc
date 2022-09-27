@@ -11,16 +11,17 @@ import eu.gaiax.difs.fc.core.service.filestore.FileStore;
 import eu.gaiax.difs.fc.core.service.schemastore.SchemaStore;
 import eu.gaiax.difs.fc.core.util.HashUtils;
 import java.io.IOException;
+import java.io.Reader;
+import java.io.StringReader;
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import javax.persistence.EntityExistsException;
 import javax.persistence.LockModeType;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaDelete;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.jena.rdf.model.*;
+import org.apache.jena.shacl.Shapes;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
@@ -51,64 +52,105 @@ public class SchemaStoreImpl implements SchemaStore {
    */
   private SchemaAnalysisResult analyseSchema(ContentAccessor schema) {
     SchemaAnalysisResult result = new SchemaAnalysisResult();
-    List<String> extractedUrls = new ArrayList<>();
-    /**
-     * TODO FIT: add code that
-     *
-     * - Analyses the type of the schema
-     *
-     * - Checks if the schema is valid
-     *
-     * - Extracts the Identifier from the schema if possible
-     *
-     * - Extracts the URLs of all entities defined in the schema.
-     */
-    result.setSchemaType(SchemaType.SHAPE);
-    result.setValid(true);
+    List<String> extractedUrlsDupliacte = new ArrayList<>();
+    Model model = ModelFactory.createDefaultModel();
+    StringReader schemaReader = new StringReader(schema.getContentAsString());
+    model.read(schemaReader, null,"TTL");
+    StmtIterator iter = model.listStatements();
+    while (iter.hasNext()) {
+      Statement stmt = iter.nextStatement();
+      String predicate = stmt.getPredicate().getURI();
+      String subject = stmt.getSubject().getURI();
+      Object object = stmt.getObject();
+      if (predicate != null){
+        if(predicate.toLowerCase().indexOf("/skos") > 0){
+          result.setSchemaType(SchemaType.VOCABULARY);
+          if(stmt.getObject().isURIResource()) {
+            extractedUrlsDupliacte.add(object.toString());
+          }
+          if(subject!=null && predicate!=null ) {
+            extractedUrlsDupliacte.add(predicate);
+            extractedUrlsDupliacte.add(subject);
+          }
+          break;
+        }
+        else if(predicate.toLowerCase().indexOf("/shacl") > 0){
+          try {
+            Shapes schemaShape = Shapes.parse(schema.toString());
+            result.setValid(true);
+          }  catch (Throwable t){
+            result.setValid(false);
+            throw new VerificationException(t.getMessage());
+          }
+          result.setSchemaType(SchemaType.SHAPE);
+          if(stmt.getObject().isURIResource()) {
+            extractedUrlsDupliacte.add(object.toString());
+          }
+          if(subject!=null && predicate!=null ) {
+            extractedUrlsDupliacte.add(predicate);
+            extractedUrlsDupliacte.add(subject);
+          }
+          ResIterator res = model.listSubjects();
+          while (res.hasNext()) {
+            String extractedID= res.nextResource().getURI();
+            if(extractedID!=null){
+              result.setExtractedId(extractedID);
+            }
+          }
+          break;
+        }else{
+          result.setSchemaType(SchemaType.ONTOLOGY);
+          if(stmt.getObject().isURIResource()) {
+            extractedUrlsDupliacte.add(object.toString());
+          }
+          if(subject!=null && predicate!=null ) {
+            extractedUrlsDupliacte.add(predicate);
+            extractedUrlsDupliacte.add(subject);
+          }
+        }
+      }
+    }
+    Set<String> extractedUrlsSet = new LinkedHashSet<>(extractedUrlsDupliacte);
+    List<String> extractedUrls = new ArrayList<>(extractedUrlsSet);
     result.setExtractedUrls(extractedUrls);
-    result.setExtractedId(null);
     return result;
   }
 
   private ContentAccessor createCompositeSchema(SchemaType type) {
     StringBuilder contentBuilder = new StringBuilder();
-
-    /**
-     * TODO FIT: Add code that
-     *
-     * - Fetches the existing schema IDs using getSchemaList
-     *
-     * - Iterates over these schemas and adds each schema to the composite
-     * schema.
-     *
-     * Example structure listed below.
-     */
     Map<SchemaType, List<String>> schemaList = getSchemaList();
+    Model model = ModelFactory.createDefaultModel();
+    Model unionModel = ModelFactory.createDefaultModel();
     switch (type) {
       case ONTOLOGY:
         for (String schemaId : schemaList.get(SchemaType.ONTOLOGY)) {
           ContentAccessor schemaContent = getSchema(schemaId);
-          // Add ONTOLOGY schema to union schema...
+          Reader schemaContentReader = new StringReader(schemaContent.getContentAsString());
+          model.read(schemaContentReader,null);
+          unionModel.union(model);
         }
         break;
       case SHAPE:
         for (String schemaId : schemaList.get(SchemaType.SHAPE)) {
           ContentAccessor schemaContent = getSchema(schemaId);
-          // Add SHAPE schema to union schema...
+          Reader schemaContentReader = new StringReader(schemaContent.getContentAsString());
+          model.read(schemaContentReader,null);
+          unionModel.union(model);
         }
         break;
       case VOCABULARY:
         for (String schemaId : schemaList.get(SchemaType.VOCABULARY)) {
           ContentAccessor schemaContent = getSchema(schemaId);
-          // Add VOCABULARY schema to union schema...
+          Reader schemaContentReader = new StringReader(schemaContent.getContentAsString());
+          model.read(schemaContentReader,null);
+          unionModel.union(model);
         }
         break;
       default:
         throw new IllegalArgumentException("Unknown schema type: " + type.name());
 
     }
-
-    return new ContentAccessorDirect(contentBuilder.toString());
+    return new ContentAccessorDirect(unionModel.toString());
   }
 
   @Override

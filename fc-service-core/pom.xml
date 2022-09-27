@@ -108,6 +108,10 @@
             <type>pom</type>
         </dependency>
         <dependency>
+            <groupId>org.topbraid</groupId>
+            <artifactId>shacl</artifactId>
+        </dependency>
+        <dependency>
             <groupId>commons-validator</groupId>
             <artifactId>commons-validator</artifactId>
         </dependency>
