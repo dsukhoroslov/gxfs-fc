@@ -100,8 +100,10 @@ public class VerificationServiceImplTest {
     }
 
     @Test
-    void verifyValidPEM () throws IOException {
-        assertTrue(verificationService.verifyPEM("https://compliance.gaia-x.eu/.well-known/x509CertificateChain.pem"));
+    void verifyValidPEM () {
+        assertDoesNotThrow(() -> {
+            verificationService.getValidatorFromPEM("https://compliance.gaia-x.eu/.well-known/x509CertificateChain.pem", "");
+        });
     }
 
     @Test
