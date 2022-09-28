@@ -8,6 +8,8 @@ import com.danubetech.keyformats.keytypes.KeyTypeName_for_JWK;
 import com.danubetech.verifiablecredentials.CredentialSubject;
 import com.danubetech.verifiablecredentials.VerifiableCredential;
 import com.danubetech.verifiablecredentials.VerifiablePresentation;
+import com.nimbusds.jwt.JWT;
+import com.nimbusds.jwt.JWTParser;
 import eu.gaiax.difs.fc.core.exception.VerificationException;
 import eu.gaiax.difs.fc.core.pojo.*;
 import eu.gaiax.difs.fc.core.service.verification.VerificationService;
@@ -17,6 +19,7 @@ import foundation.identity.jsonld.JsonLDObject;
 import info.weboftrust.ldsignatures.LdProof;
 import info.weboftrust.ldsignatures.verifier.JsonWebSignature2020LdVerifier;
 import info.weboftrust.ldsignatures.verifier.LdVerifier;
+import kotlin.Pair;
 import liquibase.pro.packaged.O;
 import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpResponse;
@@ -29,6 +32,7 @@ import org.apache.http.message.BasicNameValuePair;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.text.ParseException;
 import java.time.Instant;
 import java.io.InputStream;
 import java.net.URI;
@@ -122,10 +126,10 @@ public class VerificationServiceImpl implements VerificationService {
     Map<String, Object> sd = cleanSD(presentation);
     Object _vcs = sd.get("verifiableCredential");
     List<Map<String, Object>> credentials;
-    try {
+    if (_vcs instanceof List) {
       credentials = (List<Map<String, Object>>) _vcs;
-    } catch (Exception e) {
-      credentials = new ArrayList<Map<String, Object>>();
+    } else {
+      credentials = new ArrayList<>();
       credentials.add((Map<String, Object>) _vcs);
     }
     List<SdClaim> claims = new ArrayList<>();
@@ -170,10 +174,10 @@ public class VerificationServiceImpl implements VerificationService {
     Map<String, Object> sd = cleanSD(presentation);
     Object _vcs = sd.get("verifiableCredential");
     List<Map<String, Object>> credentials;
-    try {
+    if (_vcs instanceof List) {
       credentials = (List<Map<String, Object>>) _vcs;
-    } catch (Exception e) {
-      credentials = new ArrayList<Map<String, Object>>();
+    } else {
+      credentials = new ArrayList<>();
       credentials.add((Map<String, Object>) _vcs);
     }
     List<SdClaim> claims = new ArrayList<>();
@@ -206,7 +210,7 @@ public class VerificationServiceImpl implements VerificationService {
     }
   }
 
-  Map<String, Boolean> getSDType (VerifiablePresentation presentation) {
+  Pair<Boolean, Boolean> getSDType (VerifiablePresentation presentation) {
     boolean isParticipant = false;
     boolean isServiceOffering = false;
 
@@ -225,21 +229,15 @@ public class VerificationServiceImpl implements VerificationService {
       throw new VerificationException("SD is both, a participant and an offering SD");
     }
 
-    boolean finalIsParticipant = isParticipant;
-    boolean finalIsServiceOffering = isServiceOffering;
-
-    return new HashMap<>() {{
-      put("participant", finalIsParticipant);
-      put("offering", finalIsServiceOffering);
-    }};
+    return new Pair<>(isParticipant, isServiceOffering);
   }
 
   boolean isSDServiceOffering (VerifiablePresentation presentation) {
-    return getSDType(presentation).get("offering").booleanValue();
+    return getSDType(presentation).getSecond();
   }
 
   boolean isSDParticipant (VerifiablePresentation presentation) {
-    return getSDType(presentation).get("participant").booleanValue();
+    return getSDType(presentation).getFirst();
   }
 
   //TODO This function becomes obsolete when a did resolver will be available
@@ -258,7 +256,7 @@ public class VerificationServiceImpl implements VerificationService {
       InputStream stream = url.openStream();
       did_json = IOUtils.toString(stream, StandardCharsets.UTF_8);
     } else {
-      throw new RuntimeException("Couldn't load key. Origin not supported");
+      throw new VerificationException("Couldn't load key. Origin not supported");
     }
     return DIDDocument.fromJson(did_json);
   }
@@ -279,16 +277,9 @@ public class VerificationServiceImpl implements VerificationService {
     return new_map;
   }
 
-  String getAlgorithmFromJWT(String jwt) {
-    String[] chunks = jwt.split("\\.");
-    Base64.Decoder decoder = Base64.getUrlDecoder();
-
-    String header = new String(decoder.decode(chunks[0]));
-    try {
-      return (String) JsonLDObject.fromJson(header).getJsonObject().get("alg");
-    } catch (RuntimeException ex) {
-      throw new VerificationException(ex);
-    }
+  String getAlgorithmFromJWT(String s) throws ParseException {
+    JWT jwt = JWTParser.parse(s);
+    return jwt.getHeader().getAlgorithm().getName();
   }
 
   Validator getValidatorFromPEM(String uri, String did) throws IOException {
@@ -317,7 +308,7 @@ public class VerificationServiceImpl implements VerificationService {
     );
   }
 
-  Object [] getVerifiedVerifier(LdProof proof) throws IOException {
+  Pair<PublicKeyVerifier, Validator> getVerifiedVerifier(LdProof proof) throws IOException {
     URI uri = proof.getVerificationMethod();
     String jwt = proof.getJws();
     JWK jwk;
@@ -341,7 +332,7 @@ public class VerificationServiceImpl implements VerificationService {
                 KeyTypeName_for_JWK.keyTypeName_for_JWK(jwk),
                 getAlgorithmFromJWT(jwt),
                 JWK_to_PublicKey.JWK_to_anyPublicKey(jwk));
-      } catch (IllegalArgumentException ex) {
+      } catch (IllegalArgumentException | ParseException ex) {
         throw new VerificationException(ex);
       }
 
@@ -351,7 +342,7 @@ public class VerificationServiceImpl implements VerificationService {
         throw new VerificationException("JWK does not match with provided certificate");
     } else throw new VerificationException("Unknown Verification Method: " + uri);
 
-    return new Object[]{pubKey, validator};
+    return new Pair<>(pubKey, validator);
   }
 
   Validator checkCryptographic (JsonLDObject payload, LdProof proof) throws JsonLDException, GeneralSecurityException, IOException {
@@ -359,9 +350,9 @@ public class VerificationServiceImpl implements VerificationService {
     LdVerifier verifier;
     Validator validator = null; //TODO Cache.getValidator(proof.getVerificationMethod().toString());
     if (validator == null) {
-      Object [] pkVerifierAndValidator = getVerifiedVerifier(proof);
-      PublicKeyVerifier publicKeyVerifier = (PublicKeyVerifier) pkVerifierAndValidator[0];
-      validator = (Validator) pkVerifierAndValidator[1];
+      Pair<PublicKeyVerifier, Validator> pkVerifierAndValidator = getVerifiedVerifier(proof);
+      PublicKeyVerifier publicKeyVerifier = pkVerifierAndValidator.getFirst();
+      validator = pkVerifierAndValidator.getSecond();
       verifier = new JsonWebSignature2020LdVerifier(publicKeyVerifier);
     } else {
       verifier = getVerifierFromValidator(validator);
@@ -400,10 +391,9 @@ public class VerificationServiceImpl implements VerificationService {
     //TODO compare to validators
     //
     CredentialSubject credentialSubject = presentation.getVerifiableCredential().getCredentialSubject();
-    String [] subjects = credentialSubject.getClaims().keySet().toArray(new String[0]);
-    for (String subject:subjects) {
-      if (subject.contains("providedBy")) {
-        return (String) credentialSubject.getClaims().get(subject);
+    for (String predicate : credentialSubject.getClaims().keySet()) {
+      if (predicate.contains("providedBy")) {
+        return (String) credentialSubject.getClaims().get(predicate);
       }
     }
     throw new VerificationException("Provided By was not specified");
