@@ -26,6 +26,7 @@ import org.slf4j.LoggerFactory;
 import org.slf4j.Marker;
 import org.slf4j.MarkerFactory;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.topbraid.shacl.validation.ValidationUtil;
 import org.topbraid.shacl.vocabulary.SH;
@@ -40,7 +41,8 @@ public class VerificationServiceImpl implements VerificationService {
   private static final String sd_format = "JSONLD";
   private static final String shapes_format = "TURTLE";
   private static final Logger logger = LoggerFactory.getLogger(VerificationServiceImpl.class);
-
+@Autowired
+private  SchemaStoreImpl schemaStore;
 
   /**
    * The function validates the Self-Description as JSON and tries to parse the json handed over.
@@ -82,7 +84,6 @@ public class VerificationServiceImpl implements VerificationService {
     LocalDate issuedDate = null;
     List<Signature> signatures = new ArrayList<>();
     List<SdClaim> claims = new ArrayList<>();
-    SchemaStore schemaStore = new SchemaStoreImpl();
     ContentAccessor shaclShapeCompositeSchema = schemaStore.getCompositeSchema(SchemaStore.SchemaType.SHAPE);
     String validationReport = validationAgainstShacl(payload,shaclShapeCompositeSchema).getValidationReport();
     //Verify Syntax and parse json

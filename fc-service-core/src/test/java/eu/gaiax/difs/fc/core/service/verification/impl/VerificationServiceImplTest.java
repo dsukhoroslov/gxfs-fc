@@ -1,9 +1,28 @@
 package eu.gaiax.difs.fc.core.service.verification.impl;
 
+import eu.gaiax.difs.fc.core.config.DatabaseConfig;
+import eu.gaiax.difs.fc.core.config.EmbeddedNeo4JConfig;
+import eu.gaiax.difs.fc.core.config.FileStoreConfig;
 import eu.gaiax.difs.fc.core.exception.VerificationException;
 import eu.gaiax.difs.fc.core.pojo.ContentAccessorFile;
-import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.Test;
+import eu.gaiax.difs.fc.core.service.graphdb.impl.Neo4jGraphStore;
+import eu.gaiax.difs.fc.core.service.schemastore.impl.SchemaStoreImpl;
+import eu.gaiax.difs.fc.core.service.sdstore.SelfDescriptionStore;
+import eu.gaiax.difs.fc.core.service.sdstore.impl.SelfDescriptionStoreImpl;
+import eu.gaiax.difs.fc.core.service.sdstore.impl.SelfDescriptionStoreImplTest;
+import eu.gaiax.difs.fc.core.service.verification.VerificationService;
+import io.zonky.test.db.AutoConfigureEmbeddedDatabase;
+import lombok.extern.slf4j.Slf4j;
+import org.junit.jupiter.api.*;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
+import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.io.*;
 import java.net.URL;
@@ -16,10 +35,29 @@ import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
+@TestMethodOrder(MethodOrderer.MethodName.class)
+//@EnableAutoConfiguration(exclude = {LiquibaseAutoConfiguration.class, DataSourceAutoConfiguration.class, Neo4jTestHarnessAutoConfiguration.class})
+@SpringBootTest
+@ActiveProfiles("tests-sdstore")
+@ContextConfiguration(classes = {VerificationServiceImplTest.TestApplication.class, FileStoreConfig.class,
+        VerificationServiceImpl.class, VerificationServiceImplTest.class, DatabaseConfig.class, Neo4jGraphStore.class, SchemaStoreImpl.class})
+@DirtiesContext
+@Transactional
+@Slf4j
+@AutoConfigureEmbeddedDatabase(provider = AutoConfigureEmbeddedDatabase.DatabaseProvider.ZONKY)
+@Import(EmbeddedNeo4JConfig.class)
 public class VerificationServiceImplTest {
-    static Path base_path = Paths.get(".").toAbsolutePath().normalize();
-    private final VerificationServiceImpl verificationService = new VerificationServiceImpl();
+    @SpringBootApplication
+    public static class TestApplication {
 
+        public static void main(final String[] args) {
+            SpringApplication.run(SelfDescriptionStoreImplTest.TestApplication.class, args);
+        }
+    }
+
+    @Autowired
+    private VerificationServiceImpl verificationService;
     private static ContentAccessorFile getAccessor(String path) throws UnsupportedEncodingException {
         URL url = VerificationServiceImplTest.class.getClassLoader().getResource(path);
         String str = URLDecoder.decode(url.getFile(), StandardCharsets.UTF_8.name());
@@ -48,7 +86,6 @@ public class VerificationServiceImplTest {
     }
 
     @Test
-    @Disabled("The test is disabled because composite Schema composite is still in progress")
     void verifyJSONLDSyntax_MissingQuote() throws IOException {
         String path = "JSON-LD-Tests/missingQuote.jsonld";
 
