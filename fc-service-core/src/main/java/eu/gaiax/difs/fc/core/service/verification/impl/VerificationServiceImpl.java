@@ -117,7 +117,7 @@ public class VerificationServiceImpl implements VerificationService {
 
     try {
       checkCryptographic(presentation);
-    } catch (JsonLDException | GeneralSecurityException | IOException e) {
+    } catch (JsonLDException | GeneralSecurityException | IOException | ParseException e) {
       throw new VerificationException(e);
     }
 
@@ -165,7 +165,7 @@ public class VerificationServiceImpl implements VerificationService {
 
     try {
       checkCryptographic(presentation);
-    } catch (JsonLDException | GeneralSecurityException | IOException e) {
+    } catch (JsonLDException | GeneralSecurityException | IOException | ParseException e) {
       throw new VerificationException(e);
     }
 
@@ -220,7 +220,7 @@ public class VerificationServiceImpl implements VerificationService {
       if(type.contains("LegalPerson")) {
         isParticipant = true;
       }
-      if(type.contains("ServiceOfferingExperimental")) { //TODO is this type final? No Credential subject type
+      if(type.contains("ServiceOfferingExperimental")) {
         isServiceOffering = true;
       }
     }
@@ -282,7 +282,7 @@ public class VerificationServiceImpl implements VerificationService {
     return jwt.getHeader().getAlgorithm().getName();
   }
 
-  Validator getValidatorFromPEM(String uri, String did) throws IOException {
+  Instant hasPEMTrustAnchorAndIsNotDeprecated (String uri) throws IOException {
     //Is the PEM anchor in the registry?
     HttpClient httpclient = HttpClients.createDefault();
     HttpPost httppost = new HttpPost("https://registry.lab.gaia-x.eu/api/v2204/trustAnchor/chain/file");
@@ -296,16 +296,9 @@ public class VerificationServiceImpl implements VerificationService {
     HttpResponse response = httpclient.execute(httppost);
     if(response.getStatusLine().getStatusCode() != 200) throw new VerificationException("The trust anchor is not set in the registry");
 
-    //TODO
-    //https://www.baeldung.com/java-read-pem-file-keys
-    //https://www.bouncycastle.org/docs/docs1.5on/index.html
-    //https://stackoverflow.com/questions/12967016/how-to-check-ssl-certificate-expiration-date-programmatically-in-java
-    
-    return new Validator(
-            did,
-            "",
-            null
-    );
+    //TODO deprecation time from pem from URI
+
+    return Instant.now();
   }
 
   Pair<PublicKeyVerifier, Validator> getVerifiedVerifier(LdProof proof) throws IOException {
@@ -324,29 +317,42 @@ public class VerificationServiceImpl implements VerificationService {
       Map<String, Object> jwk_map_uncleaned = (Map<String, Object>) extractRelevantVerificationMethod(available_jwks, uri).get("publicKeyJwk");
       Map<String, Object> jwk_map_cleaned = extractRelevantValues(jwk_map_uncleaned);
 
+      Instant deprecation = hasPEMTrustAnchorAndIsNotDeprecated((String) jwk_map_uncleaned.get("x5u"));
+
       // use from map and extract only relevant
       jwk = JWK.fromMap(jwk_map_cleaned);
 
       try {
         pubKey = PublicKeyVerifierFactory.publicKeyVerifierForKey(
                 KeyTypeName_for_JWK.keyTypeName_for_JWK(jwk),
-                getAlgorithmFromJWT(jwt),
+                (String) jwk_map_uncleaned.get("alg"),
                 JWK_to_PublicKey.JWK_to_anyPublicKey(jwk));
-      } catch (IllegalArgumentException | ParseException ex) {
+      } catch (IllegalArgumentException ex) {
         throw new VerificationException(ex);
       }
-
-      validator = getValidatorFromPEM((String) jwk_map_uncleaned.get("x5u"), uri.toString());
-
-      if(!jwk.getN().equals(validator.getPublicKey()))
-        throw new VerificationException("JWK does not match with provided certificate");
+      validator = new Validator(
+              uri.toString(),
+              JsonLDObject.fromJsonObject(jwk_map_uncleaned).toString(),
+              deprecation);
+      //Does this help? https://www.baeldung.com/java-read-pem-file-keys#2-get-public-key-from-pem-string
     } else throw new VerificationException("Unknown Verification Method: " + uri);
 
     return new Pair<>(pubKey, validator);
   }
 
-  Validator checkCryptographic (JsonLDObject payload, LdProof proof) throws JsonLDException, GeneralSecurityException, IOException {
-    if (proof == null) throw new VerificationException("No proof found");
+  Validator checkSignature (JsonLDObject payload) throws JsonLDException, GeneralSecurityException, IOException, ParseException {
+    Map<String, Object> proof_map = (Map<String, Object>) payload.getJsonObject().get("proof");
+    if (proof_map == null) throw new VerificationException("No proof found");
+    LdProof proof = LdProof.fromMap(proof_map);
+
+    try {
+      return checkSignature(payload, proof);
+    } catch (GeneralSecurityException e) {
+      throw new VerificationException("Could not verify signature", e);
+    }
+  }
+
+  Validator checkSignature (JsonLDObject payload, LdProof proof) throws JsonLDException, GeneralSecurityException, IOException, ParseException {
     LdVerifier verifier;
     Validator validator = null; //TODO Cache.getValidator(proof.getVerificationMethod().toString());
     if (validator == null) {
@@ -357,25 +363,34 @@ public class VerificationServiceImpl implements VerificationService {
     } else {
       verifier = getVerifierFromValidator(validator);
     }
-    if(!verifier.verify(payload)) throw new VerificationException(payload.getClass().getName() + "does not matcht with proof");
+    if(!verifier.verify(payload)) throw new VerificationException(payload.getClass().getName() + "does not match with proof");
 
     return validator;
   }
 
-  private LdVerifier getVerifierFromValidator(Validator validator) {
-    //TODO
-    return null;
+  private LdVerifier getVerifierFromValidator(Validator validator) throws IOException, ParseException {
+    Map<String, Object> jwk_map_uncleaned = JsonLDObject.fromJson(validator.getPublicKey()).getJsonObject();
+    Map<String, Object> jwk_map_cleaned = extractRelevantValues(jwk_map_uncleaned);
+
+    // use from map and extract only relevant
+    JWK jwk = JWK.fromMap(jwk_map_cleaned);
+
+    PublicKeyVerifier pubKey = PublicKeyVerifierFactory.publicKeyVerifierForKey(
+            KeyTypeName_for_JWK.keyTypeName_for_JWK(jwk),
+            getAlgorithmFromJWT((String) jwk_map_uncleaned.get("alg")),
+            JWK_to_PublicKey.JWK_to_anyPublicKey(jwk));
+    return new JsonWebSignature2020LdVerifier(pubKey);
   }
 
-  List<Validator> checkCryptographic (VerifiablePresentation presentation) throws JsonLDException, GeneralSecurityException, IOException {
+  List<Validator> checkCryptographic (VerifiablePresentation presentation) throws JsonLDException, GeneralSecurityException, IOException, ParseException {
     List<Validator> validators = new ArrayList<>();
 
-    validators.add(checkCryptographic(presentation, presentation.getLdProof()));
+    validators.add(checkSignature(presentation));
 
     List<Map<String, Object>> credentials = (List<Map<String, Object>>) presentation.getJsonObject().get("verifiableCredential");
     for (Map<String, Object> _credential : credentials) {
       VerifiableCredential credential = VerifiableCredential.fromMap(_credential);
-      validators.add(checkCryptographic(credential, credential.getLdProof()));
+      validators.add(checkSignature(credential));
     }
 
     //If this point was reached without an exception, the signatures are valid

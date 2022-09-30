@@ -1,8 +1,10 @@
 package eu.gaiax.difs.fc.core.service.verification.impl;
 
+import com.danubetech.verifiablecredentials.VerifiableCredential;
 import com.danubetech.verifiablecredentials.VerifiablePresentation;
 import eu.gaiax.difs.fc.core.exception.VerificationException;
 import eu.gaiax.difs.fc.core.pojo.ContentAccessorFile;
+import foundation.identity.jsonld.JsonLDException;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
@@ -14,7 +16,9 @@ import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.*;
+import java.security.GeneralSecurityException;
+import java.text.ParseException;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -102,7 +106,7 @@ public class VerificationServiceImplTest {
     @Test
     void verifyValidPEM () {
         assertDoesNotThrow(() -> {
-            verificationService.getValidatorFromPEM("https://compliance.gaia-x.eu/.well-known/x509CertificateChain.pem", "");
+            verificationService.hasPEMTrustAnchorAndIsNotDeprecated("https://compliance.gaia-x.eu/.well-known/x509CertificateChain.pem");
         });
     }
 
@@ -114,7 +118,6 @@ public class VerificationServiceImplTest {
 
         //TODO: Will throw exception when it is checked cryptographically
         Exception ex = assertThrowsExactly(VerificationException.class, () -> verificationService.checkCryptographic(parsed));
-        assertTrue(ex.getMessage().contains("Unsupported public key RSA and/or algorithm EdDSA"));
     }
 
     @Test
@@ -180,6 +183,15 @@ public class VerificationServiceImplTest {
         //Are proof removed?
         assertNull(presentation.getLdProof());
         assertNull(presentation.getJsonObject().get("proof"));
+    }
+
+    @Test
+    @Disabled()
+    void verifySignature () throws IOException, JsonLDException, GeneralSecurityException, ParseException {
+        String path = "Claims-Extraction-Tests/participant-sd.json";
+
+        VerifiableCredential credential = VerifiableCredential.fromJson(getAccessor(path).getContentAsString());
+        verificationService.checkSignature(credential);
     }
 
 
