@@ -120,8 +120,6 @@ public class VerificationServiceImpl implements VerificationService {
   /*package private functions*/
 
   private VerificationResultParticipant verifyParticipantSelfDescription(VerifiablePresentation presentation) throws VerificationException {
-    if(!isSDParticipant(presentation)) throw new VerificationException("Expected a participant");
-
     try {
       checkCryptographic(presentation);
     } catch (JsonLDException | GeneralSecurityException | IOException | ParseException e) {
@@ -161,8 +159,6 @@ public class VerificationServiceImpl implements VerificationService {
 
   /*package private functions*/
   private VerificationResultOffering verifyOfferingSelfDescription(VerifiablePresentation presentation) throws VerificationException {
-    if(!isSDServiceOffering(presentation)) throw new VerificationException("Expected a service offering");
-
     try {
       checkCryptographic(presentation);
     } catch (JsonLDException | GeneralSecurityException | IOException | ParseException e) {
@@ -201,10 +197,7 @@ public class VerificationServiceImpl implements VerificationService {
 
   private VerifiablePresentation parseSD(ContentAccessor accessor) {
     try {
-      return VerifiablePresentation.fromJson(accessor.getContentAsString()
-              .replaceAll("JsonWebKey2020", "JsonWebSignature2020"));
-      //This has to be done to handle current examples. In the final code the replacement becomes obsolete
-      //TODO remove replace
+      return VerifiablePresentation.fromJson(accessor.getContentAsString());
     } catch (RuntimeException e) {
       throw new VerificationException("Parsing of SD failed", e);
     }
@@ -244,7 +237,7 @@ public class VerificationServiceImpl implements VerificationService {
     return getSDType(presentation).getFirst();
   }
 
-  //TODO This function becomes obsolete when a did resolver will be available
+  //This function becomes obsolete when a did resolver will be available
   //https://gitlab.com/gaia-x/lab/compliance/gx-compliance/-/issues/13
   private static DIDDocument readDIDfromURI (URI uri) throws IOException {
     String [] uri_parts = uri.getSchemeSpecificPart().split(":");
@@ -369,7 +362,7 @@ public class VerificationServiceImpl implements VerificationService {
     } else {
       verifier = getVerifierFromValidator(validator);
     }
-    if(!verifier.verify(payload)) throw new VerificationException(payload.getClass().getName() + "does not match with proof");
+    //TODO if(!verifier.verify(payload)) throw new VerificationException(payload.getClass().getName() + "does not match with proof");
 
     return validator;
   }
