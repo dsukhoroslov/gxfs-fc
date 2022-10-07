@@ -8,7 +8,8 @@
 	"verifiableCredential": [{
 			"@id": "http://example.edu/verifiableCred/participantVC",
 			"type": [
-				"VerifiableCredential"
+				"VerifiableCredential",
+				"LegalPerson"
 			],
 			"issuer": "https://example.edu/issuers/particiant1",
 			"issuanceDate": "2010-01-01T00:00:00Z",

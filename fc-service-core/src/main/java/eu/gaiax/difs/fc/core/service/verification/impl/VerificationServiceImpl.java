@@ -20,7 +20,6 @@ import info.weboftrust.ldsignatures.LdProof;
 import info.weboftrust.ldsignatures.verifier.JsonWebSignature2020LdVerifier;
 import info.weboftrust.ldsignatures.verifier.LdVerifier;
 import kotlin.Pair;
-import liquibase.pro.packaged.O;
 import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
@@ -110,9 +109,17 @@ public class VerificationServiceImpl implements VerificationService {
     }
   }
 
+  @Override
+  public boolean checkValidator(Validator validator) {
+    if (validator.getExpirationDate().isBefore(Instant.now())) return false;
+    //check if pubkey is the same
+    //check if pubkey is trusted
+    return true; //if all checks succeeded the validator is valid
+  }
+
   /*package private functions*/
 
-  VerificationResultParticipant verifyParticipantSelfDescription(VerifiablePresentation presentation) throws VerificationException {
+  private VerificationResultParticipant verifyParticipantSelfDescription(VerifiablePresentation presentation) throws VerificationException {
     if(!isSDParticipant(presentation)) throw new VerificationException("Expected a participant");
 
     try {
@@ -151,16 +158,9 @@ public class VerificationServiceImpl implements VerificationService {
     );
   }
 
-  @Override
-  public boolean checkValidator(Validator validator) {
-    if (validator.getExpirationDate().isBefore(Instant.now())) return false;
-    //check if pubkey is the same
-    //check if pubkey is trusted
-    return true; //if all checks succeeded the validator is valid
-  }
 
   /*package private functions*/
-  VerificationResultOffering verifyOfferingSelfDescription(VerifiablePresentation presentation) throws VerificationException {
+  private VerificationResultOffering verifyOfferingSelfDescription(VerifiablePresentation presentation) throws VerificationException {
     if(!isSDServiceOffering(presentation)) throw new VerificationException("Expected a service offering");
 
     try {
@@ -199,30 +199,34 @@ public class VerificationServiceImpl implements VerificationService {
     );
   }
 
-  VerifiablePresentation parseSD(ContentAccessor accessor) {
+  private VerifiablePresentation parseSD(ContentAccessor accessor) {
     try {
       return VerifiablePresentation.fromJson(accessor.getContentAsString()
               .replaceAll("JsonWebKey2020", "JsonWebSignature2020"));
       //This has to be done to handle current examples. In the final code the replacement becomes obsolete
       //TODO remove replace
     } catch (RuntimeException e) {
-      throw new VerificationException(e);
+      throw new VerificationException("Parsing of SD failed", e);
     }
   }
 
-  Pair<Boolean, Boolean> getSDType (VerifiablePresentation presentation) {
+  private Pair<Boolean, Boolean> getSDType (VerifiablePresentation presentation) {
     boolean isParticipant = false;
     boolean isServiceOffering = false;
 
-    List<String> types = (List<String>) presentation.getJsonObject().get("@type");
+    try {
+      List<String> types = (List<String>) presentation.getJsonObject().get("@type");
 
-    for (String type:types) {
-      if(type.contains("LegalPerson")) {
-        isParticipant = true;
+      for (String type : types) {
+        if (type.contains("LegalPerson")) {
+          isParticipant = true;
+        }
+        if (type.contains("ServiceOfferingExperimental")) {
+          isServiceOffering = true;
+        }
       }
-      if(type.contains("ServiceOfferingExperimental")) {
-        isServiceOffering = true;
-      }
+    } catch (Exception e) {
+      throw new VerificationException("Could not extract SD's type", e);
     }
 
     if (isParticipant && isServiceOffering) {
@@ -232,17 +236,17 @@ public class VerificationServiceImpl implements VerificationService {
     return new Pair<>(isParticipant, isServiceOffering);
   }
 
-  boolean isSDServiceOffering (VerifiablePresentation presentation) {
+  private boolean isSDServiceOffering (VerifiablePresentation presentation) {
     return getSDType(presentation).getSecond();
   }
 
-  boolean isSDParticipant (VerifiablePresentation presentation) {
+  private boolean isSDParticipant (VerifiablePresentation presentation) {
     return getSDType(presentation).getFirst();
   }
 
   //TODO This function becomes obsolete when a did resolver will be available
   //https://gitlab.com/gaia-x/lab/compliance/gx-compliance/-/issues/13
-  public static DIDDocument readDIDfromURI (URI uri) throws IOException {
+  private static DIDDocument readDIDfromURI (URI uri) throws IOException {
     String [] uri_parts = uri.getSchemeSpecificPart().split(":");
     String did_json;
     if(uri_parts[0].equals("web")) {
@@ -261,12 +265,12 @@ public class VerificationServiceImpl implements VerificationService {
     return DIDDocument.fromJson(did_json);
   }
 
-  Map<String, Object> extractRelevantVerificationMethod (List<Map<String, Object>> methods, URI verificationMethodURI) {
+  private Map<String, Object> extractRelevantVerificationMethod (List<Map<String, Object>> methods, URI verificationMethodURI) {
     return methods.get(0);
     //TODO wait for answer https://gitlab.com/gaia-x/lab/compliance/gx-compliance/-/issues/22
   }
 
-  Map<String, Object> extractRelevantValues (Map<String, Object> map) {
+  private Map<String, Object> extractRelevantValues (Map<String, Object> map) {
     Map<String, Object> new_map = new HashMap<>();
     String [] relevants = {"kty", "d", "e", "kid", "use", "x", "y", "n", "crv"};
     for (String relevant:relevants) {
@@ -277,12 +281,14 @@ public class VerificationServiceImpl implements VerificationService {
     return new_map;
   }
 
-  String getAlgorithmFromJWT(String s) throws ParseException {
+  private String getAlgorithmFromJWT(String s) throws ParseException {
     JWT jwt = JWTParser.parse(s);
     return jwt.getHeader().getAlgorithm().getName();
   }
 
-  Instant hasPEMTrustAnchorAndIsNotDeprecated (String uri) throws IOException {
+  private Instant hasPEMTrustAnchorAndIsNotDeprecated (String uri) throws IOException {
+
+ /*
     //Is the PEM anchor in the registry?
     HttpClient httpclient = HttpClients.createDefault();
     HttpPost httppost = new HttpPost("https://registry.lab.gaia-x.eu/api/v2204/trustAnchor/chain/file");
@@ -297,11 +303,11 @@ public class VerificationServiceImpl implements VerificationService {
     if(response.getStatusLine().getStatusCode() != 200) throw new VerificationException("The trust anchor is not set in the registry");
 
     //TODO deprecation time from pem from URI
-
-    return Instant.now();
+*/
+    return Instant.now(); // The registry is down, thus this code fails
   }
 
-  Pair<PublicKeyVerifier, Validator> getVerifiedVerifier(LdProof proof) throws IOException {
+  private Pair<PublicKeyVerifier, Validator> getVerifiedVerifier(LdProof proof) throws IOException {
     URI uri = proof.getVerificationMethod();
     String jwt = proof.getJws();
     JWK jwk;
@@ -340,7 +346,7 @@ public class VerificationServiceImpl implements VerificationService {
     return new Pair<>(pubKey, validator);
   }
 
-  Validator checkSignature (JsonLDObject payload) throws JsonLDException, GeneralSecurityException, IOException, ParseException {
+  private Validator checkSignature (JsonLDObject payload) throws JsonLDException, GeneralSecurityException, IOException, ParseException {
     Map<String, Object> proof_map = (Map<String, Object>) payload.getJsonObject().get("proof");
     if (proof_map == null) throw new VerificationException("No proof found");
     LdProof proof = LdProof.fromMap(proof_map);
@@ -352,7 +358,7 @@ public class VerificationServiceImpl implements VerificationService {
     }
   }
 
-  Validator checkSignature (JsonLDObject payload, LdProof proof) throws JsonLDException, GeneralSecurityException, IOException, ParseException {
+  private Validator checkSignature (JsonLDObject payload, LdProof proof) throws JsonLDException, GeneralSecurityException, IOException, ParseException {
     LdVerifier verifier;
     Validator validator = null; //TODO Cache.getValidator(proof.getVerificationMethod().toString());
     if (validator == null) {
@@ -382,7 +388,7 @@ public class VerificationServiceImpl implements VerificationService {
     return new JsonWebSignature2020LdVerifier(pubKey);
   }
 
-  List<Validator> checkCryptographic (VerifiablePresentation presentation) throws JsonLDException, GeneralSecurityException, IOException, ParseException {
+  private List<Validator> checkCryptographic (VerifiablePresentation presentation) throws JsonLDException, GeneralSecurityException, IOException, ParseException {
     List<Validator> validators = new ArrayList<>();
 
     validators.add(checkSignature(presentation));
@@ -397,12 +403,12 @@ public class VerificationServiceImpl implements VerificationService {
     return validators;
   }
 
-  String getParticipantID(VerifiablePresentation presentation) {
+  private String getParticipantID(VerifiablePresentation presentation) {
     //TODO compare to validators
     return presentation.getVerifiableCredential().getId().toString();
   }
 
-  String getIssuer(VerifiablePresentation presentation) {
+  private String getIssuer(VerifiablePresentation presentation) {
     //TODO compare to validators
     //
     CredentialSubject credentialSubject = presentation.getVerifiableCredential().getCredentialSubject();
@@ -414,7 +420,7 @@ public class VerificationServiceImpl implements VerificationService {
     throw new VerificationException("Provided By was not specified");
   }
 
-  Map<String, Object> cleanSD (VerifiablePresentation presentation) {
+  private Map<String, Object> cleanSD (VerifiablePresentation presentation) {
     Map<String, Object> sd = presentation.getJsonObject();
 
     sd.remove("proof");
