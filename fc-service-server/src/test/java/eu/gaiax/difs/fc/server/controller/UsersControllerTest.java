@@ -1,11 +1,14 @@
 package eu.gaiax.difs.fc.server.controller;
 
+import static eu.gaiax.difs.fc.server.util.CommonConstants.SD_ADMIN_ROLE;
 import static eu.gaiax.difs.fc.server.util.TestCommonConstants.CATALOGUE_ADMIN_ROLE_WITH_PREFIX;
 import static eu.gaiax.difs.fc.server.util.TestCommonConstants.CATALOGUE_PARTICIPANT_ADMIN_ROLE_ID;
+import static eu.gaiax.difs.fc.server.util.TestCommonConstants.DEFAULT_GAIAX_REALM_ROLE;
 import static eu.gaiax.difs.fc.server.util.TestCommonConstants.DEFAULT_PARTICIPANT_ID;
 import static eu.gaiax.difs.fc.server.util.TestCommonConstants.SD_ADMIN_ROLE_ID;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -109,13 +112,15 @@ public class UsersControllerTest extends EmbeddedKeycloakTest {
     public void getUserShouldReturnSuccessResponse() throws Exception {
         User user = getTestUser("name3", "surname3");
         UserProfile existed = userDao.create(user);
-        mockMvc
+        String response = mockMvc
             .perform(MockMvcRequestBuilders.get("/users/{userId}", existed.getId())
                 .contentType(MediaType.APPLICATION_JSON))
-            .andExpect(status().isOk());
+            .andExpect(status().isOk())
+            .andReturn().getResponse().getContentAsString();
+        UserProfile profile = objectMapper.readValue(response, UserProfile.class);
+        assertThatResponseUserHasValidData(user, profile);
         userDao.delete(existed.getId());
     }
-
     @Test
     @WithMockUser(authorities = {CATALOGUE_ADMIN_ROLE_WITH_PREFIX})
     public void wrongUserShouldReturnNotFoundResponse() throws Exception {
@@ -185,24 +190,57 @@ public class UsersControllerTest extends EmbeddedKeycloakTest {
         User user = getTestUser("name6", "surname6");
         UserProfile existed = userDao.create(user);
         user = getTestUser("changed name", "changed surname");
-        mockMvc
+        user.addRoleIdsItem("Ro-MU-CA");
+        String response = mockMvc
             .perform(MockMvcRequestBuilders.put("/users/{userId}", existed.getId())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(user)))
-            .andExpect(status().isOk());
+            .andExpect(status().isOk())
+            .andReturn().getResponse().getContentAsString();
+        UserProfile profile = objectMapper.readValue(response, UserProfile.class);
+        assertThatResponseUserHasValidData(user, profile);
         userDao.delete(existed.getId());
     }
-    
+
+
     @Test
     @WithMockUser(authorities = {CATALOGUE_ADMIN_ROLE_WITH_PREFIX})
     public void updateUserRolesShouldReturnSuccessResponse() throws Exception {
         User user = getTestUser("name7", "surname7");
         UserProfile existed = userDao.create(user);
-        mockMvc
+
+        String response = mockMvc
             .perform(MockMvcRequestBuilders.put("/users/{userId}/roles", existed.getId())
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(List.of(SD_ADMIN_ROLE_ID))))
-            .andExpect(status().isOk());
+                .content(objectMapper.writeValueAsString(List.of(SD_ADMIN_ROLE))))
+            .andExpect(status().isOk())
+            .andExpect(status().isOk())
+            .andReturn().getResponse().getContentAsString();
+
+        UserProfile profile = objectMapper.readValue(response, UserProfile.class);
+        assertEquals(2, profile.getRoleIds().size());
+        assertTrue(profile.getRoleIds().containsAll(List.of(SD_ADMIN_ROLE, "default-roles-gaia-x")));
+        userDao.delete(existed.getId());
+    }
+
+    @Test
+    @WithMockUser(authorities = {CATALOGUE_ADMIN_ROLE_WITH_PREFIX})
+    public void changeUserPermissionShouldReturnSuccessResponse() throws Exception {
+        UserProfile existed = userDao.create(getTestUser("new_user", "new_user")
+            .roleIds(List.of("default-roles-gaia-x")));
+        assertEquals(1, existed.getRoleIds().size());
+        assertTrue( existed.getRoleIds().contains("default-roles-gaia-x"));
+
+        String response = mockMvc
+            .perform(MockMvcRequestBuilders.put("/users/{userId}/roles", existed.getId())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(List.of(SD_ADMIN_ROLE))))
+            .andExpect(status().isOk())
+            .andReturn().getResponse().getContentAsString();
+
+        UserProfile updated = objectMapper.readValue(response, UserProfile.class);
+        assertEquals(2, updated.getRoleIds().size());
+        assertTrue(updated.getRoleIds().containsAll(List.of(SD_ADMIN_ROLE, DEFAULT_GAIAX_REALM_ROLE)));
         userDao.delete(existed.getId());
     }
 
@@ -212,17 +250,15 @@ public class UsersControllerTest extends EmbeddedKeycloakTest {
     public void updateDuplicatedUserRoleShouldReturnSuccessResponse() throws Exception {
         User user = getTestUser("name8", "surname8");
         UserProfile existed = userDao.create(user);
-        mockMvc.perform(MockMvcRequestBuilders.put("/users/{userId}/roles", existed.getId())
+        String response = mockMvc.perform(MockMvcRequestBuilders.put("/users/{userId}/roles", existed.getId())
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(List.of(CATALOGUE_PARTICIPANT_ADMIN_ROLE_ID))))
+                .content(objectMapper.writeValueAsString(List.of(SD_ADMIN_ROLE))))
             .andExpect(status().isOk())
-            .andReturn()
-            .getResponse()
-            .getContentAsString();
-        UserProfile newProfile = userDao.select(existed.getId());
+            .andReturn().getResponse().getContentAsString();
+        UserProfile newProfile = objectMapper.readValue(response, UserProfile.class);
         assertNotNull(newProfile);
-        assertEquals(1, newProfile.getRoleIds().size());
-        assertEquals(List.of(CATALOGUE_PARTICIPANT_ADMIN_ROLE_ID), newProfile.getRoleIds());
+        assertEquals(2, newProfile.getRoleIds().size());
+        assertTrue(newProfile.getRoleIds().containsAll(List.of(SD_ADMIN_ROLE, DEFAULT_GAIAX_REALM_ROLE)));
     }
 
     private User getTestUser(String firstName, String lastName) {
@@ -231,7 +267,8 @@ public class UsersControllerTest extends EmbeddedKeycloakTest {
             .participantId(DEFAULT_PARTICIPANT_ID)
             .firstName(firstName)
             .lastName(lastName)
-            .addRoleIdsItem("Ro-SD-A");
+            .addRoleIdsItem(SD_ADMIN_ROLE)
+            .addRoleIdsItem(DEFAULT_GAIAX_REALM_ROLE);
     }
 
     private static void assertThatResponseUserHasValidData(final User excepted, final UserProfile actual) {
@@ -241,6 +278,8 @@ public class UsersControllerTest extends EmbeddedKeycloakTest {
         assertEquals(excepted.getEmail(), actual.getEmail());
         assertEquals(excepted.getFirstName(), actual.getFirstName());
         assertEquals(excepted.getLastName(), actual.getLastName());
+        assertEquals(excepted.getRoleIds().size(), actual.getRoleIds().size());
+        assertTrue(actual.getRoleIds().containsAll(excepted.getRoleIds()));
         assertEquals(excepted.getParticipantId(), actual.getParticipantId());
     }
 }
