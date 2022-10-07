@@ -140,7 +140,7 @@ public class VerificationServiceImpl implements VerificationService {
     List<SdClaim> claims = new ArrayList<>();
     for (Map<String, Object> vc : credentials) {
       List<Map<String, Object>> credentialSubjects = (List<Map<String, Object>>) vc.get("credentialSubject");
-      List<SdClaim> _claims = null; //TODO semantic verification and claim extraction
+      List<SdClaim> _claims = new ArrayList<>(); //TODO semantic verification and claim extraction
       claims.addAll(_claims);
     }
 
@@ -180,7 +180,7 @@ public class VerificationServiceImpl implements VerificationService {
 
     for (Map<String, Object> vc : credentials) {
       List<Map<String, Object>> credentialSubjects = (List<Map<String, Object>>) vc.get("credentialSubject");
-      List<SdClaim> _claims = null; //TODO semantic verification and claim extraction
+      List<SdClaim> _claims = new ArrayList<>(); //TODO semantic verification and claim extraction
       claims.addAll(_claims);
     }
 
@@ -362,7 +362,7 @@ public class VerificationServiceImpl implements VerificationService {
     } else {
       verifier = getVerifierFromValidator(validator);
     }
-    //TODO if(!verifier.verify(payload)) throw new VerificationException(payload.getClass().getName() + "does not match with proof");
+    //TODO    if(!verifier.verify(payload)) throw new VerificationException(payload.getClass().getName() + "does not match with proof");
 
     return validator;
   }
@@ -398,7 +398,9 @@ public class VerificationServiceImpl implements VerificationService {
 
   private String getParticipantID(VerifiablePresentation presentation) {
     //TODO compare to validators
-    return presentation.getVerifiableCredential().getId().toString();
+    List<Map<String, Object>> credentials = (List<Map<String, Object>>) presentation.getJsonObject().get("verifiableCredential");
+    String id = (String) credentials.get(0).getOrDefault("id", credentials.get(0).get("@id"));
+    return id;
   }
 
   private String getIssuer(VerifiablePresentation presentation) {

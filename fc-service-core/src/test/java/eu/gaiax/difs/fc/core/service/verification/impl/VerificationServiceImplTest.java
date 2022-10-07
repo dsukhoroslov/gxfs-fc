@@ -83,7 +83,7 @@ public class VerificationServiceImplTest {
     }
 
     @Test
-    //@Disabled() //TODO
+    @Disabled() //TODO
     void verifySignature_InvalidSignature () throws UnsupportedEncodingException {
         String path = "VerificationService/signature/hasInvalidSignature.jsonld";
 
