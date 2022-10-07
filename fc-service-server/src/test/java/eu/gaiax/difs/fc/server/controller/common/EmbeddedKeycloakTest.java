@@ -17,6 +17,7 @@ import org.keycloak.models.GroupModel;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.RoleModel;
+import org.keycloak.models.UserCredentialModel;
 import org.keycloak.models.UserModel;
 import org.keycloak.services.managers.RealmManager;
 import org.springframework.beans.factory.annotation.Value;
@@ -56,7 +57,10 @@ public class EmbeddedKeycloakTest {
         catalogAdmin =
             session.users().addUser(realm, UUID.randomUUID().toString(), CATALOGUE_ADMIN_USERNAME, true, true);
         catalogAdmin.grantRole(catalogAdminRole);
+        catalogAdmin.setEmail(CATALOGUE_ADMIN_USERNAME + "@gmail.com");
+        catalogAdmin.setEnabled(true);
         catalogAdmin.joinGroup(group);
+        session.userCredentialManager().updateCredential(realm, catalogAdmin, UserCredentialModel.password("catalog_admin"));
       }
       session.getTransactionManager().commit();
     } catch (Exception ex) {
