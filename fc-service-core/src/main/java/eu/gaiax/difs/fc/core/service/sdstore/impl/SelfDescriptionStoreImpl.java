@@ -2,6 +2,7 @@ package eu.gaiax.difs.fc.core.service.sdstore.impl;
 
 import eu.gaiax.difs.fc.core.exception.ServerException;
 import eu.gaiax.difs.fc.core.pojo.ContentAccessor;
+import eu.gaiax.difs.fc.core.pojo.PaginatedResults;
 import eu.gaiax.difs.fc.core.service.graphdb.GraphStore;
 import eu.gaiax.difs.fc.core.service.filestore.FileStore;
 import eu.gaiax.difs.fc.api.generated.model.SelfDescriptionStatus;
@@ -46,8 +47,7 @@ public class SelfDescriptionStoreImpl implements SelfDescriptionStore {
   private static final String ORDER_BY_HQL = "order by sd.statusTime desc, sd.sdHash";
 
   /**
-   * The fileStore to use. TODO: figure out how to configure the implementation at
-   * run time.
+   * The fileStore to use.
    */
   @Autowired
   @Qualifier("sdFileStore")
@@ -95,28 +95,33 @@ public class SelfDescriptionStoreImpl implements SelfDescriptionStore {
   }
 
   private static class FilterQueryBuilder {
+
     private final SessionFactory sessionFactory;
     private final List<Clause> clauses;
     private int firstResult;
     private int maxResults;
 
     private static class Clause {
+
       private static final char PLACEHOLDER_SYMBOL = '?';
       private final String formalParameterName;
       private final Object actualParameter;
       private final String templateInstance;
 
       private Clause(final String template, final String formalParameterName, final Object actualParameter) {
-        assert actualParameter != null : "value for parameter " + formalParameterName + " is null";
+        if (actualParameter == null) {
+          throw new IllegalArgumentException("value for parameter " + formalParameterName + " is null");
+        }
         this.formalParameterName = formalParameterName;
         this.actualParameter = actualParameter;
         final int placeholderPosition = template.indexOf(PLACEHOLDER_SYMBOL);
-        assert placeholderPosition >= 0
-            : "missing parameter placeholder '" + PLACEHOLDER_SYMBOL + "' in template: " + template;
-        templateInstance = template.substring(0, placeholderPosition) + ":" + formalParameterName
-            + template.substring(placeholderPosition + 1);
-        assert templateInstance.indexOf(PLACEHOLDER_SYMBOL, placeholderPosition + 1) == -1
-            : "multiple parameter placeholders '" + PLACEHOLDER_SYMBOL + "' in template: " + template;
+        if (placeholderPosition < 0) {
+          throw new IllegalArgumentException("missing parameter placeholder '" + PLACEHOLDER_SYMBOL + "' in template: " + template);
+        }
+        templateInstance = template.substring(0, placeholderPosition) + ":" + formalParameterName + template.substring(placeholderPosition + 1);
+        if (templateInstance.indexOf(PLACEHOLDER_SYMBOL, placeholderPosition + 1) != -1) {
+          throw new IllegalArgumentException("multiple parameter placeholders '" + PLACEHOLDER_SYMBOL + "' in template: " + template);
+        }
       }
     }
 
@@ -180,7 +185,7 @@ public class SelfDescriptionStoreImpl implements SelfDescriptionStore {
   }
 
   @Override
-  public List<SelfDescriptionMetadata> getByFilter(final SdFilter filter) {
+  public PaginatedResults<SelfDescriptionMetadata> getByFilter(final SdFilter filter) {
     final FilterQueryBuilder queryBuilder = new FilterQueryBuilder(sessionFactory);
 
     final Instant uploadTimeStart = filter.getUploadTimeStart();
@@ -204,8 +209,7 @@ public class SelfDescriptionStoreImpl implements SelfDescriptionStore {
 
     final String validator = filter.getValidator();
     if (validator != null) {
-      queryBuilder.addClause("? in (select validator from ValidatorRecord where sdHash=sd.sdHash)", "validator",
-          validator);
+      queryBuilder.addClause("? = inarray(validators)", "validator", validator);
     }
 
     final SelfDescriptionStatus status = filter.getStatus();
@@ -223,10 +227,12 @@ public class SelfDescriptionStoreImpl implements SelfDescriptionStore {
       queryBuilder.addClause("sdhash = ?", "hash", hash);
     }
 
+    Long totalCount = queryBuilder.createQuery().getResultStream().distinct().count();
+
     queryBuilder.setFirstResult(filter.getOffset());
     queryBuilder.setMaxResults(filter.getLimit());
 
-    return queryBuilder.createQuery().stream().collect(Collectors.toList());
+    return new PaginatedResults<>(totalCount, queryBuilder.createQuery().stream().collect(Collectors.toList()));
   }
 
   @Override
@@ -249,7 +255,6 @@ public class SelfDescriptionStoreImpl implements SelfDescriptionStore {
 
     // TODO: Add validators/signatures to the record once the Signature class is
     // clarified.
-
     if (existingSd != null) {
       existingSd.setStatus(SelfDescriptionStatus.DEPRECATED);
       existingSd.setStatusTime(Instant.now());
@@ -260,12 +265,12 @@ public class SelfDescriptionStoreImpl implements SelfDescriptionStore {
     try {
       currentSession.persist(sdmRecord);
     } catch (final EntityExistsException exc) {
-        log.error("storeSelfDescription.error 1", exc);
+      log.error("storeSelfDescription.error 1", exc);
       final String message = String.format("self-description file with hash %s already exists", sdMetadata.getSdHash());
       throw new ConflictException(message);
     } catch (Exception ex) {
-        log.error("storeSelfDescription.error 2", ex);
-        throw ex;
+      log.error("storeSelfDescription.error 2", ex);
+      throw ex;
     }
 
     graphDb.addClaims(verificationResult.getClaims(), sdmRecord.getSubjectId());
@@ -278,10 +283,10 @@ public class SelfDescriptionStoreImpl implements SelfDescriptionStore {
     } catch (final IOException exc) {
       throw new ServerException("Error while adding SD to file storage: " + exc.getMessage());
     } catch (Exception ex) {
-        log.error("storeSelfDescription.error 3", ex);
-        throw ex;
+      log.error("storeSelfDescription.error 3", ex);
+      throw ex;
     }
-    
+
   }
 
   @Override

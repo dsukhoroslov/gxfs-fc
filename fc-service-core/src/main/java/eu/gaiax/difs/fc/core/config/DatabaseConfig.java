@@ -2,6 +2,9 @@ package eu.gaiax.difs.fc.core.config;
 
 import java.util.Properties;
 import javax.sql.DataSource;
+import org.hibernate.dialect.PostgreSQL82Dialect;
+import org.hibernate.dialect.function.SQLFunctionTemplate;
+import org.hibernate.type.StandardBasicTypes;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -29,9 +32,10 @@ public class DatabaseConfig {
   public LocalSessionFactoryBean sessionFactory() {
     LocalSessionFactoryBean sessionFactory = new LocalSessionFactoryBean();
     sessionFactory.setDataSource(dataSource);
+    sessionFactory.setMappingResources("mappings/validators.hbm.xml");
     sessionFactory.setPackagesToScan(
-            "eu.gaiax.difs.fc.core.service.sdstore.impl",
-            "eu.gaiax.difs.fc.core.service.schemastore.impl"
+        "eu.gaiax.difs.fc.core.service.sdstore.impl",
+        "eu.gaiax.difs.fc.core.service.schemastore.impl"
     );
     sessionFactory.setHibernateProperties(hibernateProperties());
     return sessionFactory;
@@ -51,7 +55,9 @@ public class DatabaseConfig {
 
   private Properties hibernateProperties() {
     Properties hibernateProperties = new Properties();
-    hibernateProperties.setProperty("hibernate.hbm2ddl.auto", "update");
+    hibernateProperties.setProperty("hibernate.hbm2ddl.auto", "validate");
+    hibernateProperties.setProperty("hibernate.dialect", ArrayPostgresSQLDialect.class.getCanonicalName());
     return hibernateProperties;
   }
+
 }

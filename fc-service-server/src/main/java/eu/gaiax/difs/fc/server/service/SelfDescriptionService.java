@@ -7,7 +7,9 @@ import eu.gaiax.difs.fc.api.generated.model.SelfDescription;
 import eu.gaiax.difs.fc.api.generated.model.SelfDescriptionStatus;
 import eu.gaiax.difs.fc.api.generated.model.SelfDescriptions;
 import eu.gaiax.difs.fc.core.exception.ClientException;
+import eu.gaiax.difs.fc.core.exception.ConflictException;
 import eu.gaiax.difs.fc.core.pojo.ContentAccessorDirect;
+import eu.gaiax.difs.fc.core.pojo.PaginatedResults;
 import eu.gaiax.difs.fc.core.pojo.SdFilter;
 import eu.gaiax.difs.fc.core.pojo.SelfDescriptionMetadata;
 import eu.gaiax.difs.fc.core.pojo.VerificationResultOffering;
@@ -83,10 +85,9 @@ public class SelfDescriptionService implements SelfDescriptionsApiDelegate {
       filter.setLimit(limit);
       filter.setOffset(offset);
     }
-    final List<SelfDescriptionMetadata> selfDescriptions = sdStore.getByFilter(filter);
-    log.debug("readSelfDescriptions.exit; returning: {}", selfDescriptions.size());
-    // TODO: set total count
-    return ResponseEntity.ok(new SelfDescriptions(0, (List) selfDescriptions));
+    final PaginatedResults<SelfDescriptionMetadata> selfDescriptions = sdStore.getByFilter(filter);
+    log.debug("readSelfDescriptions.exit; returning: {}", selfDescriptions);
+    return ResponseEntity.ok(new SelfDescriptions((int) selfDescriptions.getTotalCount(), (List) selfDescriptions.getResults()));
   }
 
   /**
@@ -164,7 +165,7 @@ public class SelfDescriptionService implements SelfDescriptionsApiDelegate {
 
       // TODO: 24.08.2022 Need to set a validator
       SelfDescriptionMetadata sdMetadata = new SelfDescriptionMetadata(contentAccessor,
-          verificationResult.getId(), verificationResult.getIssuer(), new ArrayList<>());
+          verificationResult.getId(), verificationResult.getIssuer(), verificationResult.getValidators());
 
       checkParticipantAccess(sdMetadata.getIssuer());
       sdStore.storeSelfDescription(sdMetadata, verificationResult);
@@ -201,6 +202,8 @@ public class SelfDescriptionService implements SelfDescriptionsApiDelegate {
 
     if (sdMetadata.getStatus().equals(SelfDescriptionStatus.ACTIVE)) {
       sdStore.changeLifeCycleStatus(sdMetadata.getSdHash(), SelfDescriptionStatus.REVOKED);
+    } else {
+      throw new ConflictException("The SD status cannot be changed because the SD Metadata status is " + sdMetadata.getStatus());
     }
 
     log.debug("updateSelfDescription.exit; update self-description by hash: {}", selfDescriptionHash);

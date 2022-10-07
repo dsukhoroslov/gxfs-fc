@@ -1,43 +1,47 @@
 package eu.gaiax.difs.fc.server.controller;
 
-import static eu.gaiax.difs.fc.server.util.CommonConstants.PARTICIPANT_ADMIN_ROLE;
-import static org.junit.jupiter.api.Assertions.assertThrowsExactly;
+import static eu.gaiax.difs.fc.server.helper.FileReaderHelper.getMockFileDataAsString;
+import static eu.gaiax.difs.fc.server.util.TestCommonConstants.CATALOGUE_ADMIN_ROLE_WITH_PREFIX;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doThrow;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
+import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.c4_soft.springaddons.security.oauth2.test.annotations.*;
+import com.c4_soft.springaddons.security.oauth2.test.annotations.Claims;
+import com.c4_soft.springaddons.security.oauth2.test.annotations.OpenIdClaims;
+import com.c4_soft.springaddons.security.oauth2.test.annotations.StringClaim;
+import com.c4_soft.springaddons.security.oauth2.test.annotations.WithMockJwtAuth;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import eu.gaiax.difs.fc.api.generated.model.Error;
 import eu.gaiax.difs.fc.api.generated.model.SelfDescription;
 import eu.gaiax.difs.fc.api.generated.model.SelfDescriptionStatus;
+import eu.gaiax.difs.fc.api.generated.model.SelfDescriptions;
 import eu.gaiax.difs.fc.core.exception.NotFoundException;
 import eu.gaiax.difs.fc.core.pojo.ContentAccessorDirect;
-import eu.gaiax.difs.fc.core.pojo.SdClaim;
 import eu.gaiax.difs.fc.core.pojo.SelfDescriptionMetadata;
-import eu.gaiax.difs.fc.core.pojo.Signature;
 import eu.gaiax.difs.fc.core.pojo.VerificationResult;
 import eu.gaiax.difs.fc.core.pojo.VerificationResultOffering;
 import eu.gaiax.difs.fc.core.service.filestore.FileStore;
 import eu.gaiax.difs.fc.core.service.sdstore.SelfDescriptionStore;
 import eu.gaiax.difs.fc.core.service.verification.VerificationService;
 import eu.gaiax.difs.fc.core.util.HashUtils;
-import eu.gaiax.difs.fc.server.config.EmbeddedNeo4JConfig;
-
+import eu.gaiax.difs.fc.testsupport.config.EmbeddedNeo4JConfig;
+import io.zonky.test.db.AutoConfigureEmbeddedDatabase;
+import io.zonky.test.db.AutoConfigureEmbeddedDatabase.DatabaseProvider;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
-import javax.transaction.Transactional;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
-
-import io.zonky.test.db.AutoConfigureEmbeddedDatabase;
-import io.zonky.test.db.AutoConfigureEmbeddedDatabase.DatabaseProvider;
-
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.neo4j.harness.Neo4j;
 import org.mockito.ArgumentCaptor;
+import org.neo4j.harness.Neo4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -54,13 +58,6 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
-import static eu.gaiax.difs.fc.server.helper.FileReaderHelper.getMockFileDataAsString;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.doThrow;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.*;
-import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
 // TODO: 23.08.2022 Add a test Graph storage
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -72,17 +69,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 //@Transactional
 public class SelfDescriptionControllerTest {
     private final static String TEST_ISSUER = "http://example.org/test-issuer";
-    private final static String SD_FILE_NAME = "test-provider-sd.json";
+    private final static String SD_FILE_NAME = "default-sd.json";
 
-    private final String CATALOGUE_ADMIN_ROLE_WITH_PREFIX = "ROLE_" + PARTICIPANT_ADMIN_ROLE;
-
-    //@Autowired
-    //private Neo4j embeddedDatabaseServer;
-
-    //@AfterAll
-    //void closeNeo4j() {
-    //    embeddedDatabaseServer.close();
-    //}
+    @Autowired
+    private Neo4j embeddedDatabaseServer;
 
     // TODO: 14.07.2022 After adding business logic, need to fix/add tests, taking into account exceptions
     private static SelfDescriptionMetadata sdMeta;
@@ -118,6 +108,7 @@ public class SelfDescriptionControllerTest {
     @AfterAll
     public void storageSelfCleaning() throws IOException {
         fileStore.clearStorage();
+        embeddedDatabaseServer.close();
     }
 
     @Test
@@ -141,12 +132,16 @@ public class SelfDescriptionControllerTest {
     @WithMockUser
     public void readSDsShouldReturnSuccessResponse() throws Exception {
         sdStore.storeSelfDescription(sdMeta, getStaticVerificationResult());
-
-        mockMvc.perform(MockMvcRequestBuilders.get("/self-descriptions")
+        MvcResult result =  mockMvc.perform(MockMvcRequestBuilders.get("/self-descriptions")
                         .with(csrf())
                         .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk());
+                .andExpect(status().isOk())
+            .andReturn();
 
+        SelfDescriptions selfDescriptions = objectMapper.readValue(result.getResponse().getContentAsString(), SelfDescriptions.class);
+        assertNotNull(selfDescriptions);
+        assertEquals(1, selfDescriptions.getItems().size());
+        assertEquals(1, selfDescriptions.getTotalCount());
         sdStore.deleteSelfDescription(sdMeta.getSdHash());
     }
 
@@ -258,7 +253,7 @@ public class SelfDescriptionControllerTest {
         @StringClaim(name = "participant_id", value = TEST_ISSUER)})))
     public void addSDWithoutIssuerReturnForbiddenResponse() throws Exception {
       mockMvc.perform(MockMvcRequestBuilders.post("/self-descriptions")
-              .content(getMockFileDataAsString("test-provider-sd-without-credential-subject.json"))
+              .content(getMockFileDataAsString("sd-without-credential-subject.json"))
               .with(csrf())
               .contentType(MediaType.APPLICATION_JSON)
               .accept(MediaType.APPLICATION_JSON))
@@ -281,7 +276,7 @@ public class SelfDescriptionControllerTest {
         sdStore.deleteSelfDescription(sd.getSdHash());
     }
 
-    @Test 
+    @Test
     @WithMockJwtAuth(authorities = {CATALOGUE_ADMIN_ROLE_WITH_PREFIX}, claims = @OpenIdClaims(otherClaims = @Claims(stringClaims = {
         @StringClaim(name = "participant_id", value = TEST_ISSUER)})))
     public void addDuplicateSDReturnConflictWithSdStorage() throws Exception {
@@ -290,7 +285,7 @@ public class SelfDescriptionControllerTest {
 
       SelfDescriptionMetadata sdMetadata =
           new SelfDescriptionMetadata(contentAccessor, "id123", TEST_ISSUER, new ArrayList<>());
-      
+
       sdStore.storeSelfDescription(sdMetadata, getStaticVerificationResult());
       mockMvc.perform(MockMvcRequestBuilders
               .post("/self-descriptions")
@@ -360,7 +355,7 @@ public class SelfDescriptionControllerTest {
     @WithMockJwtAuth(authorities = {CATALOGUE_ADMIN_ROLE_WITH_PREFIX}, claims = @OpenIdClaims(otherClaims = @Claims(stringClaims = {
         @StringClaim(name = "participant_id", value = TEST_ISSUER)})))
     public void revokeSDReturnSuccessResponse() throws Exception {
-        final VerificationResult vr = new VerificationResult("vhash", new ArrayList<SdClaim>(), new ArrayList<Signature>(),
+        final VerificationResult vr = new VerificationResult("vhash", new ArrayList<>(), new ArrayList<>(),
             OffsetDateTime.now(), "lifecyclestatus", "issuer", LocalDate.now());
         sdStore.storeSelfDescription(sdMeta, vr);
 //        sdStore.storeSelfDescription(sdMeta, getStaticVerificationResult());
@@ -370,6 +365,26 @@ public class SelfDescriptionControllerTest {
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
         sdStore.deleteSelfDescription(sdMeta.getSdHash());
+    }
+
+    @Test
+    @WithMockJwtAuth(authorities = {CATALOGUE_ADMIN_ROLE_WITH_PREFIX}, claims = @OpenIdClaims(otherClaims = @Claims(stringClaims = {
+        @StringClaim(name = "participant_id", value = TEST_ISSUER)})))
+    public void revokeSdWithNotActiveStatusReturnConflictResponse() throws Exception {
+        final VerificationResult vr = new VerificationResult("vhash", new ArrayList<>(), new ArrayList<>(),
+            OffsetDateTime.now(), "lifecyclestatus", "issuer", LocalDate.now());
+        SelfDescriptionMetadata metadata = sdMeta;
+        metadata.setStatus(SelfDescriptionStatus.DEPRECATED);
+        sdStore.storeSelfDescription(metadata, vr);
+        MvcResult result = mockMvc
+            .perform(MockMvcRequestBuilders.post("/self-descriptions/" + sdMeta.getSdHash() + "/revoke")
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isConflict()).andReturn();
+        Error error = objectMapper.readValue(result.getResponse().getContentAsString(), Error.class);
+        assertEquals("The SD status cannot be changed because the SD Metadata status is deprecated", error.getMessage());
+        sdStore.deleteSelfDescription(metadata.getSdHash());
     }
 
     private static SelfDescriptionMetadata createSdMetadata() throws IOException {
