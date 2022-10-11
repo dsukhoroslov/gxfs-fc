@@ -50,12 +50,18 @@ public class SchemaStoreImpl implements SchemaStore {
    * @param schema The schema to analyse.
    * @return The analysis results.
    */
-  private SchemaAnalysisResult analyseSchema(ContentAccessor schema) {
+  public SchemaAnalysisResult analyseSchema(ContentAccessor schema) {
     SchemaAnalysisResult result = new SchemaAnalysisResult();
     List<String> extractedUrlsDupliacte = new ArrayList<>();
     Model model = ModelFactory.createDefaultModel();
-    StringReader schemaReader = new StringReader(schema.getContentAsString());
-    model.read(schemaReader, null,"TTL");
+    try {
+      StringReader schemaReader = new StringReader(schema.getContentAsString());
+      model.read(schemaReader, null,"TTL");
+      result.setValid(true);
+    }  catch (Throwable t){
+      result.setValid(false);
+    //  throw new VerificationException(t.getMessage());
+    }
     StmtIterator iter = model.listStatements();
     while (iter.hasNext()) {
       Statement stmt = iter.nextStatement();
@@ -75,13 +81,6 @@ public class SchemaStoreImpl implements SchemaStore {
           break;
         }
         else if(predicate.toLowerCase().indexOf("/shacl") > 0){
-          try {
-            Shapes schemaShape = Shapes.parse(schema.toString());
-            result.setValid(true);
-          }  catch (Throwable t){
-            result.setValid(false);
-            throw new VerificationException(t.getMessage());
-          }
           result.setSchemaType(SchemaType.SHAPE);
           if(stmt.getObject().isURIResource()) {
             extractedUrlsDupliacte.add(object.toString());

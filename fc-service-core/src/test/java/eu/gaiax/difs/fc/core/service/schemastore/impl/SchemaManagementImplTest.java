@@ -1,5 +1,8 @@
 package eu.gaiax.difs.fc.core.service.schemastore.impl;
 
+import static eu.gaiax.difs.fc.core.service.schemastore.SchemaStore.SchemaType.*;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrowsExactly;
 
@@ -14,9 +17,8 @@ import eu.gaiax.difs.fc.core.service.schemastore.SchemaStore.SchemaType;
 import eu.gaiax.difs.fc.core.util.HashUtils;
 import io.zonky.test.db.AutoConfigureEmbeddedDatabase;
 import io.zonky.test.db.AutoConfigureEmbeddedDatabase.DatabaseProvider;
-import java.io.File;
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
+
+import java.io.*;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
@@ -75,24 +77,42 @@ public class SchemaManagementImplTest {
   /**
    * Test of verifySchema method, of class SchemaManagementImpl.
    */
-  //@Disabled
+
   @Test
-  public void testVerifySchema() {
-    // TODO: FIT
+  public void testVerifyValidSchema() throws UnsupportedEncodingException {
+    String path = "Schema-Tests/valid-schemaShape.ttl";
+    ContentAccessor content = getAccessor(path);
+    boolean actual =  schemaStore.verifySchema(content);
+    assertTrue(actual);
   }
+  @Test
+  public void testVerifyInvalidSchema() throws UnsupportedEncodingException {
+    String path = "Schema-Tests/invalid-schemaShape.ttl";
+    ContentAccessor content = getAccessor(path);
+    boolean actual =  schemaStore.verifySchema(content);
+    assertFalse(actual);
+
+  }
+
+
+
+
+
 
   /**
    * Test of addSchema method, of class SchemaManagementImpl.
    */
   @Test
-  public void testAddSchema() {
+  public void testAddSchema() throws UnsupportedEncodingException {
     log.info("testAddSchema");
-    String schema1 = "Schema-Tests/LargeSchemaContent.json";
+    String path = "Schema-Tests/valid-schemaShapeCopy.ttl";
+    ContentAccessor content = getAccessor(path);
+   // String schema1 = "Some Schema Content";
 
-    String schemaId1 = schemaStore.addSchema(new ContentAccessorDirect(schema1));
+    String schemaId1 = schemaStore.addSchema(content);
 
     Map<SchemaType, List<String>> expected = new HashMap<>();
-    expected.computeIfAbsent(SchemaType.SHAPE, t -> new ArrayList<>()).add(schemaId1);
+    expected.computeIfAbsent(SHAPE, t -> new ArrayList<>()).add(schemaId1);
     Map<SchemaType, List<String>> schemaList = schemaStore.getSchemaList();
     assertEquals(expected, schemaList);
 
@@ -119,7 +139,7 @@ public class SchemaManagementImplTest {
   public void testAddSchemaWithLongContent() throws IOException  {
     log.info("testAddSchemaWithLongContent");
 
-    String path = "Schema-Tests/largeSchemaContent.json";
+    String path = "Schema-Tests/schema.ttl";
 
     String schema1 = getAccessor(path).getContentAsString();
 
@@ -200,17 +220,41 @@ public class SchemaManagementImplTest {
    * Test of getSchemasForType method, of class SchemaManagementImpl.
    */
   @Test
-  @Disabled
-  public void testGetSchemasForType() {
+  public void testGetSchemasForTypeShape() throws UnsupportedEncodingException {
+    String path = "Schema-Tests/valid-schemaShape.ttl";
+    ContentAccessor content = getAccessor(path);
+    SchemaAnalysisResult schemaAnalysisResult = schemaStore.analyseSchema(content);
+
+    SchemaType actual = schemaAnalysisResult.getSchemaType();
+    SchemaType expected = SHAPE;
+    assertEquals(expected.toString(),actual.toString());
+
+  }
+  @Test
+  public void testGetSchemasForTypeVocabulary() throws UnsupportedEncodingException {
+    String path = "Schema-Tests/skosConcept.ttl";
+    ContentAccessor content = getAccessor(path);
+    SchemaAnalysisResult schemaAnalysisResult = schemaStore.analyseSchema(content);
+    SchemaType actual = schemaAnalysisResult.getSchemaType();
+    SchemaType expected = VOCABULARY;
+    assertEquals(expected.toString(),actual.toString());
   }
 
   /**
    * Test of getCompositeSchema method, of class SchemaManagementImpl.
    */
   @Test
-  @Disabled
-  public void testGetCompositeSchema() {
+  public void testGetCompositeSchema() throws UnsupportedEncodingException {
+    String path = "Schema-Tests/compositeShacl";
+
+    ContentAccessor compositeSchemaExpected = getAccessor(path);
+    ContentAccessor compositeSchemaActual = schemaStore.getCompositeSchema(SHAPE);
+
+    assertEquals(compositeSchemaExpected.getContentAsString(),compositeSchemaActual.getContentAsString());
   }
+
+
+
 
 
   private static ContentAccessorFile getAccessor(String path) throws UnsupportedEncodingException {
