@@ -75,7 +75,7 @@ public class SchemaManagementImplTest {
   /**
    * Test of verifySchema method, of class SchemaManagementImpl.
    */
-  @Disabled
+  //@Disabled
   @Test
   public void testVerifySchema() {
     // TODO: FIT
@@ -87,7 +87,7 @@ public class SchemaManagementImplTest {
   @Test
   public void testAddSchema() {
     log.info("testAddSchema");
-    String schema1 = "Some Schema Content";
+    String schema1 = "Schema-Tests/LargeSchemaContent.json";
 
     String schemaId1 = schemaStore.addSchema(new ContentAccessorDirect(schema1));
 

@@ -9,13 +9,11 @@ import org.neo4j.driver.Driver;
 import org.neo4j.driver.GraphDatabase;
 import org.neo4j.driver.Result;
 import org.neo4j.driver.Session;
-import org.neo4j.driver.springframework.boot.test.autoconfigure.Neo4jTestHarnessAutoConfiguration;
 import org.neo4j.gds.catalog.GraphExistsProc;
 import org.neo4j.gds.catalog.GraphListProc;
 import org.neo4j.gds.catalog.GraphProjectProc;
 import org.neo4j.harness.Neo4j;
 import org.neo4j.harness.Neo4jBuilders;
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 
@@ -27,7 +25,6 @@ import org.springframework.context.annotation.Configuration;
 @Slf4j
 @Configuration
 @ConditionalOnProperty(value = "federated-catalogue.scope", havingValue = "test")
-@EnableAutoConfiguration(exclude = {Neo4jTestHarnessAutoConfiguration.class})
 public class EmbeddedNeo4JConfig {
   @Bean
   public Neo4j embeddedDatabaseServer() {
