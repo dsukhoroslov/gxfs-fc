@@ -8,6 +8,7 @@ import io.zonky.test.db.AutoConfigureEmbeddedDatabase;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
+import org.neo4j.cypher.internal.expressions.True;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -129,12 +130,13 @@ public class VerificationServiceImplTest {
     }
 
     @Test
-    @Disabled("This test wont work like this anymore since some functions are private now")
+  //  @Disabled("This test wont work like this anymore since some functions are private now")
     void providerClaimsTest() throws Exception {
-        String path = "Claims-Extraction-Tests/providerTest.jsonld";
+        String path = "Claims-Extraction-Tests/providerTestUpdated.jsonld";
 
         VerificationResult result = verificationService.verifySelfDescription(getAccessor(path));
         List<SdClaim> actualClaims = result.getClaims();
+        assertTrue(true);
 
         List<SdClaim> expectedClaims = new ArrayList<>();
         expectedClaims.add(new SdClaim("_:b0", "<vcard:country-name>", "\"Country Name 2\""));
