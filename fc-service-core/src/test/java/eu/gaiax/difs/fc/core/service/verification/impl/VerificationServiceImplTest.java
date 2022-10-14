@@ -132,11 +132,11 @@ public class VerificationServiceImplTest {
     @Test
   //  @Disabled("This test wont work like this anymore since some functions are private now")
     void providerClaimsTest() throws Exception {
-        String path = "Claims-Extraction-Tests/providerTestUpdated.jsonld";
+        String path = "Claims-Extraction-Tests/providerTest.jsonld";
 
         VerificationResult result = verificationService.verifySelfDescription(getAccessor(path));
         List<SdClaim> actualClaims = result.getClaims();
-        assertTrue(true);
+//        assertTrue(true);
 
         List<SdClaim> expectedClaims = new ArrayList<>();
         expectedClaims.add(new SdClaim("_:b0", "<vcard:country-name>", "\"Country Name 2\""));
