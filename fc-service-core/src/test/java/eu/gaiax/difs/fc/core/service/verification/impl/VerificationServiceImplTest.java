@@ -1,19 +1,44 @@
 package eu.gaiax.difs.fc.core.service.verification.impl;
 
+import apoc.coll.Coll;
+import com.danubetech.verifiablecredentials.VerifiablePresentation;
+import eu.gaiax.difs.fc.core.config.DatabaseConfig;
 import eu.gaiax.difs.fc.core.config.FileStoreConfig;
 import eu.gaiax.difs.fc.core.exception.VerificationException;
 import eu.gaiax.difs.fc.core.pojo.*;
+import eu.gaiax.difs.fc.core.service.filestore.FileStore;
+import eu.gaiax.difs.fc.core.service.graphdb.impl.Neo4jGraphStore;
 import eu.gaiax.difs.fc.core.service.schemastore.impl.SchemaStoreImpl;
+import eu.gaiax.difs.fc.core.service.sdstore.SelfDescriptionStore;
+import eu.gaiax.difs.fc.core.service.sdstore.impl.SelfDescriptionStoreImpl;
+import eu.gaiax.difs.fc.core.service.sdstore.impl.SelfDescriptionStoreImplTest;
+import eu.gaiax.difs.fc.core.service.validatorcache.ValidatorCache;
+import eu.gaiax.difs.fc.core.service.validatorcache.impl.ValidatorCacheImpl;
+import eu.gaiax.difs.fc.testsupport.config.EmbeddedNeo4JConfig;
 import io.zonky.test.db.AutoConfigureEmbeddedDatabase;
+import lombok.extern.slf4j.Slf4j;
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
+import org.hibernate.boot.Metadata;
+import org.hibernate.boot.MetadataSources;
+import org.hibernate.boot.SessionFactoryBuilder;
+import org.hibernate.boot.registry.StandardServiceRegistry;
+import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
+import org.hibernate.ejb.HibernateEntityManagerFactory;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Import;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.io.File;
 import java.io.IOException;
@@ -24,16 +49,29 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @ActiveProfiles("tests-sdstore")
-@ContextConfiguration(classes = {VerificationServiceImplTest.TestApplication.class, FileStoreConfig.class,
-        VerificationServiceImpl.class, SchemaStoreImpl.class})
+@ContextConfiguration(classes = {
+        VerificationServiceImplTest.TestApplication.class,
+        VerificationServiceImpl.class,
+        SelfDescriptionStoreImplTest.class,
+        SchemaStoreImpl.class,
+        SelfDescriptionStoreImpl.class,
+        Neo4jGraphStore.class,
+        FileStoreConfig.class,
+        DatabaseConfig.class})
+@DirtiesContext
+@Transactional
 @AutoConfigureEmbeddedDatabase(provider = AutoConfigureEmbeddedDatabase.DatabaseProvider.ZONKY)
+@Slf4j
+@Import(EmbeddedNeo4JConfig.class)
 public class VerificationServiceImplTest {
 
     static Path base_path = Paths.get(".").toAbsolutePath().normalize();
@@ -48,6 +86,16 @@ public class VerificationServiceImplTest {
 
     @Autowired
     private VerificationServiceImpl verificationService;
+
+    @Autowired
+    private SelfDescriptionStore selfDescriptionStore;
+
+    @Autowired
+    private Neo4jGraphStore graphStore;
+
+    @Autowired
+    @Qualifier("sdFileStore")
+    private FileStore fileStore;
 
     private static ContentAccessor getAccessor(String path) throws UnsupportedEncodingException {
         URL url = VerificationServiceImplTest.class.getClassLoader().getResource(path);
@@ -148,6 +196,45 @@ public class VerificationServiceImplTest {
         assertTrue(expectedClaims.size() == actualClaims.size());
         assertTrue(expectedClaims.containsAll(actualClaims));
         assertTrue(actualClaims.containsAll(expectedClaims));
+    }
+
+    @Test
+    void playingWithClaims() throws UnsupportedEncodingException {
+        String path = "serviceOfferingSD.jsonld";
+
+
+        ContentAccessor contentAccessor = getAccessor(path);
+        VerificationResult verificationResult = verificationService.verifySelfDescription(contentAccessor);
+
+        SelfDescriptionMetadata sdMetadata = new SelfDescriptionMetadata(verificationResult.getId(), verificationResult.getIssuer(),
+                verificationResult.getValidators(), contentAccessor);
+
+        selfDescriptionStore.storeSelfDescription(sdMetadata, verificationResult);
+
+        String credentialSubject = "http://example.org/test-issuer2";  // == sdMetadata.getIssuer()
+        System.out.println("########################## Issuer: " + sdMetadata.getIssuer());
+        System.out.println("########################## ID: " + sdMetadata.getId());
+        System.out.println("########################## SD: " + sdMetadata.getSelfDescription());
+
+        ContentAccessor sdAccessor = sdMetadata.getSelfDescription();
+        System.out.println("########################## SD content str: " + sdAccessor.getContentAsString());
+
+        // get the data back from SD store
+        SdFilter filter = new SdFilter();
+        filter.setIssuers(Collections.singletonList(credentialSubject));
+        List<SelfDescriptionMetadata> results = selfDescriptionStore.getByFilter(filter).getResults();
+        System.out.println("########################## Number of results: " + results.size());
+
+        SelfDescriptionMetadata firstResult = results.get(0);
+        VerifiablePresentation vp =
+                VerifiablePresentation.fromJson(firstResult.getSelfDescription().getContentAsString()
+                        .replaceAll("JsonWebKey2020", "JsonWebSignature2020"));
+
+        Map<String, Object> claims =
+                vp.getVerifiableCredential().getCredentialSubject().getClaims();
+
+        System.out.println("########################## claims: " + claims);
+        fail("Planned failure");
     }
 
     @Test
