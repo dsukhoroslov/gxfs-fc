@@ -244,10 +244,11 @@ public class SchemaManagementImplTest {
    * Test of getCompositeSchema method, of class SchemaManagementImpl.
    */
   @Test
-  public void testGetCompositeSchema() throws UnsupportedEncodingException {
+  public void testGetCompositeSchema() throws IOException {
     String path = "Schema-Tests/compositeShacl";
-
     ContentAccessor compositeSchemaExpected = getAccessor(path);
+
+
     ContentAccessor compositeSchemaActual = schemaStore.getCompositeSchema(SHAPE);
 
     assertEquals(compositeSchemaExpected.getContentAsString(),compositeSchemaActual.getContentAsString());
