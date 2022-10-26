@@ -35,7 +35,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.time.OffsetDateTime;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -65,7 +65,6 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
-// TODO: 23.08.2022 Add a test Graph storage
 @Slf4j
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -74,7 +73,6 @@ import org.springframework.web.context.WebApplicationContext;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @AutoConfigureEmbeddedDatabase(provider = DatabaseProvider.ZONKY)
 @Import(EmbeddedNeo4JConfig.class)
-@Transactional
 public class SelfDescriptionControllerTest {
     private final static String TEST_ISSUER = "http://example.org/test-issuer";
     private final static String SD_FILE_NAME = "default-sd.json";
@@ -82,12 +80,6 @@ public class SelfDescriptionControllerTest {
     @Autowired
     private Neo4j embeddedDatabaseServer;
 
-    @AfterAll
-    void closeNeo4j() {
-        embeddedDatabaseServer.close();
-    }
-
-    // TODO: 14.07.2022 After adding business logic, need to fix/add tests, taking into account exceptions
     private static SelfDescriptionMetadata sdMeta;
 
     @Autowired
@@ -316,15 +308,18 @@ public class SelfDescriptionControllerTest {
     }
 
     @Test
-    @WithMockJwtAuth(authorities = SD_ADMIN_ROLE_WITH_PREFIX, claims = @OpenIdClaims(otherClaims = @Claims(stringClaims = {
-        @StringClaim(name = "participant_id", value = "")})))
-    public void addSDWithoutIssuerReturnForbiddenResponse() throws Exception {
+    @WithMockJwtAuth(authorities = {CATALOGUE_ADMIN_ROLE_WITH_PREFIX}, claims = @OpenIdClaims(otherClaims = @Claims(stringClaims = {
+        @StringClaim(name = "participant_id", value = TEST_ISSUER)})))
+    public void addSDWithoutIssuerReturnUnprocessableEntity() throws Exception {
+//    @WithMockJwtAuth(authorities = SD_ADMIN_ROLE_WITH_PREFIX, claims = @OpenIdClaims(otherClaims = @Claims(stringClaims = {
+//        @StringClaim(name = "participant_id", value = "")})))
+//    public void addSDWithoutIssuerReturnForbiddenResponse() throws Exception {
       mockMvc.perform(MockMvcRequestBuilders.post("/self-descriptions")
               .content(getMockFileDataAsString("sd-without-issuer.json"))
               .with(csrf())
               .contentType(MediaType.APPLICATION_JSON)
               .accept(MediaType.APPLICATION_JSON))
-          .andExpect(status().isForbidden());
+          .andExpect(status().isUnprocessableEntity());
     }
 
     @Test
@@ -421,8 +416,8 @@ public class SelfDescriptionControllerTest {
     @WithMockJwtAuth(authorities = {CATALOGUE_ADMIN_ROLE_WITH_PREFIX}, claims = @OpenIdClaims(otherClaims = @Claims(stringClaims = {
         @StringClaim(name = "participant_id", value = TEST_ISSUER)})))
     public void revokeSDReturnSuccessResponse() throws Exception {
-        final VerificationResult vr = new VerificationResult(OffsetDateTime.now(), SelfDescriptionStatus.ACTIVE.getValue(), "issuer", 
-                OffsetDateTime.now(), "vhash", List.of(), List.of());
+        final VerificationResult vr = new VerificationResult(Instant.now(), SelfDescriptionStatus.ACTIVE.getValue(), "issuer", 
+                Instant.now(), "vhash", List.of(), List.of());
         sdStore.storeSelfDescription(sdMeta, vr);
 //        sdStore.storeSelfDescription(sdMeta, getStaticVerificationResult());
         mockMvc.perform(MockMvcRequestBuilders.post("/self-descriptions/" + sdMeta.getSdHash() + "/revoke")
@@ -437,8 +432,8 @@ public class SelfDescriptionControllerTest {
     @WithMockJwtAuth(authorities = {CATALOGUE_ADMIN_ROLE_WITH_PREFIX}, claims = @OpenIdClaims(otherClaims = @Claims(stringClaims = {
         @StringClaim(name = "participant_id", value = TEST_ISSUER)})))
     public void revokeSdWithNotActiveStatusReturnConflictResponse() throws Exception {
-        final VerificationResult vr = new VerificationResult(OffsetDateTime.now(), SelfDescriptionStatus.ACTIVE.getValue(), "issuer", 
-                OffsetDateTime.now(), "vhash", List.of(), List.of());
+        final VerificationResult vr = new VerificationResult(Instant.now(), SelfDescriptionStatus.ACTIVE.getValue(), "issuer", 
+                Instant.now(), "vhash", List.of(), List.of());
         SelfDescriptionMetadata metadata = sdMeta;
         metadata.setStatus(SelfDescriptionStatus.DEPRECATED);
         sdStore.storeSelfDescription(metadata, vr);
@@ -459,8 +454,8 @@ public class SelfDescriptionControllerTest {
         sdMeta.setIssuer(TEST_ISSUER);
         sdMeta.setSdHash(HashUtils.calculateSha256AsHex("test hash"));
         sdMeta.setStatus(SelfDescriptionStatus.ACTIVE);
-        sdMeta.setStatusDatetime(OffsetDateTime.parse("2022-01-01T12:00:00Z"));
-        sdMeta.setUploadDatetime(OffsetDateTime.parse("2022-01-02T12:00:00Z"));
+        sdMeta.setStatusDatetime(Instant.parse("2022-01-01T12:00:00Z"));
+        sdMeta.setUploadDatetime(Instant.parse("2022-01-02T12:00:00Z"));
         sdMeta.setSelfDescription(new ContentAccessorDirect(getMockFileDataAsString(SD_FILE_NAME)));
         return sdMeta;
     }

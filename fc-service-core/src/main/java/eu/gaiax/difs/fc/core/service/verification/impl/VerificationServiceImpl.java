@@ -1,7 +1,5 @@
 package eu.gaiax.difs.fc.core.service.verification.impl;
 
-import com.apicatalog.rdf.RdfNQuad;
-import com.apicatalog.rdf.RdfValue;
 import com.danubetech.keyformats.JWK_to_PublicKey;
 import com.danubetech.keyformats.crypto.PublicKeyVerifier;
 import com.danubetech.keyformats.crypto.PublicKeyVerifierFactory;
@@ -10,13 +8,15 @@ import com.danubetech.keyformats.keytypes.KeyTypeName_for_JWK;
 import com.danubetech.verifiablecredentials.CredentialSubject;
 import com.danubetech.verifiablecredentials.VerifiableCredential;
 import com.danubetech.verifiablecredentials.VerifiablePresentation;
-import com.danubetech.verifiablecredentials.validation.Validation;
 import com.nimbusds.jwt.JWT;
 import com.nimbusds.jwt.JWTParser;
 import eu.gaiax.difs.fc.api.generated.model.SelfDescriptionStatus;
+import eu.gaiax.difs.fc.core.exception.ClientException;
 import eu.gaiax.difs.fc.core.exception.VerificationException;
 import eu.gaiax.difs.fc.core.pojo.*;
 import eu.gaiax.difs.fc.core.service.schemastore.SchemaStore;
+import eu.gaiax.difs.fc.core.service.verification.ClaimExtractor;
+import eu.gaiax.difs.fc.core.service.validatorcache.ValidatorCache;
 import eu.gaiax.difs.fc.core.service.verification.VerificationService;
 import foundation.identity.did.DIDDocument;
 import foundation.identity.jsonld.JsonLDException;
@@ -37,6 +37,7 @@ import org.apache.http.message.BasicNameValuePair;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Resource;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.topbraid.shacl.validation.ValidationUtil;
@@ -47,24 +48,14 @@ import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
-
+import java.security.GeneralSecurityException;
+import java.security.Security;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
-
 import java.text.ParseException;
 import java.time.Instant;
-import java.time.LocalDate;
-import java.time.OffsetDateTime;
-import java.time.ZoneId;
-import java.time.ZoneOffset;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Implementation of the {@link VerificationService} interface.
@@ -80,12 +71,21 @@ public class VerificationServiceImpl implements VerificationService {
   private static final Set<String> SERVICE_OFFERING_TYPES = Set.of("ServiceOfferingExperimental", "http://w3id.org/gaia-x/service#ServiceOffering", "gax-service:ServiceOffering");
   private static final Set<String> SIGNATURES = Set.of("JsonWebSignature2020"); //, "Ed25519Signature2018");
   
+  private static final ClaimExtractor[] extractors = new ClaimExtractor[] {new TitaniumClaimExtractor(), new DanubeTechClaimExtractor()};
+  
   private static final int VRT_UNKNOWN = 0;
   private static final int VRT_PARTICIPANT= 1;
   private static final int VRT_OFFERING = 2;
 
   @Autowired
   private SchemaStore schemaStore;
+
+  @Autowired
+  private ValidatorCache validatorCache;
+
+  public VerificationServiceImpl () {
+    Security.addProvider(new BouncyCastleProvider());
+  }
 
   /**
    * The function validates the Self-Description as JSON and tries to parse the json handed over.
@@ -137,8 +137,6 @@ public class VerificationServiceImpl implements VerificationService {
     VerifiableCredential vc; 
     if (verifySemantics) {
       try {
-        //Validation.validate(vp);
-        //Validation.validate(vc);
         vc = verifyPresentation(vp);
       } catch (VerificationException ex) {
         throw ex;
@@ -148,15 +146,17 @@ public class VerificationServiceImpl implements VerificationService {
       }
     } else {
       vc = getCredential(vp);
-      // what if vc is null?
+      if (vc == null) {
+        throw new VerificationException("Semantic error: VerifiablePresentation must contain 'verifiableCredential' property");
+      }
     }
     
-    Pair<Boolean, Boolean> type = getSDType(vp, vc);
+    Pair<Boolean, Boolean> type = getSDTypes(vc);
     if (strict) {
       if (type.getLeft()) {
-        if (type.getRight()) { 
-          throw new VerificationException("Semantic error: SD is both, a Participant and an Service Offering SD");
-        }
+        //if (type.getRight()) { 
+        //  throw new VerificationException("Semantic error: SD is both, a Participant and a Service Offering SD");
+        //}
         if (expectedType == VRT_OFFERING) {
           throw new VerificationException("Semantic error: Expected Service Offering SD, got Participant SD");
         }
@@ -165,7 +165,7 @@ public class VerificationServiceImpl implements VerificationService {
           throw new VerificationException("Semantic error: Expected Participant SD, got Service Offering SD");
         }
       } else {
-        throw new VerificationException("Semantic error: SD is neither a Participant SD nor a Service Offering SD");
+        throw new VerificationException("Semantic error: SD is neither a Participant nor a Service Offering SD");
       }
     }
     
@@ -190,17 +190,9 @@ public class VerificationServiceImpl implements VerificationService {
       issuer = vc.getIssuer().toString();
     }
     Date issDate = vc.getIssuanceDate();
-    OffsetDateTime issuedDate = issDate == null ? OffsetDateTime.now() : issDate.toInstant().atOffset(ZoneOffset.UTC); 
+    Instant issuedDate = issDate == null ? Instant.now() : issDate.toInstant(); 
 
-    List<SdClaim> claims = null;
-    CredentialSubject credentialSubject = getCredentialSubject(vc);
-    if (credentialSubject == null) {
-      if (strict) {
-        throw new VerificationException("Semantic error: could not find CS in VC");
-      }
-    } else {
-      claims = extractClaims(credentialSubject);
-    }
+    List<SdClaim> claims = extractClaims(payload);
     
     VerificationResult result;
     if (type.getLeft()) {
@@ -213,13 +205,13 @@ public class VerificationServiceImpl implements VerificationService {
       }
       URI holder = vp.getHolder();
       String name = holder == null ? issuer : holder.toString();
-      result = new VerificationResultParticipant(OffsetDateTime.now(), SelfDescriptionStatus.ACTIVE.getValue(), issuer, issuedDate,
+      result = new VerificationResultParticipant(Instant.now(), SelfDescriptionStatus.ACTIVE.getValue(), issuer, issuedDate,
               claims, validators, name, key);
     } else if (type.getRight()) {
-      result = new VerificationResultOffering(OffsetDateTime.now(), SelfDescriptionStatus.ACTIVE.getValue(), issuer, issuedDate,
+      result = new VerificationResultOffering(Instant.now(), SelfDescriptionStatus.ACTIVE.getValue(), issuer, issuedDate,
               id, claims, validators);
     } else {
-      result = new VerificationResult(OffsetDateTime.now(), SelfDescriptionStatus.ACTIVE.getValue(), issuer, issuedDate,
+      result = new VerificationResult(Instant.now(), SelfDescriptionStatus.ACTIVE.getValue(), issuer, issuedDate,
             id, claims, validators);
     }
 
@@ -242,120 +234,134 @@ public class VerificationServiceImpl implements VerificationService {
       return VerifiablePresentation.fromJson(content.getContentAsString());
     } catch (Exception ex) {
       log.error("parseContent.syntactic error;", ex);
-      throw new VerificationException("Syntactic error: " + ex.getMessage(), ex);
+      throw new ClientException("Syntactic error: " + ex.getMessage(), ex);
     }
   }
   
   private VerifiableCredential verifyPresentation(VerifiablePresentation presentation) {
-    // VP must have VC
+    StringBuilder sb = new StringBuilder();
+    String sep = System.getProperty("line.separator");  
+    if (checkAbsence(presentation, "@context")) { 
+      sb.append(" - VerifiablePresentation must contain '@context' property").append(sep);
+    }
+    if (checkAbsence(presentation, "type", "@type")) {
+      sb.append(" - VerifiablePresentation must contain 'type' property").append(sep);
+    }
+    if (checkAbsence(presentation, "verifiableCredential")) {
+      sb.append(" - VerifiablePresentation must contain 'verifiableCredential' property").append(sep);
+    }
     VerifiableCredential credential = getCredential(presentation);
-    if (credential == null) {
-      throw new VerificationException("Semantic error: could not find VC in SD");
-    }
-    String vcId = getID(credential);
-    if (vcId == null) {
-      throw new VerificationException("Semantic error: could not find ID in VC");
-    }
+    if (credential != null) {
+      if (checkAbsence(credential, "@context")) {
+        sb.append(" - VerifiableCredential must contain '@context' property").append(sep);
+      }
+      if (checkAbsence(credential, "type", "@type")) {
+        sb.append(" - VerifiableCredential must contain 'type' property").append(sep);
+      }
+      if (checkAbsence(credential, "credentialSubject")) {
+        sb.append(" - VerifiableCredential must contain 'credentialSubject' property").append(sep);
+      }
+      if (checkAbsence(credential, "issuer")) {
+        sb.append(" - VerifiableCredential must contain 'issuer' property").append(sep);
+      }
+      if (checkAbsence(credential, "issuanceDate")) {
+        sb.append(" - VerifiableCredential must contain 'issuanceDate' property").append(sep);
+      }
     
-    CredentialSubject subject = getCredentialSubject(credential);
-    if (subject == null) {
-      throw new VerificationException("Semantic error: could not find CS in VC");
+      Date today = Date.from(Instant.now());
+      Date issDate = credential.getIssuanceDate();
+      if (issDate != null && issDate.after(today)) { 
+        sb.append(" - 'issuanceDate' must be in the past").append(sep);
+      }
+      Date expDate = credential.getExpirationDate();
+      if (expDate != null && expDate.before(today)) {
+        sb.append(" - 'expirationDate' must be in the future").append(sep);
+      }
     }
-    
-    Date today = Date.from(Instant.now());
-    Date issDate = credential.getIssuanceDate();
-    if (issDate != null && issDate.after(today)) {
-      throw new VerificationException("Semantic error: issuanceDate must be in the past");
+    if (sb.length() > 0) {
+      sb.insert(0, "Semantic Errors:").insert(16,  sep);
+      throw new VerificationException(sb.toString());  
     }
-
-    Date expDate = credential.getExpirationDate();
-    if (expDate != null && expDate.before(today)) {
-      throw new VerificationException("Semantic error: expirationDate must be in the future");
-    }
-    
     return credential;
   }
-  
-  private Pair<Boolean, Boolean> getSDType(VerifiablePresentation presentation, VerifiableCredential credential) {
-    boolean isParticipant = false;
-    boolean isServiceOffering = false;
 
-    try {
-      CredentialSubject cs = getCredentialSubject(credential);
-      if (cs != null) {
-        log.debug("getSDType; type: {}, types: {}", cs.getType(), cs.getTypes());
-        for (String key : TYPE_KEYS) {
-          Object _type = cs.getJsonObject().get(key);
-          log.debug("getSDType; key: {}, value: {}", key, _type);
-          if (_type == null) continue;
-           
-          List<String> types;
-          if (_type instanceof List) {
-            types = (List<String>) _type;
-          } else {
-            types = List.of((String) _type);
+  private boolean checkAbsence(JsonLDObject container, String ... keys) {
+      boolean found = false;
+      for (String key: keys) {
+          if (container.getJsonObject().containsKey(key)) {
+              found = true; break;
           }
+      }
+      return !found;
+  }
+  
+  private Pair<Boolean, Boolean> getSDTypes(VerifiableCredential credential) {
+    Boolean result = getSDType(credential);
+    if (result == null) {
+      CredentialSubject subject = getCredentialSubject(credential);
+      if (subject != null) {
+        result = getSDType(subject);
+      }
+    }
     
-          for (String type : types) {
-            if (PARTICIPANT_TYPES.contains(type)) {
-              isParticipant = true;
-            }
-            if (SERVICE_OFFERING_TYPES.contains(type)) {
-              isServiceOffering = true;
-            }
+    if (result == null) {
+      return Pair.of(false, false); 
+    }
+    return result ? Pair.of(true,  false) : Pair.of(false, true);
+  }
+  
+  private Boolean getSDType(JsonLDObject container) {
+    try {
+      for (String key : TYPE_KEYS) {
+        Object _type = container.getJsonObject().get(key);
+        log.debug("getSDType; key: {}, value: {}", key, _type);
+        if (_type == null) continue;
+             
+        List<String> types;
+        if (_type instanceof List) {
+          types = (List<String>) _type;
+        } else {
+          types = List.of((String) _type);
+        }
+      
+        for (String type : types) {
+          if (PARTICIPANT_TYPES.contains(type)) {
+            return Boolean.TRUE;
+          }
+          if (SERVICE_OFFERING_TYPES.contains(type)) {
+            return Boolean.FALSE;
           }
         }
-      }
+      } 
     } catch (Exception e) {
       log.debug("getSDType.error: {}", e.getMessage());  
-      throw new VerificationException("Semantic error: could not extract SD type", e);
     }
-
-    return Pair.of(isParticipant, isServiceOffering);
+    return null;
   }
+  
 
+  /*package private functions*/
   /**
    * A method that returns a list of claims given a self-description's VerifiablePresentation
    *
    * @param cs a self-description as Verifiable Presentation for claims extraction
    * @return a list of claims.
    */
-   private List<SdClaim> extractClaims(CredentialSubject cs) {
-
-     log.debug("extractClaims.enter; got credential subject: {}", cs);
-     List<SdClaim> claims = new ArrayList<>();
-     try {
-       for (RdfNQuad nquad: cs.toDataset().toList()) {
-         log.debug("extractClaims; got NQuad: {}", nquad);
-         if (nquad.getSubject().isIRI()) {
-           String sub = rdf2String(nquad.getSubject());
-           if (sub != null) {
-             String pre = rdf2String(nquad.getPredicate());
-             if (pre != null) {
-               String obj = rdf2String(nquad.getObject());
-               if (obj != null) {
-                 SdClaim claim = new SdClaim(sub, pre, obj);
-                 claims.add(claim);
-               }
-             }
-           }
+   private List<SdClaim> extractClaims(ContentAccessor payload) {
+     List<SdClaim> claims = null;  
+     for (ClaimExtractor extra: extractors) {
+       try {
+         claims = extra.extractClaims(payload);
+         if (claims != null) {
+           break;
          }
+       } catch (Exception ex) {
+         log.error("extractClaims.error: ", ex);
        }
-     } catch (JsonLDException ex) {
-       throw new VerificationException("Semantic error: " + ex.getMessage());
      }
-     log.debug("extractClaims.exit; returning claims: {}", claims);
      return claims;
   }
 
-  private String rdf2String(RdfValue rdf) {
-     if (rdf.isBlankNode()) return rdf.getValue();
-     if (rdf.isLiteral()) return "\"" + rdf.getValue() + "\"";
-     // this is IRI, Neo4J does not process namespaced IRIs yet
-     if (rdf.getValue().startsWith("http://") || rdf.getValue().startsWith("https://")) return "<" + rdf.getValue() + ">";
-     return null;
-  }
-  
   private VerifiableCredential getCredential(VerifiablePresentation presentation) {
     try {
       VerifiableCredential credential = presentation.getVerifiableCredential();
@@ -385,7 +391,15 @@ public class VerificationServiceImpl implements VerificationService {
   }
 
   private String getID(VerifiableCredential credential) {
-    return getID(credential.getJsonObject());
+    String id = null;
+    CredentialSubject subject = getCredentialSubject(credential);
+    if (subject != null) {
+      id = getID(subject.getJsonObject());  
+    }
+    if (id == null) {
+      id = getID(credential.getJsonObject());  
+    }
+    return id;
   }
 
   private String getID (Map<String, Object> map) {
@@ -399,7 +413,7 @@ public class VerificationServiceImpl implements VerificationService {
         }
       }
     }
-    throw new VerificationException("Semantic error: could not find Credential ID");
+    return null;
   }
 
   /* SD validation against SHACL Schemas */
@@ -459,7 +473,10 @@ public class VerificationServiceImpl implements VerificationService {
   private Validator checkSignature (JsonLDObject payload) throws IOException, ParseException {
     Map<String, Object> proof_map = (Map<String, Object>) payload.getJsonObject().get("proof");
     if (proof_map == null) {
-      throw new VerificationException("Signarures error; No proof found");
+      throw new VerificationException("Signatures error; No proof found");
+    }
+    if (proof_map.get("type") == null) {
+      throw new VerificationException("Signatures error; Proof must have 'type' property");
     }
 
     LdProof proof = LdProof.fromMap(proof_map);
@@ -470,18 +487,28 @@ public class VerificationServiceImpl implements VerificationService {
   private Validator checkSignature (JsonLDObject payload, LdProof proof) throws IOException, ParseException {
     log.debug("checkSignature.enter; got payload: {}, proof: {}", payload, proof);
     LdVerifier verifier;
-    Validator validator = null; //TODO Cache.getValidator(proof.getVerificationMethod().toString());
+    Validator validator = validatorCache.getFromCache(proof.getVerificationMethod().toString());
     if (validator == null) {
       log.debug("checkSignature; validator was not cached");
       Pair<PublicKeyVerifier, Validator> pkVerifierAndValidator = getVerifiedVerifier(proof);
       PublicKeyVerifier publicKeyVerifier = pkVerifierAndValidator.getLeft();
       validator = pkVerifierAndValidator.getRight();
       verifier = new JsonWebSignature2020LdVerifier(publicKeyVerifier);
+      validatorCache.addToCache(validator);
     } else {
       log.debug("checkSignature; validator was cached");
       verifier = getVerifierFromValidator(validator);
     }
-    //TODO    if(!verifier.verify(payload)) throw new VerificationException(payload.getClass().getName() + "does not match with proof");
+
+    try {
+      if (!verifier.verify(payload)) {
+        throw new VerificationException("Signatures error; " + payload.getClass().getName() + " does not match with proof");
+      }
+    } catch (JsonLDException | GeneralSecurityException e) {
+      throw new VerificationException("Signatures error; " + e.getMessage(), e);
+    } catch (VerificationException e) {
+      throw e;
+    }
 
     log.debug("checkSignature.exit; returning: {}", validator);
     return validator;
@@ -639,7 +666,7 @@ public class VerificationServiceImpl implements VerificationService {
 
     PublicKeyVerifier pubKey = PublicKeyVerifierFactory.publicKeyVerifierForKey(
             KeyTypeName_for_JWK.keyTypeName_for_JWK(jwk),
-            getAlgorithmFromJWT((String) jwk_map_uncleaned.get("alg")),
+            (String) jwk_map_uncleaned.get("alg"),
             JWK_to_PublicKey.JWK_to_anyPublicKey(jwk));
     return new JsonWebSignature2020LdVerifier(pubKey);
   }

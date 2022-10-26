@@ -1,11 +1,9 @@
 {
+    "@context": ["https://www.w3.org/2018/credentials/v1"],
 	"@id": "http://example.edu/verifiablePresentation/self-description1",
-	"@type": [
-		"VerifiablePresentation",
-        "LegalPerson"
+	"type": [
+		"VerifiablePresentation"
 	],
-	"issuer": "https://example.edu/issuers/particiant1",
-	"issuanceDate": "2010-01-01T00:00:00Z",
 	"verifiableCredential": [{
 			"@id": "http://example.edu/verifiableCred/participantVC",
 			"type": [
@@ -16,7 +14,7 @@
 			"issuanceDate": "2010-01-01T00:00:00Z",
 			"credentialSubject": [{
 				"@id": "did:example:particiant1",
-				"type": "participant",
+				"type": "LegalPerson",
 				"registrationNumber": {
 					"@value": "3234566",
 					"@type": "xsd:string"
@@ -46,21 +44,7 @@
 					"@type": "xsd:string",
 					"@checksumtype": "SHA-256"
 				}
-			},
-			"proof": {
-				"type": "JsonWebSignature2020",
-				"created": "2022-06-12T19:38:26.853Z",
-				"proofPurpose": "assertionMethod",
-				"jws": "XXX",
-				"verificationMethod": "did:web:compliance.lab.gaia-x.eu"
 			}
 		}
-	],
-	"proof": {
-		"type": "JsonWebSignature2020",
-		"created": "2022-02-25T14:58:43Z",
-		"verificationMethod": "did:web:compliance.lab.gaia-x.eu",
-		"proofPurpose": "assertionMethod",
-		"jws": "XXX"
-	}
+	]
 }
