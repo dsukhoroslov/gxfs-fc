@@ -1,0 +1,59 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fc-service-server
+  labels:
+    app: fc-service-server
+
+spec:
+  replicas: 1
+  #  replicas: 2
+  selector:
+    matchLabels:
+      app: fc-service-server
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 50%
+      maxUnavailable: 50%
+  template:
+    metadata:
+      labels:
+        app: fc-service-server
+    spec:
+      containers:
+        - name: fc-service-server-image
+          image: registry.gitlab.com/gaia-x/data-infrastructure-federation-services/cat/fc-service/fc-service-server:0.0.1-SNAPSHOT
+          imagePullPolicy: Always
+          env:
+            - name: GRAPHSTORE_URI
+              # NEED TO CHANGE AFTER DEPLOYING GRAPH DB
+              value: bolt://10.104.3.140:7687
+            - name: SPRING_DATASOURCE_URL
+              # NEED TO CHANGE AFTER DEPLOYING POSTGRESQL
+              value: jdbc:postgresql://10.104.3.140:5432/postgres
+            - name: GRAPHSTORE_QUERY_TIMEOUT_IN_SECONDS
+              value: "1"
+              # NEED TO CHANGE AFTER DEPLOYING KEYCLOAK
+            - name: KEYCLOAK_AUTH_SERVER_URL
+              value: http://10.104.3.140:8080
+              # NEED TO CHANGE AFTER DEPLOYING KEYCLOAK
+            - name: SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI
+              value: http://10.104.3.140:8080/realms/gaia-x
+            - name: KEYCLOAK_CREDENTIALS_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: fc-server-keys-secret
+                  key: keycloak_client_secret
+
+          ports:
+            - name: "http"
+              containerPort: 8081
+          readinessProbe:
+            httpGet:
+              path: "/actuator/health"
+              port: 8081
+            initialDelaySeconds: 60
+            periodSeconds: 30
+          resources: { }
+      restartPolicy: Always
