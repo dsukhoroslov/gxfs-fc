@@ -34,6 +34,7 @@ spec:
       containers:
         - image: neo4j:4.4.12
           name: neo4j
+          imagePullPolicy: "IfNotPresent"
           env:
             - name: NEO4J_AUTH
               value: "neo4j/12345"

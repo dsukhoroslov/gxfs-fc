@@ -1,0 +1,28 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+#    cert-manager.io/cluster-issuer: cert-manager-webhook
+    kubernetes.io/ingress.class: nginx
+#    nginx.ingress.kubernetes.io/ssl-redirect: "false"
+    nginx.ingress.kubernetes.io/affinity: cookie
+    nginx.ingress.kubernetes.io/session-cookie-expires: "172800"
+    nginx.ingress.kubernetes.io/session-cookie-max-age: "172800"
+  name: fc-neo4j-ingress
+#  namespace: default
+spec:
+  rules:
+  - host: fc-neo4j-db.gxfs.dev
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: fc-neo4j
+            port:
+              number: 7474
+  tls:
+  - hosts:
+    - fc-neo4j-db.gxfs.dev
+    secretName: wildcard-gxfs-dev
