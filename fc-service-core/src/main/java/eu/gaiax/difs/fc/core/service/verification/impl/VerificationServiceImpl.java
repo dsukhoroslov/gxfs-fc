@@ -196,12 +196,22 @@ public class VerificationServiceImpl implements VerificationService {
     List<SdClaim> claims = extractClaims(payload);
 
     if (claims != null && !claims.isEmpty()) {
-      String commonSubject = claims.get(0).getSubject();
+      String commonSubject = null;
 
       for (SdClaim claim : claims) {
-        if (!commonSubject.equals(claim.getSubject())) {
-          //throw new VerificationException("Semantic error: The subjects of the claims does not match; First was " + commonSubject + "; This is " + claim.getSubject());
+        if (claim.getSubject().startsWith("_:")) {
+          continue; //Ignore blank nodes
         }
+
+        if (commonSubject == null) {
+          commonSubject = claim.getSubject();
+        }
+
+        if (commonSubject.equals(claim.getSubject())) {
+          continue;
+        }
+
+        throw new VerificationException("Semantic error: The subjects of the claims does not match; First was " + commonSubject + "; This is " + claim.getSubject());
       }
     }
 
