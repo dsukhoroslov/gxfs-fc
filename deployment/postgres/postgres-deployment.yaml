@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: fc-postgres
-          image: postgres:10.1
+          image: postgres:15.0
           imagePullPolicy: "IfNotPresent"
           ports:
             - containerPort: 5432
