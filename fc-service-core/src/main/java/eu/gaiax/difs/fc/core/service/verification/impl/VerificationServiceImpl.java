@@ -188,12 +188,17 @@ public class VerificationServiceImpl implements VerificationService {
     String issuer = null;
     URI issuerUri = firstVC.getIssuer();
     if (issuerUri != null) {
-      issuer = firstVC.getIssuer().toString();
+      issuer = issuerUri.toString();
     }
     Date issDate = firstVC.getIssuanceDate();
     Instant issuedDate = issDate == null ? Instant.now() : issDate.toInstant(); 
 
     List<SdClaim> claims = extractClaims(payload);
+    StringBuilder sb = new StringBuilder();
+    String sep = System.getProperty("line.separator");
+    sb.append("Semantic error: While checking claims of " + id + sep);
+    sb.append("The subjects of the claims does not match." + sep);
+    boolean failed = false;
 
     if (claims != null && !claims.isEmpty()) {
       String commonSubject = null;
@@ -205,14 +210,20 @@ public class VerificationServiceImpl implements VerificationService {
 
         if (commonSubject == null) {
           commonSubject = claim.getSubject();
+          sb.append("The first subject was: " + commonSubject);
         }
 
         if (commonSubject.equals(claim.getSubject())) {
           continue;
         }
 
-        throw new VerificationException("Semantic error: The subjects of the claims does not match; First was " + commonSubject + "; This is " + claim.getSubject());
+        sb.append("This is " + claim.getSubject());
+        failed = true;
       }
+    }
+
+    if (failed) {
+      throw new VerificationException(sb.toString());
     }
 
     VerificationResult result;
