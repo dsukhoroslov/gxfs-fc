@@ -195,14 +195,16 @@ public class VerificationServiceImpl implements VerificationService {
 
     List<SdClaim> claims = extractClaims(payload);
 
-    String commonSubject = claims.get(0).getSubject();
+    if (claims != null && !claims.isEmpty()) {
+      String commonSubject = claims.get(0).getSubject();
 
-    for (SdClaim claim : claims) {
-      if (!commonSubject.equals(claim.getSubject())){
-        throw new VerificationException("Semantic error: The subjects of the claims does not match");
+      for (SdClaim claim : claims) {
+        if (!commonSubject.equals(claim.getSubject())) {
+          //throw new VerificationException("Semantic error: The subjects of the claims does not match; First was " + commonSubject + "; This is " + claim.getSubject());
+        }
       }
     }
-    
+
     VerificationResult result;
     if (type.getLeft()) {
         // take it from validators?
