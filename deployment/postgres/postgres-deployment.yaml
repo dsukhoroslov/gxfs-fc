@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fc-postgres
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: fc-postgres
+  template:
+    metadata:
+      labels:
+        app: fc-postgres
+    spec:
+      containers:
+        - name: fc-postgres
+          image: postgres:10.1
+          imagePullPolicy: "IfNotPresent"
+          ports:
+            - containerPort: 5432
+          envFrom:
+            - configMapRef:
+                name: fc-postgres-config
+          volumeMounts:
+            - mountPath: /var/lib/postgresql/data
+              name: fc-postgres
+      volumes:
+        - name: fc-postgres
+          persistentVolumeClaim:
+            claimName: fc-postgres-pv-claim
