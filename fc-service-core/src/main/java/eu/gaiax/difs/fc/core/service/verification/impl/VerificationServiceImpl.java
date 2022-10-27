@@ -184,7 +184,7 @@ public class VerificationServiceImpl implements VerificationService {
       validators = null; //is it ok?  
     }
 
-    String id = getID(firstVC);
+    String id = getID(firstVC); //claims.get(0).getSubject();
     String issuer = null;
     URI issuerUri = firstVC.getIssuer();
     if (issuerUri != null) {

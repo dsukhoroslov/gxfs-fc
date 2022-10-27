@@ -207,6 +207,12 @@ public class VerificationServiceImplTest {
     }
 
     @Test
+    void validComplexSD () throws UnsupportedEncodingException {
+        String path = "VerificationService/sign/valid_complex_signature.json";
+        verificationService.verifySelfDescription(getAccessor(path));
+    }
+
+    @Test
     void extractClaims_providerTest() throws Exception {
         ContentAccessor content = getAccessor("Claims-Extraction-Tests/providerTest.jsonld");
         VerificationResult result = verificationService.verifySelfDescription(content, true, true, false);
