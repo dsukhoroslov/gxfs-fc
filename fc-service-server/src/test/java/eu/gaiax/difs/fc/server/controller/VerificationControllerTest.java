@@ -110,7 +110,7 @@ public class VerificationControllerTest {
         Error error = objectMapper.readValue(response, Error.class);
         assertEquals("verification_error", error.getCode());
         assertTrue(error.getMessage().startsWith("Semantic Errors:"));
-        assertTrue(error.getMessage().contains("VerifiableCredential must contain 'credentialSubject' property")); 
+        assertTrue(error.getMessage().contains("must contain 'credentialSubject' property"));
     }
 
     @Test
