@@ -149,7 +149,7 @@ public class VerificationServiceImpl implements VerificationService {
     }
 
     if (vcs.size() == 0) {
-      throw new VerificationException("Semantic error: VerifiablePresentation must contain 'verifiableCredential' property");
+      throw new VerificationException("Semantic Errors: VerifiablePresentation must contain 'verifiableCredential' property");
     }
 
     VerifiableCredential firstVC = vcs.get(0);
@@ -195,34 +195,25 @@ public class VerificationServiceImpl implements VerificationService {
     Instant issuedDate = issDate == null ? Instant.now() : issDate.toInstant(); 
 
     List<SdClaim> claims = extractClaims(payload);
-    StringBuilder sb = new StringBuilder();
-    String sep = System.getProperty("line.separator");
-    sb.append("Semantic error: While checking claims the subjects of the claims does not match." + sep);
-    boolean failed = false;
+    Set<String> ids = new HashSet<>();
 
     if (claims != null && !claims.isEmpty()) {
-      String commonSubject = null;
 
       for (SdClaim claim : claims) {
         if (claim.getSubject().startsWith("_:")) {
           continue; //Ignore blank nodes
         }
 
-        if (commonSubject == null) {
-          commonSubject = claim.getSubject();
-          sb.append("The first subject was: " + commonSubject);
-        }
-
-        if (commonSubject.equals(claim.getSubject())) {
-          continue;
-        }
-
-        sb.append("This is " + claim.getSubject());
-        failed = true;
+        ids.add(claim.getSubject());
       }
     }
 
-    if (failed) {
+    if (ids.size() > 1) {
+      String sep = System.lineSeparator();
+      StringBuilder sb = new StringBuilder("Semantic Errors: There are different subjects in the credential subjects:" + sep);
+      for (String s : ids) {
+        sb.append(s + sep);
+      }
       throw new VerificationException(sb.toString());
     }
 
@@ -309,7 +300,7 @@ public class VerificationServiceImpl implements VerificationService {
         }
         Date expDate = credential.getExpirationDate();
         if (expDate != null && expDate.before(today)) {
-          sb.append(" - 'expirationDate' of VerifiableCredential [\" + i + \"] must be in the future").append(sep);
+          sb.append(" - 'expirationDate' of VerifiableCredential [" + i + "] must be in the future").append(sep);
         }
       }
     }
@@ -718,12 +709,26 @@ public class VerificationServiceImpl implements VerificationService {
       List<VerifiableCredential> result = new ArrayList<>(l.size());
 
       for (Map<String, Object> _vc : l){
+        VerifiableCredential vc = VerifiableCredential.fromMap(_vc);
+
+        Pair<Boolean, Boolean> p = getSDTypes(vc);
+        if(p.getLeft() == p.getRight()) {
+          continue;
+        }
+
         result.add(VerifiableCredential.fromJsonObject(_vc));
       }
 
       return result;
     } else {
-      return List.of(VerifiableCredential.fromJsonObject((Map<String, Object>) obj));
+      VerifiableCredential vc = VerifiableCredential.fromMap((Map<String, Object>) obj);
+
+      Pair<Boolean, Boolean> p = getSDTypes(vc);
+      if(p.getLeft() == p.getRight()) {
+        return Collections.emptyList();
+      }
+
+      return List.of(vc);
     }
   }
 }

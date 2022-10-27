@@ -12,7 +12,8 @@
     ],
     "@id": "https://delta-dao.com/.well-known/participant.json",
     "@type": [
-      "VerifiableCredential"
+      "VerifiableCredential",
+      "ServiceOfferingExperimental"
     ],
     "issuer": "http://gaiax.de",
     "issuanceDate": "2022-10-19T18:48:09Z",

@@ -17,6 +17,7 @@
     "issuer": "http://gaiax.de",
     "issuanceDate": "2022-10-19T18:48:09Z",
     "credentialSubject": {
+      "@type": ["ServiceOfferingExperimental"],
       "@context": {
         "owl": "http://www.w3.org/2002/07/owl#",
         "rdf": "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
