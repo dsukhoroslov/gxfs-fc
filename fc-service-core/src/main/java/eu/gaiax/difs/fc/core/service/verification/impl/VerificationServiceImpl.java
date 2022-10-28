@@ -210,9 +210,9 @@ public class VerificationServiceImpl implements VerificationService {
 
     if (ids.size() > 1) {
       String sep = System.lineSeparator();
-      StringBuilder sb = new StringBuilder("Semantic Errors: There are different subjects in the credential subjects:" + sep);
+      StringBuilder sb = new StringBuilder("Semantic Errors: There are different subjects ids in the credential subjects:").append(sep);
       for (String s : ids) {
-        sb.append(s + sep);
+        sb.append(s).append(sep);
       }
       throw new VerificationException(sb.toString());
     }
