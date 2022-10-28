@@ -2,6 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: fc-key-server
+  namespace: federated-catalogue
   labels:
     app: fc-key-server
 spec:
@@ -25,8 +26,12 @@ spec:
           args:
             - "start-dev --auto-build"
             - "-Dkeycloak.migration.action=import"
+            - "-Dkeycloak.migration.provider=dir"
+            - "-Dkeycloak.migration.dir=/tmp/import"
+            - "-Dkeycloak.migration.strategy=OVERWRITE_EXISTING"
             - "-Dkeycloak.profile.feature.upload_scripts=enabled"
             - "-Dkeycloak.migration.strategy=OVERWRITE_EXISTING"
+            - "--log-level=DEBUG,io.quarkus:INFO,liquibase:INFO,org.hibernate:INFO,org.infinispan:INFO,org.keycloak.services.scheduled:INFO,org.keycloak.transaction:INFO,io.netty.buffer.PoolThreadCache:INFO,org.keycloak.models.sessions.infinispan:INFO"
           env:
             - name: KEYCLOAK_ADMIN
               valueFrom:

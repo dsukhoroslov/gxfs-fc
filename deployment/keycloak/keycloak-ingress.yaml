@@ -4,12 +4,12 @@ metadata:
   annotations:
 #    cert-manager.io/cluster-issuer: cert-manager-webhook
     kubernetes.io/ingress.class: nginx
-#    nginx.ingress.kubernetes.io/ssl-redirect: "false"
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
     nginx.ingress.kubernetes.io/affinity: cookie
     nginx.ingress.kubernetes.io/session-cookie-expires: "172800"
     nginx.ingress.kubernetes.io/session-cookie-max-age: "172800"
   name: fc-key-server-ingress
-#  namespace: default
+  namespace: federated-catalogue
 spec:
   rules:
   - host: fc-key-server.gxfs.dev
