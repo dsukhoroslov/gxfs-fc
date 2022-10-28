@@ -9,17 +9,17 @@ metadata:
   namespace: federated-catalogue
 spec:
   rules:
-  - host: fc-postgres.gxfs.dev
-    http:
-      paths:
-      - path: /
-        pathType: Prefix
-        backend:
-          service:
-            name: fc-postgres
-            port:
-              number: 5432
+    - host: fc-postgres.gxfs.dev
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: fc-postgres
+                port:
+                  number: 5432
   tls:
-  - hosts:
-    - fc-postgres.gxfs.dev
-    secretName: wildcard-gxfs-dev
+    - hosts:
+        - fc-postgres.gxfs.dev
+      secretName: wildcard-gxfs-dev

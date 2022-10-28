@@ -1,16 +1,15 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: fc-service-server
+  name: fc-service
   labels:
-    app: fc-service-server
+    app: fc-service
   namespace: federated-catalogue
 spec:
-  replicas: 1
-  #  replicas: 2
+  replicas: 2
   selector:
     matchLabels:
-      app: fc-service-server
+      app: fc-service
   strategy:
     type: RollingUpdate
     rollingUpdate:
@@ -19,19 +18,19 @@ spec:
   template:
     metadata:
       labels:
-        app: fc-service-server
+        app: fc-service
     spec:
       containers:
         - name: fc-service-server-image
-          image: registry.gitlab.com/gaia-x/data-infrastructure-federation-services/cat/fc-service/fc-service-server
+          image: registry.gitlab.com/gaia-x/data-infrastructure-federation-services/cat/fc-service/fc-service-server:latest
           imagePullPolicy: Always
           env:
             - name: GRAPHSTORE_URI
               # NEED TO CHANGE AFTER DEPLOYING GRAPH DB
-              value: bolt://10.104.3.140:7687
+              value: bolt://10.110.142.153:7687
             - name: SPRING_DATASOURCE_URL
               # NEED TO CHANGE AFTER DEPLOYING POSTGRESQL
-              value: jdbc:postgresql://10.104.3.140:5432/postgres
+              value: jdbc:postgresql://10.104.96.87:5432/postgres
             - name: GRAPHSTORE_QUERY_TIMEOUT_IN_SECONDS
               value: "5"
               # NEED TO CHANGE AFTER DEPLOYING KEYCLOAK
@@ -45,7 +44,6 @@ spec:
                 secretKeyRef:
                   name: fc-server-keys-secret
                   key: keycloak_client_secret
-
           ports:
             - name: "http"
               containerPort: 8081
