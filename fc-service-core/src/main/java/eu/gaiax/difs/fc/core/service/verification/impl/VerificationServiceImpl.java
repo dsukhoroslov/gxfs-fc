@@ -327,8 +327,11 @@ public class VerificationServiceImpl implements VerificationService {
     Boolean result = getSDType(credential);
     if (result == null) {
       List<CredentialSubject> subjects = getCredentialSubject(credential);
-      if (subjects.size() > 0) {
-        result = getSDType(subjects.get(0));
+      for (CredentialSubject subject : subjects) {
+        result = getSDType(subject);
+        if(result != null) {
+          break;
+        }
       }
     }
     
