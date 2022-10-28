@@ -4,7 +4,7 @@ metadata:
   name: fc-service-server
   labels:
     app: fc-service-server
-
+  namespace: federated-catalogue
 spec:
   replicas: 1
   #  replicas: 2
@@ -23,7 +23,7 @@ spec:
     spec:
       containers:
         - name: fc-service-server-image
-          image: registry.gitlab.com/gaia-x/data-infrastructure-federation-services/cat/fc-service/fc-service-server:0.0.1-SNAPSHOT
+          image: registry.gitlab.com/gaia-x/data-infrastructure-federation-services/cat/fc-service/fc-service-server
           imagePullPolicy: Always
           env:
             - name: GRAPHSTORE_URI
@@ -33,7 +33,7 @@ spec:
               # NEED TO CHANGE AFTER DEPLOYING POSTGRESQL
               value: jdbc:postgresql://10.104.3.140:5432/postgres
             - name: GRAPHSTORE_QUERY_TIMEOUT_IN_SECONDS
-              value: "1"
+              value: "5"
               # NEED TO CHANGE AFTER DEPLOYING KEYCLOAK
             - name: KEYCLOAK_AUTH_SERVER_URL
               value: http://10.104.3.140:8080
