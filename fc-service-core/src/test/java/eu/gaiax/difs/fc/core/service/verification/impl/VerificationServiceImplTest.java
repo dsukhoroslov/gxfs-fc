@@ -268,7 +268,7 @@ public class VerificationServiceImplTest {
         ContentAccessor content = getAccessor("Claims-Extraction-Tests/participantTwoVCs.jsonld");
         VerificationResult result = verificationService.verifySelfDescription(content, true, true, false);
         List<SdClaim> actualClaims = result.getClaims();
-        log.debug("extractClaims_participantTest; actual claims: {}", actualClaims);
+        log.debug("extractClaims_participantTwoVCsTest; actual claims: {}", actualClaims);
 
         Set<SdClaim> expectedClaims = new HashSet<>();
 
@@ -289,7 +289,7 @@ public class VerificationServiceImplTest {
         ContentAccessor content = getAccessor("Claims-Extraction-Tests/participantTwoCSs.jsonld");
         VerificationResult result = verificationService.verifySelfDescription(content, true, true, false);
         List<SdClaim> actualClaims = result.getClaims();
-        log.debug("extractClaims_participantTest; actual claims: {}", actualClaims);
+        log.debug("extractClaims_participantTwoCSsTest; actual claims: {}", actualClaims);
 
         Set<SdClaim> expectedClaims = new HashSet<>();
 
