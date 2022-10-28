@@ -407,10 +407,12 @@ public class VerificationServiceImpl implements VerificationService {
       }
 
       return result;
-    } else {
+    } else if (obj instanceof Map) {
       CredentialSubject vc = CredentialSubject.fromMap((Map<String, Object>) obj);
 
       return List.of(vc);
+    } else {
+      return Collections.emptyList();
     }
   }
 
