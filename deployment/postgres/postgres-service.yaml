@@ -4,6 +4,7 @@ metadata:
   name: fc-postgres
   labels:
     app: fc-postgres
+  namespace: federated-catalogue
 spec:
   type: NodePort
   ports:
