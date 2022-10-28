@@ -326,9 +326,9 @@ public class VerificationServiceImpl implements VerificationService {
   private Pair<Boolean, Boolean> getSDTypes(VerifiableCredential credential) {
     Boolean result = getSDType(credential);
     if (result == null) {
-      CredentialSubject subject = getCredentialSubject(credential);
-      if (subject != null) {
-        result = getSDType(subject);
+      List<CredentialSubject> subjects = getCredentialSubject(credential);
+      if (subjects.size() > 0) {
+        result = getSDType(subjects.get(0));
       }
     }
     
@@ -391,17 +391,36 @@ public class VerificationServiceImpl implements VerificationService {
      return claims;
   }
 
-  private CredentialSubject getCredentialSubject(VerifiableCredential credential) {
-    return credential.getCredentialSubject();
+  private List<CredentialSubject> getCredentialSubject(VerifiableCredential credential) {
+    Object obj = credential.getJsonObject().get("credentialSubject");
+
+    if (obj == null) {
+      return Collections.emptyList();
+    } else if (obj instanceof List) {
+      List<Map<String, Object>> l = (List<Map<String, Object>>) obj;
+      List<CredentialSubject> result = new ArrayList<>(l.size());
+
+      for (Map<String, Object> _cs : l){
+        CredentialSubject cs = CredentialSubject.fromMap(_cs);
+
+        result.add(cs);
+      }
+
+      return result;
+    } else {
+      CredentialSubject vc = CredentialSubject.fromMap((Map<String, Object>) obj);
+
+      return List.of(vc);
+    }
   }
 
   private String getID(VerifiableCredential credential) {
     String id = null;
-    CredentialSubject subject = getCredentialSubject(credential);
-    if (subject != null) {
-      id = getID(subject.getJsonObject());  
-    }
-    if (id == null) {
+    List<CredentialSubject> subjects = getCredentialSubject(credential);
+
+    if (subjects.size() > 0) {
+      id = getID(subjects.get(0).getJsonObject());
+    } else {
       id = getID(credential.getJsonObject());  
     }
     return id;
@@ -716,7 +735,7 @@ public class VerificationServiceImpl implements VerificationService {
           continue;
         }
 
-        result.add(VerifiableCredential.fromJsonObject(_vc));
+        result.add(vc);
       }
 
       return result;
