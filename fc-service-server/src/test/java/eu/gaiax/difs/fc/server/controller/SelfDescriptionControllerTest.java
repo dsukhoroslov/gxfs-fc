@@ -458,6 +458,8 @@ public class SelfDescriptionControllerTest {
         sdMeta.setUploadDatetime(Instant.parse("2022-01-02T12:00:00Z"));
         sdMeta.setSelfDescription(new ContentAccessorDirect(getMockFileDataAsString(SD_FILE_NAME)));
         return sdMeta;
+        //return new SelfDescriptionMetadata("http://example.org/test-subject", "http://example.org/test-issuer", List.of(),
+        //        new ContentAccessorDirect(getMockFileDataAsString(SD_FILE_NAME)));
     }
 
     private VerificationResultOffering getStaticVerificationResult() {

@@ -130,7 +130,7 @@ public class SelfDescriptionStoreCompositeTest {
   @Test
   void test01StoreSelfDescription() throws Exception {
     log.info("test01StoreSelfDescription");
-    ContentAccessor content = getAccessor("Claims-Extraction-Tests/participantSD.jsonld");
+    ContentAccessor content = getAccessor("Claims-Extraction-Tests/providerTest.jsonld");
     VerificationResultParticipant result = (VerificationResultParticipant) verificationService.verifySelfDescription(content, true, true, false);
     SelfDescriptionMetadata sdMeta = new SelfDescriptionMetadata(content, result);
     sdStore.storeSelfDescription(sdMeta, result);

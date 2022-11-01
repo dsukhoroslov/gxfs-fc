@@ -22,6 +22,8 @@ import eu.gaiax.difs.fc.core.service.verification.VerificationService;
 import eu.gaiax.difs.fc.server.generated.controller.ParticipantsApiDelegate;
 import java.io.IOException;
 import java.net.URI;
+import java.net.URLDecoder;
+import java.nio.charset.Charset;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -92,14 +94,15 @@ public class ParticipantsService implements ParticipantsApiDelegate {
   @Override
   @Transactional
   public ResponseEntity<Participant> deleteParticipant(String participantId) {
-    log.debug("deleteParticipant.enter; got participant: {}", participantId);
-    checkParticipantAccess(participantId);
-    ParticipantMetaData participant = partDao.select(participantId)
-        .orElseThrow(() -> new NotFoundException("Participant not found: " + participantId));
-    selfDescriptionStore.deleteSelfDescription(participant.getSdHash());
-    participant = partDao.delete(participant.getId()).get();
-    log.debug("deleteParticipant.exit; returning: {}", participant);
-    return ResponseEntity.ok(participant);
+    String partId = URLDecoder.decode(participantId, Charset.defaultCharset());  
+    log.debug("deleteParticipant.enter; got participant: {}, id: {}", participantId, partId);
+    checkParticipantAccess(partId);
+    ParticipantMetaData part = partDao.select(partId)
+        .orElseThrow(() -> new NotFoundException("Participant not found: " + partId));
+    selfDescriptionStore.deleteSelfDescription(part.getSdHash());
+    part = partDao.delete(part.getId()).get();
+    log.debug("deleteParticipant.exit; returning: {}", part);
+    return ResponseEntity.ok(part);
   }
 
   /**
@@ -115,10 +118,11 @@ public class ParticipantsService implements ParticipantsApiDelegate {
    */
   @Override
   public ResponseEntity<Participant> getParticipant(String participantId) {
-    log.debug("getParticipant.enter; got participant: {}", participantId);
-    checkParticipantAccess(participantId);
-    ParticipantMetaData part = partDao.select(participantId)
-        .orElseThrow(() -> new NotFoundException("Participant not found: " + participantId));
+    String partId = URLDecoder.decode(participantId, Charset.defaultCharset());  
+    log.debug("getParticipant.enter; got participant: {}, id: {}", participantId, partId);
+    checkParticipantAccess(partId);
+    ParticipantMetaData part = partDao.select(partId)
+        .orElseThrow(() -> new NotFoundException("Participant not found: " + partId));
     SelfDescriptionMetadata selfDescriptionMetadata = selfDescriptionStore.getByHash(part.getSdHash());
     part.setSelfDescription(selfDescriptionMetadata.getSelfDescription().getContentAsString());
     log.debug("getParticipant.exit; returning: {}", part);
@@ -138,10 +142,11 @@ public class ParticipantsService implements ParticipantsApiDelegate {
    */
   @Override
   public ResponseEntity<UserProfiles> getParticipantUsers(String participantId, Integer offset, Integer limit) {
-    log.debug("getParticipantUsers.enter; got participantId: {}", participantId);
-    checkParticipantAccess(participantId);
-    PaginatedResults<UserProfile> profiles = partDao.selectUsers(participantId)
-        .orElseThrow(() -> new NotFoundException("Participant not found: " + participantId));
+    String partId = URLDecoder.decode(participantId, Charset.defaultCharset());  
+    log.debug("getParticipantUsers.enter; got participantId: {}, id: {}", participantId, partId);
+    checkParticipantAccess(partId);
+    PaginatedResults<UserProfile> profiles = partDao.selectUsers(partId)
+        .orElseThrow(() -> new NotFoundException("Participant not found: " + partId));
     log.debug("getParticipantUsers.exit; returning: {}", profiles.getTotalCount());
     return ResponseEntity.ok(new UserProfiles((int) profiles.getTotalCount(), profiles.getResults()));
   }
@@ -190,12 +195,12 @@ public class ParticipantsService implements ParticipantsApiDelegate {
   @Override
   @Transactional
   public ResponseEntity<Participant> updateParticipant(String participantId, String body) {
-    log.debug("updateParticipant.enter; got participant: {}", participantId);
+    String partId = URLDecoder.decode(participantId, Charset.defaultCharset());  
+    log.debug("updateParticipant.enter; got participant: {}, id: {}", participantId, partId);
+    checkParticipantAccess(partId);
 
-    checkParticipantAccess(participantId);
-
-    ParticipantMetaData participantExisted = partDao.select(participantId)
-        .orElseThrow(() -> new NotFoundException("Participant not found: " + participantId));
+    ParticipantMetaData participantExisted = partDao.select(partId)
+        .orElseThrow(() -> new NotFoundException("Participant not found: " + partId));
 
     Pair<VerificationResultParticipant, SelfDescriptionMetadata> pairResult = validateSelfDescription(body);
     VerificationResultParticipant verificationResult = pairResult.getLeft();
@@ -207,11 +212,10 @@ public class ParticipantsService implements ParticipantsApiDelegate {
     }
 
     selfDescriptionStore.storeSelfDescription(selfDescriptionMetadata, verificationResult);
-
     registerRollBackForFileStoreManuallyIfTransactionFail(participantUpdated);
 
-    ParticipantMetaData participantMetaData = partDao.update(participantId, participantUpdated)
-        .orElseThrow(() -> new NotFoundException("Participant not found: " + participantId));
+    ParticipantMetaData participantMetaData = partDao.update(partId, participantUpdated)
+        .orElseThrow(() -> new NotFoundException("Participant not found: " + partId));
     log.debug("updateParticipant.exit; returning: {}", participantMetaData);
     return ResponseEntity.ok(participantMetaData);
   }

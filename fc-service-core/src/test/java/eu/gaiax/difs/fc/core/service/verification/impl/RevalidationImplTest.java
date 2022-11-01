@@ -145,7 +145,7 @@ public class RevalidationImplTest {
     Instant treshold = Instant.now();
     List<String> hashes = new ArrayList<>();
     hashes.add(addSelfDescription("VerificationService/syntax/input.vp.jsonld"));
-    hashes.add(addSelfDescription("Query-Tests/serviceOfferingSD.jsonld"));
+    hashes.add(addSelfDescription("Claims-Extraction-Tests/providerTest.jsonld")); //"Query-Tests/serviceOfferingSD.jsonld"));
 
     revalidator.startValidating();
     int count = 0;
@@ -167,7 +167,7 @@ public class RevalidationImplTest {
     revalidator.setup();
     List<String> hashes = new ArrayList<>();
     hashes.add(addSelfDescription("VerificationService/syntax/input.vp.jsonld"));
-    hashes.add(addSelfDescription("Query-Tests/serviceOfferingSD.jsonld"));
+    hashes.add(addSelfDescription("Claims-Extraction-Tests/providerTest.jsonld")); //"Query-Tests/serviceOfferingSD.jsonld"));
     Instant treshold = Instant.now();
     schemaStore.initializeDefaultSchemas();
     int count = 0;

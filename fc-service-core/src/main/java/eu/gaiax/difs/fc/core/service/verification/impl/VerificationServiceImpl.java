@@ -64,7 +64,7 @@ public class VerificationServiceImpl implements VerificationService {
 
   private static final String sd_format = "JSONLD11";
   private static final String shapes_format = "TURTLE";
-  private static final String[] TYPE_KEYS = {"type", "types", "@type", "@types"};
+  private static final String[] TYPE_KEYS = {"type", "@type"}; 
   private static final String[] ID_KEYS = {"id", "@id"};
   private static final Set<String> PARTICIPANT_TYPES = Set.of("LegalPerson", "http://w3id.org/gaia-x/participant#LegalPerson", "gax-participant:LegalPerson");
   private static final Set<String> SERVICE_OFFERING_TYPES = Set.of("ServiceOfferingExperimental", "http://w3id.org/gaia-x/service#ServiceOffering", "gax-service:ServiceOffering");
@@ -86,6 +86,15 @@ public class VerificationServiceImpl implements VerificationService {
     Security.addProvider(new BouncyCastleProvider());
   }
 
+  public SchemaStore getSchemaStore() {
+    return schemaStore;  
+  }
+  
+  public ValidatorCache getValidatorStore() {
+    return validatorCache;  
+  }
+  
+  
   /**
    * The function validates the Self-Description as JSON and tries to parse the json handed over.
    *
@@ -173,13 +182,13 @@ public class VerificationServiceImpl implements VerificationService {
     // schema verification
     if (verifySchema) {
       // TODO: make it workable
-      //validatePayloadAgainstSchema(payload);
+      validatePayloadAgainstCompositeSchema(payload);
     }
 
     List<Validator> validators;
     // signature verification
     if (verifySignatures) {
-      validators = checkCryptographic(vp);
+      validators = checkCryptographic(vp, vcs);
     } else {
       validators = null; //is it ok?
     }
@@ -314,16 +323,19 @@ public class VerificationServiceImpl implements VerificationService {
   }
 
   private Pair<Boolean, Boolean> getSDTypes(VerifiableCredential credential) {
-    Boolean result = getSDType(credential);
-    if (result == null) {
-      List<CredentialSubject> subjects = getCredentialSubject(credential);
-      for (CredentialSubject subject : subjects) {
-        result = getSDType(subject);
-        if (result != null) {
-          break;
-        }
+    log.debug("getSDTypes.enter;");
+    Boolean result = null;
+    List<CredentialSubject> subjects = getCredentialSubjects(credential);
+    for (CredentialSubject subject : subjects) {
+      result = getSDType(subject);
+      if (result != null) {
+        break;
       }
     }
+    if (result == null) {
+      result = getSDType(credential);
+    }
+    log.debug("getSDTypes; result: {}", result);
 
     if (result == null) {
       return Pair.of(false, false);
@@ -335,7 +347,7 @@ public class VerificationServiceImpl implements VerificationService {
     try {
       for (String key : TYPE_KEYS) {
         Object _type = container.getJsonObject().get(key);
-        log.debug("getSDType; key: {}, value: {}", key, _type);
+        log.trace("getSDType; key: {}, value: {}", key, _type);
         if (_type == null) {
           continue;
         }
@@ -386,7 +398,40 @@ public class VerificationServiceImpl implements VerificationService {
     return claims;
   }
 
-  private List<CredentialSubject> getCredentialSubject(VerifiableCredential credential) {
+  private List<VerifiableCredential> getCredentials(VerifiablePresentation vp) {
+    Object obj = vp.getJsonObject().get("verifiableCredential");
+
+    if (obj == null) {
+      return Collections.emptyList();
+    } else if (obj instanceof List) {
+      List<Map<String, Object>> l = (List<Map<String, Object>>) obj;
+      List<VerifiableCredential> result = new ArrayList<>(l.size());
+
+      for (Map<String, Object> _vc : l) {
+        VerifiableCredential vc = VerifiableCredential.fromMap(_vc);
+
+        Pair<Boolean, Boolean> p = getSDTypes(vc);
+        if (Objects.equals(p.getLeft(), p.getRight())) {
+          continue;
+        }
+
+        result.add(vc);
+      }
+
+      return result;
+    } else {
+      VerifiableCredential vc = VerifiableCredential.fromMap((Map<String, Object>) obj);
+
+      Pair<Boolean, Boolean> p = getSDTypes(vc);
+      if (Objects.equals(p.getLeft(), p.getRight())) {
+        return Collections.emptyList();
+      }
+
+      return List.of(vc);
+    }
+  }
+
+  private List<CredentialSubject> getCredentialSubjects(VerifiableCredential credential) {
     Object obj = credential.getJsonObject().get("credentialSubject");
 
     if (obj == null) {
@@ -413,7 +458,7 @@ public class VerificationServiceImpl implements VerificationService {
 
   private String getID(VerifiableCredential credential) {
     String id;
-    List<CredentialSubject> subjects = getCredentialSubject(credential);
+    List<CredentialSubject> subjects = getCredentialSubjects(credential);
 
     if (!subjects.isEmpty()) {
       id = getID(subjects.get(0).getJsonObject());
@@ -447,44 +492,45 @@ public class VerificationServiceImpl implements VerificationService {
    * @param shaclShape ContentAccessor of a union schemas of type SHACL
    * @return SemanticValidationResult object
    */
-  SemanticValidationResult validatePayloadAgainstSchema(ContentAccessor payload, ContentAccessor shaclShape) {
-    Reader dataGraphReader = new StringReader(payload.getContentAsString());
-    Reader shaclShapeReader = new StringReader(shaclShape.getContentAsString());
-    Model data = ModelFactory.createDefaultModel();
-    data.read(dataGraphReader, null, sd_format);
-    Model shape = ModelFactory.createDefaultModel();
-    shape.read(shaclShapeReader, null, shapes_format);
-    Resource reportResource = ValidationUtil.validateModel(data, shape, true);
-    boolean conforms = reportResource.getProperty(SH.conforms).getBoolean();
+  private SemanticValidationResult validatePayloadAgainstSchema(ContentAccessor payload, ContentAccessor shaclShape) {
+    boolean conforms = false;   
     String report = null;
-    if (!conforms) {
-      report = reportResource.getModel().toString();
+    try {  
+      Reader dataGraphReader = new StringReader(payload.getContentAsString());
+      Reader shaclShapeReader = new StringReader(shaclShape.getContentAsString());
+      Model data = ModelFactory.createDefaultModel();
+      data.read(dataGraphReader, null, sd_format);
+      Model shape = ModelFactory.createDefaultModel();
+      shape.read(shaclShapeReader, null, shapes_format);
+      Resource reportResource = ValidationUtil.validateModel(data, shape, true);
+      conforms = reportResource.getProperty(SH.conforms).getBoolean();
+      if (!conforms) {
+        report = reportResource.getModel().toString();
+      }
+    } catch (Exception ex) {
+      log.error("validatePayloadAgainstSchema.error", ex);
+      report = ex.getMessage();
     }
     return new SemanticValidationResult(conforms, report);
   }
 
-  private SemanticValidationResult validatePayloadAgainstCompositeSchema(ContentAccessor payload) {
+  public SemanticValidationResult validatePayloadAgainstCompositeSchema(ContentAccessor payload) {
     ContentAccessor shaclShape = schemaStore.getCompositeSchema(SchemaStore.SchemaType.SHAPE);
     SemanticValidationResult result = validatePayloadAgainstSchema(payload, shaclShape);
     log.debug("validationAgainstShacl.exit; conforms: {}; model: {}", result.isConforming(), result.getValidationReport());
     if (!result.isConforming()) {
-      throw new VerificationException("Schema error; Shacl shape schema violated");
+      throw new VerificationException("Schema error; Shacl shape schema violated: " + result.getValidationReport());
     }
     return result;
   }
 
-  public SemanticValidationResult getSemanticValidationResults(ContentAccessor payload) {
-    return validatePayloadAgainstCompositeSchema(payload);
-  }
-
   /* SD signatures verification */
-  private List<Validator> checkCryptographic(VerifiablePresentation presentation) {
+  private List<Validator> checkCryptographic(VerifiablePresentation presentation, List<VerifiableCredential> credentials) {
     log.debug("checkCryptographic.enter;");
 
     Set<Validator> validators = new HashSet<>();
     try {
       validators.add(checkSignature(presentation));
-      List<VerifiableCredential> credentials = getCredentials(presentation);
       for (VerifiableCredential credential : credentials) {
         validators.add(checkSignature(credential));
       }
@@ -514,7 +560,7 @@ public class VerificationServiceImpl implements VerificationService {
 
   private Validator checkSignature(JsonLDObject payload, LdProof proof) throws IOException, ParseException {
     log.debug("checkSignature.enter; got payload: {}, proof: {}", payload, proof);
-    LdVerifier verifier;
+    LdVerifier<?> verifier;
     Validator validator = validatorCache.getFromCache(proof.getVerificationMethod().toString());
     if (validator == null) {
       log.debug("checkSignature; validator was not cached");
@@ -534,7 +580,7 @@ public class VerificationServiceImpl implements VerificationService {
     }
 
     try {
-      if (!verifier.verify(payload)) {
+      if (!verifier.verify(payload, proof)) {
         throw new VerificationException("Signatures error; " + payload.getClass().getName() + " does not match with proof");
       }
     } catch (JsonLDException | GeneralSecurityException e) {
@@ -680,7 +726,7 @@ public class VerificationServiceImpl implements VerificationService {
     return exp;
   }
 
-  private LdVerifier getVerifierFromValidator(Validator validator) throws IOException, ParseException {
+  private LdVerifier<?> getVerifierFromValidator(Validator validator) throws IOException, ParseException {
     Map<String, Object> jwk_map_uncleaned = JsonLDObject.fromJson(validator.getPublicKey()).getJsonObject();
     Map<String, Object> jwk_map_cleaned = extractRelevantValues(jwk_map_uncleaned);
 
@@ -715,36 +761,4 @@ public class VerificationServiceImpl implements VerificationService {
     return response.getStatusLine().getStatusCode() == 200;
   }
 
-  private List<VerifiableCredential> getCredentials(VerifiablePresentation vp) {
-    Object obj = vp.getJsonObject().get("verifiableCredential");
-
-    if (obj == null) {
-      return Collections.emptyList();
-    } else if (obj instanceof List) {
-      List<Map<String, Object>> l = (List<Map<String, Object>>) obj;
-      List<VerifiableCredential> result = new ArrayList<>(l.size());
-
-      for (Map<String, Object> _vc : l) {
-        VerifiableCredential vc = VerifiableCredential.fromMap(_vc);
-
-        Pair<Boolean, Boolean> p = getSDTypes(vc);
-        if (Objects.equals(p.getLeft(), p.getRight())) {
-          continue;
-        }
-
-        result.add(vc);
-      }
-
-      return result;
-    } else {
-      VerifiableCredential vc = VerifiableCredential.fromMap((Map<String, Object>) obj);
-
-      Pair<Boolean, Boolean> p = getSDTypes(vc);
-      if (Objects.equals(p.getLeft(), p.getRight())) {
-        return Collections.emptyList();
-      }
-
-      return List.of(vc);
-    }
-  }
 }

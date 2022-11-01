@@ -70,11 +70,10 @@ public class VerificationServiceImplTest {
   private VerificationServiceImpl verificationService;
   @Autowired
   private SchemaStoreImpl schemaStore;
-
   @Autowired
   @Qualifier("schemaFileStore")
   private FileStore fileStore;
-
+  
   @AfterEach
   public void storageSelfCleaning() throws IOException {
     Map<SchemaStore.SchemaType, List<String>> schemaList = schemaStore.getSchemaList();
@@ -257,7 +256,7 @@ public class VerificationServiceImplTest {
   @Test
   void extractClaims_participantTest() throws Exception {
     ContentAccessor content = getAccessor("Claims-Extraction-Tests/participantSD.jsonld");
-    VerificationResult result = verificationService.verifySelfDescription(content, true, true, false);
+    VerificationResult result = verificationService.verifySelfDescription(content, true, false, false);
     List<SdClaim> actualClaims = result.getClaims();
     log.debug("extractClaims_participantTest; actual claims: {}", actualClaims);
 
@@ -336,21 +335,19 @@ public class VerificationServiceImplTest {
 
   @Test
   void verifyValidationResult() throws IOException {
-    SemanticValidationResult validationResult = verificationService.validatePayloadAgainstSchema(
-        getAccessor("Validation-Tests/DataCenterDataGraph.jsonld"), getAccessor("Validation-Tests/physical-resourceShape.ttl"));
-
-    if (!validationResult.isConforming()) {
-      assertTrue(validationResult.getValidationReport().contains("Property needs to have at least 1 value"));
-    } else {
-      assertFalse(validationResult.isConforming());
-    }
+    schemaStore.addSchema(getAccessor("Validation-Tests/physical-resourceShape.ttl"));
+    SemanticValidationResult validationResult = verificationService.validatePayloadAgainstCompositeSchema(
+        getAccessor("Validation-Tests/DataCenterDataGraph.jsonld"));
+    assertFalse(validationResult.isConforming());
+    assertTrue(validationResult.getValidationReport().contains("Property needs to have at least 1 value"));
   }
 
   @Test
   void verifyInvalidSDValidation_Result_Against_CompositeSchema() throws IOException {
     schemaStore.addSchema(getAccessor("Schema-Tests/FirstValidSchemaShape.ttl"));
     schemaStore.addSchema(getAccessor("Schema-Tests/SecondValidSchemaShape.ttl"));
-    Exception ex = assertThrowsExactly(VerificationException.class, () -> verificationService.getSemanticValidationResults(getAccessor("Validation-Tests/DataCenterDataGraph.jsonld")));
+    Exception ex = assertThrowsExactly(VerificationException.class, () -> verificationService.validatePayloadAgainstCompositeSchema(
+        getAccessor("Validation-Tests/DataCenterDataGraph.jsonld")));
     assertTrue(ex.getMessage().contains("Schema error; Shacl shape schema violated"));
   }
 
@@ -358,7 +355,7 @@ public class VerificationServiceImplTest {
   void verifyValidVP_SDValidationCompositeSchema() throws IOException {
     schemaStore.addSchema(getAccessor("Validation-Tests/legal-personShape.ttl"));
     schemaStore.addSchema(getAccessor("Schema-Tests/FirstValidSchemaShape.ttl"));
-    SemanticValidationResult validationResult = verificationService.getSemanticValidationResults(
+    SemanticValidationResult validationResult = verificationService.validatePayloadAgainstCompositeSchema(
         getAccessor("Claims-Extraction-Tests/providerTest.jsonld"));
     assertTrue(validationResult.isConforming());
   }

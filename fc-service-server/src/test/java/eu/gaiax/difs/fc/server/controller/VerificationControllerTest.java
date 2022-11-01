@@ -61,7 +61,7 @@ public class VerificationControllerTest {
 
     @Test
     public void verifyParticipantShouldReturnSuccessResponse() throws Exception {
-        String json = getMockFileDataAsString("default_participant.json");
+        String json = getMockFileDataAsString("default_participant2.json");
         String response = mockMvc.perform(MockMvcRequestBuilders.post("/verification")
                .contentType(MediaType.APPLICATION_JSON)
                .accept(MediaType.APPLICATION_JSON)

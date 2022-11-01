@@ -37,13 +37,14 @@ import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
+import org.apache.jena.shacl.vocabulary.SHACLM;
 import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
 import org.apache.jena.vocabulary.SKOS;
 import org.apache.jena.vocabulary.OWL;
-import org.apache.jena.shacl.vocabulary.SHACLM;
 import org.apache.jena.vocabulary.OWL2;
 
 /**
@@ -68,26 +69,46 @@ public class SchemaStoreImpl implements SchemaStore {
     Session currentSession = sessionFactory.getCurrentSession();
     long count = currentSession.createQuery("select count(s) from SchemaRecord s", Long.class).getSingleResult();
     if (count > 0) {
-      log.info("Default schemas already initialized.");
+      log.info("initializeDefaultSchemas; {} default schemas already initialized", count);
       return;
     }
-    addSchemasFromDirectory("defaultschema/ontology");
-    addSchemasFromDirectory("defaultschema/shacl");
-    currentSession.flush();
-    count = currentSession.createQuery("select count(s) from SchemaRecord s", Long.class).getSingleResult();
-    log.info("Added {} default schemas", count);
-  }
-
-  private void addSchemasFromDirectory(String path) {
-    URL url = getClass().getClassLoader().getResource(path);
-    String str = URLDecoder.decode(url.getFile(), StandardCharsets.UTF_8);
-    File ontologyDir = new File(str);
-    for (File ontology : ontologyDir.listFiles()) {
-      log.debug("Adding schema: {}", ontology);
-      addSchema(new ContentAccessorFile(ontology));
+    
+    try {
+      count += addSchemasFromDirectory("defaultschema/ontology");
+      count += addSchemasFromDirectory("defaultschema/shacl");
+      log.info("initializeDefaultSchemas; added {} default schemas", count);
+      currentSession.flush();
+      count = currentSession.createQuery("select count(s) from SchemaRecord s", Long.class).getSingleResult();
+      log.info("initializeDefaultSchemas; {} default schemas found in DB", count);
+    } catch (Exception ex) {
+      ex.printStackTrace();
+      //throw ex;
     }
   }
 
+  //private void addSchemasFromDirectory(String path) throws IOException {
+  //  URL url = getClass().getClassLoader().getResource(path);
+  //  String str = URLDecoder.decode(url.getFile(), StandardCharsets.UTF_8);
+  //  File ontologyDir = new File(str);
+  //  for (File ontology : ontologyDir.listFiles()) {
+  //    log.debug("addSchemasFromDirectory; Adding schema: {}", ontology);
+  //    addSchema(new ContentAccessorFile(ontology));
+  //  }
+  //}
+
+  private int addSchemasFromDirectory(String path) throws IOException {
+    PathMatchingResourcePatternResolver scanner = new PathMatchingResourcePatternResolver();
+    org.springframework.core.io.Resource[] resources = scanner.getResources(path + "/*");
+    int cnt = 0;
+    for (org.springframework.core.io.Resource resource: resources) {
+      log.debug("addSchemasFromDirectory; Adding schema: {}", resource.getFilename());
+      String content = new String(resource.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
+      addSchema(new ContentAccessorDirect(content));
+      cnt++;
+    }
+    return cnt;
+  }
+  
   /**
    * Analyse the given schema character content.
    *
@@ -99,6 +120,7 @@ public class SchemaStoreImpl implements SchemaStore {
     Set<String> extractedUrlsSet = new HashSet<>();
     Model model = ModelFactory.createDefaultModel();
 
+    // TODO: calc schemaType from content file extension
     List<String> schemaType = Arrays.asList("JSON-LD", "RDF/XML", "TTL");
     for (String type : schemaType) {
       try {
@@ -110,8 +132,12 @@ public class SchemaStoreImpl implements SchemaStore {
         result.setErrorMessage(exc.getMessage());
       }
     }
-    if (model.contains(null, RDF.type, SHACLM.NodeShape)
-        || model.contains(null, RDF.type, SHACLM.PropertyShape)) {
+    // what if result is not valid here?
+    if (!result.isValid()) {
+      return result;  
+    }
+    
+    if (model.contains(null, RDF.type, SHACLM.NodeShape) || model.contains(null, RDF.type, SHACLM.PropertyShape)) {
       result.setSchemaType(SchemaType.SHAPE);
       result.setExtractedId(null);
     } else {
@@ -142,6 +168,7 @@ public class SchemaStoreImpl implements SchemaStore {
         }
       }
     }
+    
     if (result.isValid()) {
       switch (result.getSchemaType()) {
         case SHAPE:
@@ -156,18 +183,18 @@ public class SchemaStoreImpl implements SchemaStore {
           addExtractedUrls(model, OWL2.ObjectProperty, extractedUrlsSet);
           addExtractedUrls(model, RDFS.Class, extractedUrlsSet);
           addExtractedUrls(model, OWL2.Class, extractedUrlsSet);
-
           break;
 
         case VOCABULARY:
           addExtractedUrls(model, SKOS.Concept, extractedUrlsSet);
           break;
+          
         default:
         // this will not happen
       }
+      List<String> extractedUrls = new ArrayList<>(extractedUrlsSet);
+      result.setExtractedUrls(extractedUrls);
     }
-    List<String> extractedUrls = new ArrayList<>(extractedUrlsSet);
-    result.setExtractedUrls(extractedUrls);
     return result;
   }
 
@@ -208,17 +235,18 @@ public class SchemaStoreImpl implements SchemaStore {
       unionModel.add(model);
     }
     RDFDataMgr.write(out, unionModel, Lang.TURTLE);
-    ContentAccessorDirect content = new ContentAccessorDirect(out.toString());
+    ContentAccessor content = new ContentAccessorDirect(out.toString());
 
-    log.debug("createCompositeSchema.exit; returning: {}", content.getContentAsString().length());
     try {
       final String compositeSchemaName = "CompositeSchema" + type.name();
       fileStore.replaceFile(compositeSchemaName, content);
-      return fileStore.readFile(compositeSchemaName);
+      content = fileStore.readFile(compositeSchemaName);
+      COMPOSITE_SCHEMAS.put(type, content);
+      log.debug("createCompositeSchema.exit; returning: {}", content.getContentAsString().length());
     } catch (IOException ex) {
-      log.error("Failed to store composite schema", ex);
-      return content;
+      log.error("createCompositeSchema.error", ex);
     }
+    return content;
   }
 
   @Override
@@ -235,8 +263,9 @@ public class SchemaStoreImpl implements SchemaStore {
     }
     String schemaId = result.getExtractedId();
     String nameHash;
+    String content = schema.getContentAsString();
     if (Strings.isNullOrEmpty(schemaId)) {
-      nameHash = HashUtils.calculateSha256AsHex(schema.getContentAsString());
+      nameHash = HashUtils.calculateSha256AsHex(content);
       schemaId = nameHash;
       result.setExtractedId(schemaId);
     } else {
@@ -255,8 +284,7 @@ public class SchemaStoreImpl implements SchemaStore {
       throw new VerificationException("Schema redefines " + redefines.size() + " terms. First: " + redefines.get(0));
     }
 
-    SchemaRecord newRecord = new SchemaRecord(schemaId, nameHash, result.getSchemaType(), schema.getContentAsString(),
-        result.getExtractedUrls());
+    SchemaRecord newRecord = new SchemaRecord(schemaId, nameHash, result.getSchemaType(), content, result.getExtractedUrls());
     try {
       currentSession.persist(newRecord);
     } catch (EntityExistsException ex) {
@@ -393,16 +421,16 @@ public class SchemaStoreImpl implements SchemaStore {
 
   @Override
   public ContentAccessor getCompositeSchema(SchemaType type) {
-    // TODO IOSB add caching
-    return createCompositeSchema(type);
-  }
-
-  private static ContentAccessorFile getAccessor(String path) throws UnsupportedEncodingException {
-    URL url = SchemaStoreImpl.class.getClassLoader().getResource(path);
-    String str = URLDecoder.decode(url.getFile(), StandardCharsets.UTF_8.name());
-    File file = new File(str);
-    ContentAccessorFile accessor = new ContentAccessorFile(file);
-    return accessor;
+    try {
+      ContentAccessor composite = COMPOSITE_SCHEMAS.get(type);
+      if (composite == null) {
+        composite = createCompositeSchema(type);
+      }
+      return composite;
+    } catch (Exception ex) {
+      log.error("getCompositeSchema.error", ex);
+      throw new ServerException("Error returning composite schema of type " + type, ex);
+    }
   }
 
 }

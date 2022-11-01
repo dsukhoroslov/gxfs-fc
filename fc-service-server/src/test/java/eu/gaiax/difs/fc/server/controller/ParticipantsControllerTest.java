@@ -30,8 +30,10 @@ import eu.gaiax.difs.fc.core.pojo.ParticipantMetaData;
 import eu.gaiax.difs.fc.core.pojo.SelfDescriptionMetadata;
 import eu.gaiax.difs.fc.core.pojo.VerificationResultParticipant;
 import eu.gaiax.difs.fc.core.service.filestore.FileStore;
+import eu.gaiax.difs.fc.core.service.schemastore.SchemaStore;
 import eu.gaiax.difs.fc.core.service.sdstore.impl.SelfDescriptionStoreImpl;
 import eu.gaiax.difs.fc.core.service.verification.VerificationService;
+import eu.gaiax.difs.fc.core.service.verification.impl.VerificationServiceImpl;
 import eu.gaiax.difs.fc.testsupport.config.EmbeddedNeo4JConfig;
 
 import java.util.ArrayList;
@@ -140,9 +142,15 @@ public class ParticipantsControllerTest {
     private final String userId = "ae366624-8371-401d-b2c4-518d2f308a15";
     private final String DEFAULT_PARTICIPANT_FILE = "default_participant.json";
     
-    @BeforeAll //TestClass
+    @BeforeAll
     public void setup() {
         mockMvc = MockMvcBuilders.webAppContextSetup(context).apply(springSecurity()).build();
+        //try {
+            ((VerificationServiceImpl) verificationService).getSchemaStore().initializeDefaultSchemas();
+        //} catch (Exception ex) {
+        //    ex.printStackTrace();
+        //    throw ex;
+        //}
     }
 
     @AfterAll

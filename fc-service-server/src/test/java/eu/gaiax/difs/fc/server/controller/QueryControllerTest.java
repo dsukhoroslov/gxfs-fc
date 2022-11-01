@@ -267,10 +267,11 @@ public class QueryControllerTest {
 
         fileStore.clearStorage();
 
-        ContentAccessorDirect contentAccessor = new ContentAccessorDirect(FileReaderHelper.getMockFileDataAsString("default_participant.json")); 
-        //try {
+        ContentAccessorDirect contentAccessor = new ContentAccessorDirect(FileReaderHelper.getMockFileDataAsString("default_participant2.json")); 
         VerificationResultParticipant verificationResult = verificationService.verifyParticipantSelfDescription(contentAccessor);
 
+        // we MUST NOT add any claims manually. we must find proper SDs with extractable claims
+        // and store it in SD Store..
         SdClaim sdClaim = new SdClaim("<http://w3id.org/gaia-x/indiv#serviceMVGPortal.json>",
             "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>",
             "<http://w3id.org/gaia-x/service#ServiceOffering>");
