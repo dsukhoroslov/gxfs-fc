@@ -2,8 +2,7 @@ package eu.gaiax.difs.fc.server.controller;
 
 import static eu.gaiax.difs.fc.server.helper.FileReaderHelper.getMockFileDataAsString;
 import static eu.gaiax.difs.fc.server.helper.UserServiceHelper.getAllRoles;
-import static eu.gaiax.difs.fc.server.util.CommonConstants.CATALOGUE_ADMIN_ROLE_WITH_PREFIX;
-import static eu.gaiax.difs.fc.server.util.CommonConstants.PARTICIPANT_ADMIN_ROLE;
+import static eu.gaiax.difs.fc.server.util.CommonConstants.*;
 import static eu.gaiax.difs.fc.server.util.TestCommonConstants.SD_ADMIN_ROLE_WITH_PREFIX;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
@@ -221,9 +220,10 @@ public class ParticipantsControllerTest {
         String json = getMockFileDataAsString(DEFAULT_PARTICIPANT_FILE);
         ParticipantMetaData part = new ParticipantMetaData("did:example:issuer", "did:example:holder", "did:example:holder#key", json);
         setupKeycloak(HttpStatus.SC_OK, part);
+        String partId = URLEncoder.encode(part.getId(), Charset.defaultCharset());
 
         mockMvc
-            .perform(MockMvcRequestBuilders.get("/participants/{participantId}", part.getId())
+            .perform(MockMvcRequestBuilders.get("/participants/{participantId}", partId)
             .contentType(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk());
     }
@@ -271,11 +271,11 @@ public class ParticipantsControllerTest {
     @Order(20)
     public void wrongParticipantShouldReturnNotFoundResponse() throws Exception {
 
-        String partId = "unknown";
+        String partId = URLEncoder.encode("unknown", Charset.defaultCharset());
         setupKeycloak(HttpStatus.SC_OK, null);
 
         mockMvc
-            .perform(MockMvcRequestBuilders.get("/participants/{partId}", partId)
+            .perform(MockMvcRequestBuilders.get("/participants/{participantId}", partId)
             .contentType(MediaType.APPLICATION_JSON))
             .andExpect(status().isNotFound());
     }
@@ -306,9 +306,11 @@ public class ParticipantsControllerTest {
 
         ParticipantMetaData part = new ParticipantMetaData("did:example:issuer", "did:example:holder", "did:example:holder#key-1", "empty SD");
         setupKeycloak(HttpStatus.SC_OK, part);
+        String partId = URLEncoder.encode(part.getId(), Charset.defaultCharset());
+        
         setupKeycloakForUsers(HttpStatus.SC_NO_CONTENT, null, userId);
         MvcResult result = mockMvc
-            .perform(MockMvcRequestBuilders.get("/participants/{participantId}/users", part.getId())
+            .perform(MockMvcRequestBuilders.get("/participants/{participantId}/users", partId)
             .contentType(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk())
             .andReturn();
@@ -440,9 +442,10 @@ public class ParticipantsControllerTest {
         selfDescriptionStore.storeSelfDescription(sdMetadata, verResult);
 
         String updatedParticipant = getMockFileDataAsString(DEFAULT_PARTICIPANT_FILE).replace("did:example:new-issuer", "did:example:extra-issuer");
+        String partId = URLEncoder.encode(part.getId(), Charset.defaultCharset());
 
         mockMvc
-            .perform(MockMvcRequestBuilders.put("/participants/{participantId}", part.getId())
+            .perform(MockMvcRequestBuilders.put("/participants/{participantId}", partId)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(updatedParticipant))
             .andExpect(status().isBadRequest());
@@ -458,9 +461,10 @@ public class ParticipantsControllerTest {
         String json = getMockFileDataAsString(DEFAULT_PARTICIPANT_FILE).replace("did:example:issuer", "did:example:new-issuer");
         ParticipantMetaData part = new ParticipantMetaData("did:example:new-issuer", "did:example:holder", "did:example:holder#key", json);
         setupKeycloak(HttpStatus.SC_INTERNAL_SERVER_ERROR, part);
+        String partId = URLEncoder.encode(part.getId(), Charset.defaultCharset());
 
         mockMvc
-            .perform(MockMvcRequestBuilders.put("/participants/{participantId}", part.getId())
+            .perform(MockMvcRequestBuilders.put("/participants/{participantId}", partId)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(json))
             .andExpect(status().is5xxServerError());
@@ -483,9 +487,10 @@ public class ParticipantsControllerTest {
         String json = getMockFileDataAsString(DEFAULT_PARTICIPANT_FILE);
         ParticipantMetaData part = new ParticipantMetaData("did:example:issuer", "did:example:updated", "did:example:holder#key", json);
         setupKeycloak(HttpStatus.SC_OK, part);
+        String partId = URLEncoder.encode(part.getId(), Charset.defaultCharset());
 
         mockMvc
-            .perform(MockMvcRequestBuilders.delete("/participants/{participantId}", part.getId()))
+            .perform(MockMvcRequestBuilders.delete("/participants/{participantId}", partId))
             .andExpect(status().isForbidden());
     }
 
@@ -495,7 +500,7 @@ public class ParticipantsControllerTest {
             {@StringClaim(name = "participant_id", value = "wrongId")})))
     public void deleteParticipantShouldReturnForbiddenResponse() throws Exception {
         mockMvc
-            .perform(MockMvcRequestBuilders.delete("/participants/{participantId}","123")
+            .perform(MockMvcRequestBuilders.delete("/participants/{participantId}", "123")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(getMockFileDataAsString(DEFAULT_PARTICIPANT_FILE)))
             .andExpect(status().isForbidden());
@@ -510,9 +515,10 @@ public class ParticipantsControllerTest {
         String json = getMockFileDataAsString(DEFAULT_PARTICIPANT_FILE).replace("did:example:issuer", "did:example:wrong-issuer");
         ParticipantMetaData part = new ParticipantMetaData("did:example:wrong-issuer", "did:example:updated", "did:example:holder#key", json);
         setupKeycloak(HttpStatus.SC_NOT_FOUND, part);
+        String partId = URLEncoder.encode(part.getId(), Charset.defaultCharset());
 
         mockMvc
-            .perform(MockMvcRequestBuilders.delete("/participants/{participantId}", part.getId()))
+            .perform(MockMvcRequestBuilders.delete("/participants/{participantId}", partId))
             .andExpect(status().isNotFound());
 
 
@@ -543,9 +549,10 @@ public class ParticipantsControllerTest {
         selfDescriptionStore.storeSelfDescription(sdMetadata, verResult);
 
         setupKeycloak(HttpStatus.SC_OK, part);
+        String partId = URLEncoder.encode(part.getId(), Charset.defaultCharset());
 
         String response = mockMvc
-            .perform(MockMvcRequestBuilders.delete("/participants/{participantId}", part.getId()))
+            .perform(MockMvcRequestBuilders.delete("/participants/{participantId}", partId))
             .andExpect(status().isOk())
             .andReturn()
             .getResponse()
@@ -582,13 +589,12 @@ public class ParticipantsControllerTest {
         userDao.create(userOfParticipant);
 
         setupKeycloak(HttpStatus.SC_OK, part);
-
         setupKeycloakForUsers(HttpStatus.SC_NO_CONTENT, userOfParticipant, userId);
-
         assertDoesNotThrow(() -> fileStore.readFile(part.getSdHash()));
+        String partId = URLEncoder.encode(part.getId(), Charset.defaultCharset());
 
         String response = mockMvc
-            .perform(MockMvcRequestBuilders.delete("/participants/{participantId}", part.getId()))
+            .perform(MockMvcRequestBuilders.delete("/participants/{participantId}", partId))
             .andExpect(status().isOk())
             .andReturn()
             .getResponse()
@@ -684,6 +690,6 @@ public class ParticipantsControllerTest {
     }
 
     public User getUserOfParticipant(String partId){
-        return new  User(partId,"testUserName","testLastName","test@gmail",List.of());
+        return new  User(partId,"testUserName","testLastName","test@gmail",List.of(PARTICIPANT_USER_ADMIN_ROLE));
     }
 }
