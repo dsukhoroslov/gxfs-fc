@@ -65,7 +65,7 @@ public class SchemaControllerTest {
   @BeforeTestClass
   public void setup() {
     mockMvc = MockMvcBuilders.webAppContextSetup(context).apply(springSecurity()).build();
-    schemaStore.initializeDefaultSchemas();
+    //schemaStore.initializeDefaultSchemas();
   }
 
   @Test

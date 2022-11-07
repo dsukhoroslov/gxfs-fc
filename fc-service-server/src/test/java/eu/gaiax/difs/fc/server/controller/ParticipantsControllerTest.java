@@ -24,12 +24,12 @@ import eu.gaiax.difs.fc.core.dao.impl.ParticipantDaoImpl;
 import eu.gaiax.difs.fc.core.dao.impl.UserDaoImpl;
 import eu.gaiax.difs.fc.core.exception.NotFoundException;
 import eu.gaiax.difs.fc.core.exception.ServerException;
+import eu.gaiax.difs.fc.core.pojo.ContentAccessor;
 import eu.gaiax.difs.fc.core.pojo.ContentAccessorDirect;
 import eu.gaiax.difs.fc.core.pojo.ParticipantMetaData;
 import eu.gaiax.difs.fc.core.pojo.SelfDescriptionMetadata;
 import eu.gaiax.difs.fc.core.pojo.VerificationResultParticipant;
 import eu.gaiax.difs.fc.core.service.filestore.FileStore;
-import eu.gaiax.difs.fc.core.service.schemastore.SchemaStore;
 import eu.gaiax.difs.fc.core.service.sdstore.impl.SelfDescriptionStoreImpl;
 import eu.gaiax.difs.fc.core.service.verification.VerificationService;
 import eu.gaiax.difs.fc.core.service.verification.impl.VerificationServiceImpl;
@@ -144,7 +144,6 @@ public class ParticipantsControllerTest {
     @BeforeAll
     public void setup() {
         mockMvc = MockMvcBuilders.webAppContextSetup(context).apply(springSecurity()).build();
-        ((VerificationServiceImpl) verificationService).getSchemaStore().initializeDefaultSchemas();
     }
 
     @AfterAll
@@ -175,6 +174,14 @@ public class ParticipantsControllerTest {
 
         initialiseWithParticipantDeleteFromAllDB(part);
 
+        try {
+          // to preload required schemas
+          ContentAccessor content = new ContentAccessorDirect(json);
+          VerificationResultParticipant verResult = verificationService.verifyParticipantSelfDescription(content);
+        } catch (Exception ex) {
+          ex.printStackTrace();
+        }
+        
         String response = mockMvc
             .perform(MockMvcRequestBuilders.post("/participants")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -684,9 +691,8 @@ public class ParticipantsControllerTest {
 
     private void initialiseWithParticipantDeleteFromAllDB(ParticipantMetaData part){
         try {
-            fileStore.deleteFile(part.getSdHash());
             selfDescriptionStore.deleteSelfDescription(part.getSdHash());
-            //TODO: graphdb need to add after implementation
+            //fileStore.deleteFile(part.getSdHash());
         } catch(Exception ex) {
 
         }

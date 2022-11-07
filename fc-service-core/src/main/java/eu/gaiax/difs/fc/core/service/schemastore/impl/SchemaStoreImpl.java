@@ -31,6 +31,7 @@ import org.apache.jena.riot.RDFDataMgr;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
@@ -49,7 +50,7 @@ import org.apache.jena.vocabulary.OWL2;
 @Component
 @Transactional
 @Slf4j
-public class SchemaStoreImpl implements SchemaStore {
+public class SchemaStoreImpl implements InitializingBean, SchemaStore {
 
   @Autowired
   @Qualifier("schemaFileStore")
@@ -59,6 +60,12 @@ public class SchemaStoreImpl implements SchemaStore {
   private SessionFactory sessionFactory;
 
   private static final Map<SchemaType, ContentAccessor> COMPOSITE_SCHEMAS = new ConcurrentHashMap<>();
+  
+  @Override
+  public void afterPropertiesSet() {
+    // to think of schemas pre-loading..  
+    //initializeDefaultSchemas();
+  }
 
   @Override
   public void initializeDefaultSchemas() {

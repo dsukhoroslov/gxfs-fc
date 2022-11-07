@@ -18,7 +18,6 @@ import eu.gaiax.difs.fc.core.pojo.VerificationResultParticipant;
 import eu.gaiax.difs.fc.core.service.filestore.FileStore;
 import eu.gaiax.difs.fc.core.service.sdstore.SelfDescriptionStore;
 import eu.gaiax.difs.fc.core.service.verification.VerificationService;
-import eu.gaiax.difs.fc.core.service.verification.impl.VerificationServiceImpl;
 import eu.gaiax.difs.fc.server.helper.FileReaderHelper;
 import eu.gaiax.difs.fc.testsupport.config.EmbeddedNeo4JConfig;
 import io.zonky.test.db.AutoConfigureEmbeddedDatabase;
@@ -99,7 +98,6 @@ public class QueryControllerTest {
     public void addManuallyDBEntries() throws Exception {
         mockMvc = MockMvcBuilders.webAppContextSetup(context).apply(springSecurity()).build();
         initialiseAllDataBaseWithManuallyAddingSDFromRepository();
-        ((VerificationServiceImpl) verificationService).getSchemaStore().initializeDefaultSchemas();
     }
 
     @AfterEach

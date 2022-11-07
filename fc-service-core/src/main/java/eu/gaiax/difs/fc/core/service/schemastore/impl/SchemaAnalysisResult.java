@@ -12,6 +12,7 @@ import eu.gaiax.difs.fc.core.service.schemastore.SchemaStore.SchemaType;
 @lombok.NoArgsConstructor
 @lombok.Getter
 @lombok.Setter
+@lombok.ToString
 public class SchemaAnalysisResult {
 
   /**

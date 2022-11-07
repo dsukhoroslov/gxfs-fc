@@ -27,7 +27,6 @@ import eu.gaiax.difs.fc.core.pojo.VerificationResultOffering;
 import eu.gaiax.difs.fc.core.service.filestore.FileStore;
 import eu.gaiax.difs.fc.core.service.sdstore.SelfDescriptionStore;
 import eu.gaiax.difs.fc.core.service.verification.VerificationService;
-import eu.gaiax.difs.fc.core.service.verification.impl.VerificationServiceImpl;
 import eu.gaiax.difs.fc.core.util.HashUtils;
 import eu.gaiax.difs.fc.testsupport.config.EmbeddedNeo4JConfig;
 import io.zonky.test.db.AutoConfigureEmbeddedDatabase;
@@ -101,7 +100,6 @@ public class SelfDescriptionControllerTest {
     public void setup() throws IOException {
         mockMvc = MockMvcBuilders.webAppContextSetup(context).apply(springSecurity()).build();
         sdMeta = createSdMetadata();
-        ((VerificationServiceImpl) verificationService).getSchemaStore().initializeDefaultSchemas();
     }
 
     @AfterAll
