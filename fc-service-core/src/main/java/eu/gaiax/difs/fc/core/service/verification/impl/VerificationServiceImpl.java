@@ -358,19 +358,24 @@ public class VerificationServiceImpl implements VerificationService {
     }
     return result ? Pair.of(true, false) : Pair.of(false, true);
   }
-
+  private Boolean checkTypeSubClass(String type) {
+  //  ContentAccessor gaxOntology = schemaStore.getCompositeSchema(SchemaStore.SchemaType.ONTOLOGY);
+    //TODO check the subclass after updating the gax-core-ontology or the SDs
+    return true;
+  }
   private Boolean getSDType(JsonLDObject container) {
     try {
-      JsonLdOptions options = new JsonLdOptions();
       Model data = ModelFactory.createDefaultModel();
       RDFParser.create()
               .streamManager(getStreamManager())
-              .source(container.toJson())
+              .source(new StringReader(container.toJson()))
               .lang(SD_LANG)
               .parse(data);
       NodeIterator node = data.listObjectsOfProperty(RDF.type);
-      List <Object > jsonLdProcessor = JsonLdProcessor.expand(container.toJson());
-      Object o  = jsonLdProcessor.get(0);
+      StringBuilder s = new StringBuilder();
+      while (node.hasNext()) {
+        s.append(node.nextNode().asResource().getURI());
+      }
       for (String key : TYPE_KEYS) {
         Object _type = container.getJsonObject().get(key);
         log.debug("getSDType; key: {}, value: {}", key, _type);
@@ -514,30 +519,31 @@ public class VerificationServiceImpl implements VerificationService {
    * @return SemanticValidationResult object
    */
   SemanticValidationResult validatePayloadAgainstSchema(ContentAccessor payload, ContentAccessor shaclShape) {
-    Model data = ModelFactory.createDefaultModel();
-    RDFParser.create()
-        .streamManager(getStreamManager())
-        .source(payload.getContentAsStream())
-        .lang(SD_LANG)
-        .parse(data);
+     Model data = ModelFactory.createDefaultModel();
+     RDFParser.create()
+             .streamManager(getStreamManager())
+             .source(payload.getContentAsStream())
+             .lang(SD_LANG)
+             .parse(data);
 
-    Model shape = ModelFactory.createDefaultModel();
-    RDFParser.create()
-        .streamManager(getStreamManager())
-        .source(shaclShape.getContentAsStream())
-        .lang(SHAPES_LANG)
-        .parse(shape);
+     Model shape = ModelFactory.createDefaultModel();
+     RDFParser.create()
+             .streamManager(getStreamManager())
+             .source(shaclShape.getContentAsStream())
+             .lang(SHAPES_LANG)
+             .parse(shape);
 
-    Resource reportResource = ValidationUtil.validateModel(data, shape, true);
+     Resource reportResource = ValidationUtil.validateModel(data, shape, true);
 
-    data.close();
-    shape.close();
+     data.close();
+     shape.close();
 
-    boolean conforms = reportResource.getProperty(SH.conforms).getBoolean();
-    String report = null;
-    if (!conforms) {
-      report = reportResource.getModel().toString();
-    }
+     boolean conforms = reportResource.getProperty(SH.conforms).getBoolean();
+     String report = null;
+     if (!conforms) {
+       report = reportResource.getModel().toString();
+     }
+
     return new SemanticValidationResult(conforms, report);
   }
 
