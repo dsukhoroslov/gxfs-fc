@@ -21,8 +21,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 import javax.persistence.EntityExistsException;
 import javax.persistence.LockModeType;
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaDelete;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileExistsException;
 import org.apache.jena.rdf.model.*;
@@ -30,7 +28,6 @@ import org.apache.jena.riot.Lang;
 import org.apache.jena.riot.RDFDataMgr;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
-import org.hibernate.Transaction;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -85,19 +82,8 @@ public class SchemaStoreImpl implements InitializingBean, SchemaStore {
       log.info("initializeDefaultSchemas; {} default schemas found in DB", count);
     } catch (Exception ex) {
       ex.printStackTrace();
-      //throw ex;
     }
   }
-
-  //private void addSchemasFromDirectory(String path) throws IOException {
-  //  URL url = getClass().getClassLoader().getResource(path);
-  //  String str = URLDecoder.decode(url.getFile(), StandardCharsets.UTF_8);
-  //  File ontologyDir = new File(str);
-  //  for (File ontology : ontologyDir.listFiles()) {
-  //    log.debug("addSchemasFromDirectory; Adding schema: {}", ontology);
-  //    addSchema(new ContentAccessorFile(ontology));
-  //  }
-  //}
 
   private int addSchemasFromDirectory(String path) throws IOException {
     PathMatchingResourcePatternResolver scanner = new PathMatchingResourcePatternResolver();
