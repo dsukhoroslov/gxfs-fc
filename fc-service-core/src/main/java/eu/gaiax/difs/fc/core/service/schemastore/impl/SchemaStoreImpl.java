@@ -272,11 +272,12 @@ public class SchemaStoreImpl implements SchemaStore {
         .filter(Objects::nonNull)
         .collect(Collectors.toList());
     if (!redefines.isEmpty()) {
-      throw new VerificationException("Schema redefines " + redefines.size() + " terms. First: " + redefines.get(0));
+      throw new ConflictException("Schema redefines " + redefines.size() + " terms. First: " + redefines.get(0));
     }
 
     SchemaRecord newRecord = new SchemaRecord(schemaId, nameHash, result.getSchemaType(), content, result.getExtractedUrls());
     try {
+      log.debug("SchemaId: {}, Terms: {}", schemaId, newRecord.getTerms());
       currentSession.persist(newRecord);
     } catch (EntityExistsException ex) {
       throw new ConflictException("A schema with id " + schemaId + " already exists.");
@@ -310,7 +311,6 @@ public class SchemaStoreImpl implements SchemaStore {
       throw new IllegalArgumentException("Given schema does not have the same Identifier as the old schema: " + identifier + " <> " + schemaId);
     }
     Session currentSession = sessionFactory.getCurrentSession();
-    Transaction transaction = currentSession.getTransaction();
 
     // Find and lock record.
     SchemaRecord existing = currentSession.find(SchemaRecord.class, identifier, LockModeType.PESSIMISTIC_WRITE);
@@ -321,10 +321,11 @@ public class SchemaStoreImpl implements SchemaStore {
     }
 
     // Remove old terms
-    CriteriaBuilder cb = currentSession.getCriteriaBuilder();
-    CriteriaDelete<SchemaTerm> delete = cb.createCriteriaDelete(SchemaTerm.class);
-    delete.where(cb.equal(delete.from(SchemaTerm.class).get("schemaId"), identifier));
-    currentSession.createQuery(delete).executeUpdate();
+    int deleted = currentSession.createNativeQuery("delete from schematerms where schemaid = :schemaid")
+        .setParameter("schemaid", identifier)
+        .executeUpdate();
+    log.debug("Deleted {} terms", deleted);
+    existing.getTerms().forEach(t -> currentSession.detach(t));
 
     // Check duplicate terms
     List<SchemaTerm> redefines = currentSession.byMultipleIds(SchemaTerm.class)
@@ -343,14 +344,12 @@ public class SchemaStoreImpl implements SchemaStore {
     try {
       currentSession.update(existing);
     } catch (EntityExistsException ex) {
-      transaction.rollback();
       throw new ConflictException("Schema redefines terms.");
     }
     try {
       //Update schema file
       fileStore.replaceFile(existing.getNameHash(), schema);
     } catch (IOException ex) {
-      transaction.rollback();
       throw new RuntimeException("Failed to store schema file", ex);
     }
     currentSession.flush();
