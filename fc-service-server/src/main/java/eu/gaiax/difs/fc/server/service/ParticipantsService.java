@@ -99,8 +99,10 @@ public class ParticipantsService implements ParticipantsApiDelegate {
     checkParticipantAccess(partId);
     ParticipantMetaData part = partDao.select(partId)
         .orElseThrow(() -> new NotFoundException("Participant not found: " + partId));
+    String selfDescription = selfDescriptionStore.getByHash(part.getSdHash()).getSelfDescription().getContentAsString();
     selfDescriptionStore.deleteSelfDescription(part.getSdHash());
     part = partDao.delete(part.getId()).get();
+    part.setSelfDescription(selfDescription);
     log.debug("deleteParticipant.exit; returning: {}", part);
     return ResponseEntity.ok(part);
   }
@@ -217,6 +219,7 @@ public class ParticipantsService implements ParticipantsApiDelegate {
     ParticipantMetaData participantMetaData = partDao.update(partId, participantUpdated)
         .orElseThrow(() -> new NotFoundException("Participant not found: " + partId));
     log.debug("updateParticipant.exit; returning: {}", participantMetaData);
+    participantMetaData.setSelfDescription(selfDescriptionStore.getByHash(participantMetaData.getSdHash()).getSelfDescription().getContentAsString());
     return ResponseEntity.ok(participantMetaData);
   }
 

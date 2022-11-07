@@ -1,5 +1,7 @@
 package eu.gaiax.difs.fc.core.service.verification.impl;
 
+import com.apicatalog.jsonld.loader.DocumentLoader;
+import com.apicatalog.jsonld.loader.SchemeRouter;
 import com.danubetech.keyformats.JWK_to_PublicKey;
 import com.danubetech.keyformats.crypto.PublicKeyVerifier;
 import com.danubetech.keyformats.crypto.PublicKeyVerifierFactory;
@@ -12,6 +14,7 @@ import eu.gaiax.difs.fc.api.generated.model.SelfDescriptionStatus;
 import eu.gaiax.difs.fc.core.exception.ClientException;
 import eu.gaiax.difs.fc.core.exception.VerificationException;
 import eu.gaiax.difs.fc.core.pojo.*;
+import eu.gaiax.difs.fc.core.service.filestore.FileStore;
 import eu.gaiax.difs.fc.core.service.schemastore.SchemaStore;
 import eu.gaiax.difs.fc.core.service.verification.ClaimExtractor;
 import eu.gaiax.difs.fc.core.service.validatorcache.ValidatorCache;
@@ -54,6 +57,10 @@ import java.security.cert.X509Certificate;
 import java.text.ParseException;
 import java.time.Instant;
 import java.util.*;
+import org.apache.jena.riot.Lang;
+import org.apache.jena.riot.RDFParser;
+import org.apache.jena.riot.system.stream.StreamManager;
+import org.springframework.beans.factory.annotation.Qualifier;
 
 /**
  * Implementation of the {@link VerificationService} interface.
@@ -62,10 +69,11 @@ import java.util.*;
 @Component
 public class VerificationServiceImpl implements VerificationService {
 
-  private static final String sd_format = "JSONLD11";
-  private static final String shapes_format = "TURTLE";
-  private static final String[] TYPE_KEYS = {"type", "@type"}; 
+  private static final Lang SD_LANG = Lang.JSONLD11;
+  private static final Lang SHAPES_LANG = Lang.TURTLE;
+  private static final String[] TYPE_KEYS = {"type", "@type"};
   private static final String[] ID_KEYS = {"id", "@id"};
+  // This sniffing is extremely unreliable, since namespace-names are not fixed.
   private static final Set<String> PARTICIPANT_TYPES = Set.of("LegalPerson", "http://w3id.org/gaia-x/participant#LegalPerson", "gax-participant:LegalPerson");
   private static final Set<String> SERVICE_OFFERING_TYPES = Set.of("ServiceOfferingExperimental", "http://w3id.org/gaia-x/service#ServiceOffering", "gax-service:ServiceOffering");
   private static final Set<String> SIGNATURES = Set.of("JsonWebSignature2020"); //, "Ed25519Signature2018");
@@ -81,6 +89,13 @@ public class VerificationServiceImpl implements VerificationService {
 
   @Autowired
   private ValidatorCache validatorCache;
+
+  @Autowired
+  @Qualifier("contextCacheFileStore")
+  private FileStore fileStore;
+
+  private boolean loadersInitialised;
+  private StreamManager streamManager;
 
   public VerificationServiceImpl() {
     Security.addProvider(new BouncyCastleProvider());
@@ -181,8 +196,10 @@ public class VerificationServiceImpl implements VerificationService {
 
     // schema verification
     if (verifySchema) {
-      // TODO: make it workable
-      validatePayloadAgainstCompositeSchema(payload);
+      SemanticValidationResult result = verifySelfDescriptionAgainstCompositeSchema(payload);
+      if (!result.isConforming()) {
+        throw new VerificationException("Schema error: " + result.getValidationReport());
+      }
     }
 
     List<Validator> validators;
@@ -276,29 +293,29 @@ public class VerificationServiceImpl implements VerificationService {
       VerifiableCredential credential = credentials.get(i);
       if (credential != null) {
         if (checkAbsence(credential, "@context")) {
-          sb.append(" - VerifiableCredential [").append(i).append("] must contain '@context' property").append(sep);
+          sb.append(" - VerifiableCredential[").append(i).append("] must contain '@context' property").append(sep);
         }
         if (checkAbsence(credential, "type", "@type")) {
-          sb.append(" - VerifiableCredential [").append(i).append("] must contain 'type' property").append(sep);
+          sb.append(" - VerifiableCredential[").append(i).append("] must contain 'type' property").append(sep);
         }
         if (checkAbsence(credential, "credentialSubject")) {
-          sb.append(" - VerifiableCredential [").append(i).append("] must contain 'credentialSubject' property").append(sep);
+          sb.append(" - VerifiableCredential[").append(i).append("] must contain 'credentialSubject' property").append(sep);
         }
         if (checkAbsence(credential, "issuer")) {
-          sb.append(" - VerifiableCredential [").append(i).append("] must contain 'issuer' property").append(sep);
+          sb.append(" - VerifiableCredential[").append(i).append("] must contain 'issuer' property").append(sep);
         }
         if (checkAbsence(credential, "issuanceDate")) {
-          sb.append(" - VerifiableCredential [").append(i).append("] must contain 'issuanceDate' property").append(sep);
+          sb.append(" - VerifiableCredential[").append(i).append("] must contain 'issuanceDate' property").append(sep);
         }
 
         Date today = Date.from(Instant.now());
         Date issDate = credential.getIssuanceDate();
         if (issDate != null && issDate.after(today)) {
-          sb.append(" - 'issuanceDate' of VerifiableCredential [").append(i).append("] must be in the past").append(sep);
+          sb.append(" - 'issuanceDate' of VerifiableCredential[").append(i).append("] must be in the past").append(sep);
         }
         Date expDate = credential.getExpirationDate();
         if (expDate != null && expDate.before(today)) {
-          sb.append(" - 'expirationDate' of VerifiableCredential [").append(i).append("] must be in the future").append(sep);
+          sb.append(" - 'expirationDate' of VerifiableCredential[").append(i).append("] must be in the future").append(sep);
         }
       }
     }
@@ -360,6 +377,7 @@ public class VerificationServiceImpl implements VerificationService {
         }
 
         for (String type : types) {
+          // This should properly expand the namespace before matching.
           if (PARTICIPANT_TYPES.contains(type)) {
             return Boolean.TRUE;
           }
@@ -383,6 +401,8 @@ public class VerificationServiceImpl implements VerificationService {
    * @return a list of claims.
    */
   private List<SdClaim> extractClaims(ContentAccessor payload) {
+    // Make sure our interceptors are in place.
+    initLoaders();
     //TODO does it work with an Array of VCs
     List<SdClaim> claims = null;
     for (ClaimExtractor extra : extractors) {
@@ -392,7 +412,7 @@ public class VerificationServiceImpl implements VerificationService {
           break;
         }
       } catch (Exception ex) {
-        log.error("extractClaims.error: ", ex);
+        log.error("extractClaims.error using {}: {}", extra.getClass().getName(), ex.getMessage());
       }
     }
     return claims;
@@ -484,6 +504,31 @@ public class VerificationServiceImpl implements VerificationService {
     return null;
   }
 
+  private void initLoaders() {
+    if (!loadersInitialised) {
+      log.debug("Setting up Caching com.apicatalog.jsonld DocumentLoader");
+      DocumentLoader cachingLoader = new CachingHttpLoader(fileStore);
+      SchemeRouter loader = (SchemeRouter) SchemeRouter.defaultInstance();
+      loader.set("http", cachingLoader);
+      loader.set("https", cachingLoader);
+      loadersInitialised = true;
+    }
+  }
+
+  public StreamManager getStreamManager() {
+    if (streamManager == null) {
+      // Make sure Caching com.​apicatalog.​jsonld DocumentLoader is set up.
+      initLoaders();
+      log.debug("Setting up Jena caching Locator");
+      StreamManager clone = StreamManager.get().clone();
+      clone.clearLocators();
+      clone.addLocator(new LocatorCaching(fileStore));
+      streamManager = clone;
+    }
+    return streamManager;
+  }
+
+
   /* SD validation against SHACL Schemas */
   /**
    * Method that validates a dataGraph against shaclShape
@@ -493,34 +538,50 @@ public class VerificationServiceImpl implements VerificationService {
    * @return SemanticValidationResult object
    */
   private SemanticValidationResult validatePayloadAgainstSchema(ContentAccessor payload, ContentAccessor shaclShape) {
-    boolean conforms = false;   
+    Model data = ModelFactory.createDefaultModel();
+    RDFParser.create()
+        .streamManager(getStreamManager())
+        .source(payload.getContentAsStream())
+        .lang(SD_LANG)
+        .parse(data);
+
+    Model shape = ModelFactory.createDefaultModel();
+    RDFParser.create()
+        .streamManager(getStreamManager())
+        .source(shaclShape.getContentAsStream())
+        .lang(SHAPES_LANG)
+        .parse(shape);
+
+    Resource reportResource = ValidationUtil.validateModel(data, shape, true);
+
+    data.close();
+    shape.close();
+
+    boolean conforms = reportResource.getProperty(SH.conforms).getBoolean();
     String report = null;
-    try {  
-      Reader dataGraphReader = new StringReader(payload.getContentAsString());
-      Reader shaclShapeReader = new StringReader(shaclShape.getContentAsString());
-      Model data = ModelFactory.createDefaultModel();
-      data.read(dataGraphReader, null, sd_format);
-      Model shape = ModelFactory.createDefaultModel();
-      shape.read(shaclShapeReader, null, shapes_format);
-      Resource reportResource = ValidationUtil.validateModel(data, shape, true);
-      conforms = reportResource.getProperty(SH.conforms).getBoolean();
-      if (!conforms) {
-        report = reportResource.getModel().toString();
-      }
-    } catch (Exception ex) {
-      log.error("validatePayloadAgainstSchema.error", ex);
-      report = ex.getMessage();
+    if (!conforms) {
+      report = reportResource.getModel().toString();
     }
     return new SemanticValidationResult(conforms, report);
   }
 
-  public SemanticValidationResult validatePayloadAgainstCompositeSchema(ContentAccessor payload) {
-    ContentAccessor shaclShape = schemaStore.getCompositeSchema(SchemaStore.SchemaType.SHAPE);
-    SemanticValidationResult result = validatePayloadAgainstSchema(payload, shaclShape);
-    log.debug("validationAgainstShacl.exit; conforms: {}; model: {}", result.isConforming(), result.getValidationReport());
-    if (!result.isConforming()) {
-      throw new VerificationException("Schema error; Shacl shape schema violated: " + result.getValidationReport());
+//  public SemanticValidationResult validatePayloadAgainstCompositeSchema(ContentAccessor payload) {
+//    ContentAccessor shaclShape = schemaStore.getCompositeSchema(SchemaStore.SchemaType.SHAPE);
+//    SemanticValidationResult result = validatePayloadAgainstSchema(payload, shaclShape);
+//    log.debug("validationAgainstShacl.exit; conforms: {}; model: {}", result.isConforming(), result.getValidationReport());
+//    if (!result.isConforming()) {
+//      throw new VerificationException("Schema error; Shacl shape schema violated: " + result.getValidationReport());
+  @Override
+  public SemanticValidationResult verifySelfDescriptionAgainstCompositeSchema(ContentAccessor payload) {
+    SemanticValidationResult result;
+    try {
+      ContentAccessor shaclShape = schemaStore.getCompositeSchema(SchemaStore.SchemaType.SHAPE);
+      result = validatePayloadAgainstSchema(payload, shaclShape);
+    } catch (Exception ex) {
+      log.warn("verifySelfDescriptionAgainstCompositeSchema.error", ex);
+      result = new SemanticValidationResult(false, ex.getMessage());
     }
+    log.debug("verifySelfDescriptionAgainstCompositeSchema.exit; conforms: {}; model: {}", result.isConforming(), result.getValidationReport());
     return result;
   }
 

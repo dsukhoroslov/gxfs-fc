@@ -94,6 +94,10 @@
             <artifactId>proc</artifactId>
         </dependency>
         <dependency>
+            <groupId>com.apicatalog</groupId>
+            <artifactId>titanium-json-ld</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.apache.jena</groupId>
             <artifactId>apache-jena-libs</artifactId>
             <type>pom</type>
@@ -105,6 +109,12 @@
         <dependency>
             <groupId>com.danubetech</groupId>
             <artifactId>verifiable-credentials-java</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.glassfish</groupId>
+                    <artifactId>jakarta.json</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>com.danubetech</groupId>

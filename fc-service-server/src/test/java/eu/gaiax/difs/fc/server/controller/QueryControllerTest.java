@@ -11,7 +11,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.gaiax.difs.fc.api.generated.model.QueryLanguage;
 import eu.gaiax.difs.fc.api.generated.model.Results;
 import eu.gaiax.difs.fc.core.pojo.ContentAccessorDirect;
-import eu.gaiax.difs.fc.core.pojo.GraphQuery;
 import eu.gaiax.difs.fc.core.pojo.SdClaim;
 import eu.gaiax.difs.fc.core.pojo.SelfDescriptionMetadata;
 import eu.gaiax.difs.fc.core.pojo.VerificationResultOffering;
@@ -19,6 +18,7 @@ import eu.gaiax.difs.fc.core.pojo.VerificationResultParticipant;
 import eu.gaiax.difs.fc.core.service.filestore.FileStore;
 import eu.gaiax.difs.fc.core.service.sdstore.SelfDescriptionStore;
 import eu.gaiax.difs.fc.core.service.verification.VerificationService;
+import eu.gaiax.difs.fc.core.service.verification.impl.VerificationServiceImpl;
 import eu.gaiax.difs.fc.server.helper.FileReaderHelper;
 import eu.gaiax.difs.fc.testsupport.config.EmbeddedNeo4JConfig;
 import io.zonky.test.db.AutoConfigureEmbeddedDatabase;
@@ -40,7 +40,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.event.annotation.BeforeTestClass;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
@@ -55,8 +54,6 @@ import org.springframework.web.context.WebApplicationContext;
 @AutoConfigureEmbeddedDatabase(provider = DatabaseProvider.ZONKY)
 @Import(EmbeddedNeo4JConfig.class)
 public class QueryControllerTest {
-
-    private final static String SD_FILE_NAME = "new_participant.json"; //"default-sd.json"; //"default_participant.json"; //
 
     private final static String DEFAULT_SERVICE_SD_FILE_NAME = "default-sd-service-offering.json";
 
@@ -75,33 +72,9 @@ public class QueryControllerTest {
     private FileStore fileStore;
     @Autowired
     private  ObjectMapper objectMapper;
-    //@Autowired
-    //private  SchemaStore schemaStore;
-
-    
-    @BeforeAll
-    public void addManuallyDBEntries() throws Exception {
-        initialiseAllDataBaseWithManuallyAddingSDFromRepository();
-    }
-
-    @BeforeTestClass
-    public void setup() {
-        mockMvc = MockMvcBuilders.webAppContextSetup(context).apply(springSecurity()).build();
-    }
-
-    @AfterEach
-    public void storageSelfCleaning() throws IOException {
-        fileStore.clearStorage();
-    }
-
-    @AfterAll
-    void closeNeo4j() {
-        embeddedDatabaseServer.close();
-    }
 
     private String QUERY_REQUEST_GET = "{\"statement\": \"MATCH (n:ServiceOffering) RETURN n LIMIT 1\", " +
-        "\"parameters\": " +
-        "null}}";
+        "\"parameters\": null}}";
 
     private String QUERY_REQUEST_TIMEOUT = "{\"statement\": \"CALL apoc.util.sleep($duration)\", \"parameters\": {\"duration\": 3000}}";
 
@@ -121,6 +94,24 @@ public class QueryControllerTest {
     private String QUERY_REQUEST_DELETE = "{\"statement\": \"MATCH (n:ServiceOffering) where n.name = 'EuProGigant " +
         "Portal' DETACH DELETE n\", " +
         "\"parameters\": null}";
+
+    @BeforeAll
+    public void addManuallyDBEntries() throws Exception {
+        mockMvc = MockMvcBuilders.webAppContextSetup(context).apply(springSecurity()).build();
+        initialiseAllDataBaseWithManuallyAddingSDFromRepository();
+        ((VerificationServiceImpl) verificationService).getSchemaStore().initializeDefaultSchemas();
+    }
+
+    @AfterEach
+    public void storageSelfCleaning() throws IOException {
+        fileStore.clearStorage();
+    }
+
+    @AfterAll
+    void closeNeo4j() {
+        embeddedDatabaseServer.close();
+    }
+
     
     @Test
     public void getQueryPageShouldReturnSuccessResponse() throws Exception {

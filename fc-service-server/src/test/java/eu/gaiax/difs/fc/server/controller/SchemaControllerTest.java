@@ -1,15 +1,15 @@
 package eu.gaiax.difs.fc.server.controller;
 
+import eu.gaiax.difs.fc.core.exception.NotFoundException;
 import eu.gaiax.difs.fc.core.pojo.ContentAccessorDirect;
 import eu.gaiax.difs.fc.core.service.filestore.FileStore;
 import eu.gaiax.difs.fc.core.service.schemastore.SchemaStore;
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.charset.Charset;
-import java.util.List;
-import java.util.Map;
 import java.util.Objects;
-import org.junit.jupiter.api.AfterEach;
+
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -20,7 +20,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.event.annotation.AfterTestClass;
 import org.springframework.test.context.event.annotation.BeforeTestClass;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
@@ -32,16 +31,15 @@ import org.springframework.web.context.WebApplicationContext;
 
 import io.zonky.test.db.AutoConfigureEmbeddedDatabase;
 import io.zonky.test.db.AutoConfigureEmbeddedDatabase.DatabaseProvider;
-import lombok.extern.slf4j.Slf4j;
 
 import static eu.gaiax.difs.fc.server.helper.FileReaderHelper.getMockFileDataAsString;
 import static eu.gaiax.difs.fc.server.util.CommonConstants.CATALOGUE_ADMIN_ROLE;
 import static eu.gaiax.difs.fc.server.util.CommonConstants.PARTICIPANT_ADMIN_ROLE;
+import static org.junit.jupiter.api.Assertions.assertThrowsExactly;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@Slf4j
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
@@ -62,24 +60,14 @@ public class SchemaControllerTest {
   @Qualifier("schemaFileStore")
   private FileStore fileStore;
 
-  String SCHEMA_REQUEST = "{\"ontologies\":null,\"shapes\":null,\"vocabularies\":null}";
+  private static final String SCHEMA_REQUEST = "{\"ontologies\":null,\"shapes\":null,\"vocabularies\":null}";
 
   @BeforeTestClass
   public void setup() {
     mockMvc = MockMvcBuilders.webAppContextSetup(context).apply(springSecurity()).build();
+    schemaStore.initializeDefaultSchemas();
   }
 
-  @AfterEach
-  public void storageSelfCleaning() throws IOException {
-    Map<SchemaStore.SchemaType, List<String>> schemaList = schemaStore.getSchemaList();
-    for (List<String> typeList : schemaList.values()) {
-      for (String schema : typeList) {
-        schemaStore.deleteSchema(schema);
-      }
-    }
-    fileStore.clearStorage();
-  }
-  
   @Test
   @WithMockUser(roles = {CATALOGUE_ADMIN_ROLE, PARTICIPANT_ADMIN_ROLE})
   public void getSchemaByIdShouldReturnSuccessResponse() throws Exception {
@@ -105,8 +93,6 @@ public class SchemaControllerTest {
   public void getSchemasShouldReturnSuccessResponse() throws Exception {
     mockMvc.perform(MockMvcRequestBuilders.get("/schemas")
             .with(csrf())
-            //.param("offset", "5")
-            //.param("limit", "10")
             .accept(MediaType.APPLICATION_JSON))
         .andExpect(status().isOk());
   }
@@ -115,8 +101,6 @@ public class SchemaControllerTest {
   public void getSchemasShouldReturnUnauthorizedResponse() throws Exception {
     mockMvc.perform(MockMvcRequestBuilders.get("/schemas")
             .with(csrf())
-            .param("offset", "5")
-            .param("limit", "10")
             .accept(MediaType.APPLICATION_JSON))
         .andExpect(status().isUnauthorized());
   }
@@ -125,14 +109,10 @@ public class SchemaControllerTest {
   @WithMockUser(roles = {CATALOGUE_ADMIN_ROLE, PARTICIPANT_ADMIN_ROLE})
   public void getLatestSchemaShouldReturnSuccessResponse() throws Exception {
     String id = schemaStore.addSchema(new ContentAccessorDirect(getMockFileDataAsString("test-schema.ttl")));
-    try {
     mockMvc.perform(MockMvcRequestBuilders.get("/schemas/latest?type=SHAPE")
             .with(csrf())
             .accept(MediaType.APPLICATION_JSON))
         .andExpect(status().isOk());
-    } catch (Exception ex) {
-        ex.printStackTrace();
-    }
     schemaStore.deleteSchema(id);
   }
 
@@ -210,7 +190,6 @@ public class SchemaControllerTest {
     schemaStore.deleteSchema(id);
   }
 
-
   @Test
   @WithMockUser(roles = {PARTICIPANT_ADMIN_ROLE})
   public void deleteSchemasWithDifferentRoleReturnForbiddenResponse() throws Exception {
@@ -229,5 +208,6 @@ public class SchemaControllerTest {
             .with(csrf())
             .accept(MediaType.APPLICATION_JSON))
         .andExpect(status().isOk());
+    assertThrowsExactly(NotFoundException.class, () -> schemaStore.deleteSchema(id));
   }
 }

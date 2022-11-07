@@ -7,18 +7,13 @@ import eu.gaiax.difs.fc.core.exception.ServerException;
 import eu.gaiax.difs.fc.core.exception.VerificationException;
 import eu.gaiax.difs.fc.core.pojo.ContentAccessor;
 import eu.gaiax.difs.fc.core.pojo.ContentAccessorDirect;
-import eu.gaiax.difs.fc.core.pojo.ContentAccessorFile;
 import eu.gaiax.difs.fc.core.service.filestore.FileStore;
 import eu.gaiax.difs.fc.core.service.schemastore.SchemaStore;
 import eu.gaiax.difs.fc.core.util.HashUtils;
-import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
-import java.io.UnsupportedEncodingException;
 
-import java.net.URL;
-import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.*;
@@ -29,6 +24,7 @@ import javax.persistence.LockModeType;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaDelete;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.FileExistsException;
 import org.apache.jena.rdf.model.*;
 import org.apache.jena.riot.Lang;
 import org.apache.jena.riot.RDFDataMgr;
@@ -208,11 +204,7 @@ public class SchemaStoreImpl implements SchemaStore {
 
   public boolean isSchemaType(ContentAccessor schema, SchemaType type) {
     SchemaAnalysisResult result = analyseSchema(schema);
-    if (result.getSchemaType().equals(type)) {
-      return true;
-    } else {
-      return false;
-    }
+    return result.getSchemaType().equals(type);
   }
 
   private ContentAccessor createCompositeSchema(SchemaType type) {
@@ -226,7 +218,7 @@ public class SchemaStoreImpl implements SchemaStore {
     Model unionModel = ModelFactory.createDefaultModel();
     List<String> schemaListForType = schemaList.get(type);
     if (schemaListForType == null) {
-      return new ContentAccessorDirect("");
+      return new ContentAccessorDirect(""); //??
     }
     for (String schemaId : schemaListForType) {
       ContentAccessor schemaContent = getSchema(schemaId);
@@ -241,7 +233,6 @@ public class SchemaStoreImpl implements SchemaStore {
       final String compositeSchemaName = "CompositeSchema" + type.name();
       fileStore.replaceFile(compositeSchemaName, content);
       content = fileStore.readFile(compositeSchemaName);
-      COMPOSITE_SCHEMAS.put(type, content);
       log.debug("createCompositeSchema.exit; returning: {}", content.getContentAsString().length());
     } catch (IOException ex) {
       log.error("createCompositeSchema.error", ex);
@@ -293,8 +284,13 @@ public class SchemaStoreImpl implements SchemaStore {
 
     try {
       fileStore.storeFile(nameHash, schema);
-    } catch (IOException ex) {
-      throw new RuntimeException("Failed to store schema file", ex);
+    } catch (FileExistsException e) {
+      throw new ConflictException("The schema with the hash " + nameHash + " already exists in the file storage.", e);
+    } catch (final IOException exc) {
+      throw new ServerException("Error while adding schema to file storage: " + exc.getMessage());
+    } catch (Exception ex) {
+      log.error("Failed to store a new schema file: ", ex);
+      throw ex;
     }
 
     currentSession.flush();
@@ -421,16 +417,7 @@ public class SchemaStoreImpl implements SchemaStore {
 
   @Override
   public ContentAccessor getCompositeSchema(SchemaType type) {
-    try {
-      ContentAccessor composite = COMPOSITE_SCHEMAS.get(type);
-      if (composite == null) {
-        composite = createCompositeSchema(type);
-      }
-      return composite;
-    } catch (Exception ex) {
-      log.error("getCompositeSchema.error", ex);
-      throw new ServerException("Error returning composite schema of type " + type, ex);
-    }
+    return COMPOSITE_SCHEMAS.computeIfAbsent(type, t -> createCompositeSchema(t));
   }
 
 }

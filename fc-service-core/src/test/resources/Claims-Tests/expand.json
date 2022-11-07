@@ -1,0 +1,82 @@
+[
+	{
+		"@id": "https://delta-dao.com/.well-known/participant.json",
+		"https://www.w3.org/2018/credentials#issuer": [
+			{
+				"@id": "https://www.handelsregister.de/"
+			}
+		],
+		"https://www.w3.org/2018/credentials#issuanceDate": [
+			{
+				"@value": "2010-01-01T19:73:24Z",
+				"@type": "http://www.w3.org/2001/XMLSchema#dateTime"
+			}
+		],
+		"@type": [
+			"https://www.w3.org/2018/credentials#VerifiableCredential",
+			"LegalPerson"
+		],
+		"https://www.w3.org/2018/credentials#credentialSubject": [
+			{
+				"@id": "http://example.org/test-issuer",
+				"@type": [
+					"http://w3id.org/gaia-x/participant#Provider"
+				],
+				"http://w3id.org/gaia-x/participant#name": [
+					{
+						"@value": "deltaDAO AG",
+						"@type": "http://www.w3.org/2001/XMLSchema#string"
+					}
+				],
+				"http://w3id.org/gaia-x/participant#legalName": [
+					{
+						"@value": "deltaDAO AG",
+						"@type": "http://www.w3.org/2001/XMLSchema#string"
+					}
+				],
+				"http://w3id.org/gaia-x/participant#legalAddress": [
+					{
+						"@type": [
+							"http://w3id.org/gaia-x/participant#Address"
+						],
+						"http://w3id.org/gaia-x/participant#country": [
+							{
+								"@value": "DE",
+								"@type": "http://www.w3.org/2001/XMLSchema#string"
+							}
+						],
+						"http://w3id.org/gaia-x/participant#street-address": [
+							{
+								"@value": "Geibelstra?e 46b",
+								"@type": "http://www.w3.org/2001/XMLSchema#string"
+							}
+						],
+						"http://w3id.org/gaia-x/participant#postal-code": [
+							{
+								"@value": "22303",
+								"@type": "http://www.w3.org/2001/XMLSchema#string"
+							}
+						],
+						"http://w3id.org/gaia-x/participant#locality": [
+							{
+								"@value": "Hamburg",
+								"@type": "http://www.w3.org/2001/XMLSchema#string"
+							}
+						]
+					}
+				]
+			}
+		],
+		"https://w3id.org/security#proof": [
+			{
+				"@graph": [
+					{
+						"@type": [
+							"JsonWebSignature2020"
+						]
+					}
+				]
+			}
+		]
+	}
+]

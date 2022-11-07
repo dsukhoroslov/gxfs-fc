@@ -1,0 +1,157 @@
+[
+	{
+		"@id": "_:b0",
+		"@type": [
+			"https://www.w3.org/2018/credentials#VerifiablePresentation"
+		],
+		"https://w3id.org/security#proof": [
+			{
+				"@id": "_:b1"
+			}
+		],
+		"https://www.w3.org/2018/credentials#verifiableCredential": [
+			{
+				"@id": "_:b3"
+			}
+		]
+	},
+	{
+		"@id": "_:b1",
+		"@graph": [
+			{
+				"@id": "_:b2",
+				"@type": [
+					"https://w3id.org/security#RsaSignature2018"
+				],
+				"http://purl.org/dc/terms/created": [
+					{
+						"@value": "2018-09-14T21:19:10Z",
+						"@type": "xsd:dateTime"
+					}
+				],
+				"sec:challenge": [
+					{
+						"@value": "1f44d55f-f161-4938-a659-f8026467f126"
+					}
+				],
+				"sec:domain": [
+					{
+						"@value": "4jt78h47fh47"
+					}
+				],
+				"sec:jws": [
+					{
+						"@value": "eyJhbGciOiJSUzI1NiIsImI2NCI6ZmFsc2UsImNyaXQiOlsiYjY0Il19..kTCYt5XsITJX1CxPCT8yAV-TVIw5WEuts01mqpQy7UJiN5mgREEMGlv50aqzpqh4Qq_PbChOMqsLfRoPsnsgxD-WUcX16dUOqV0G_zS245-kronKb78cPktb3rk-BuQy72IFLN25DYuNzVBAh4vGHSrQyHUGlcTwLtjPAnKb78"
+					}
+				],
+				"sec:proofPurpose": [
+					{
+						"@id": "https://w3id.org/security#authenticationMethod"
+					}
+				],
+				"sec:verificationMethod": [
+					{
+						"@id": "did:web:example"
+					}
+				]
+			}
+		]
+	},
+	{
+		"@id": "_:b3",
+		"@graph": [
+			{
+				"@id": "https://delta-dao.com/.well-known/participant.json",
+				"@type": [
+					"https://www.w3.org/2018/credentials#VerifiableCredential",
+					"LegalPerson"
+				],
+				"https://w3id.org/security#proof": [
+					{
+						"@id": "_:b4"
+					}
+				],
+				"https://www.w3.org/2018/credentials#credentialSubject": [
+					{
+						"@id": "http://example.org/test-issuer"
+					}
+				],
+				"https://www.w3.org/2018/credentials#issuanceDate": [
+					{
+						"@value": "2010-01-01T19:73:24Z",
+						"@type": "http://www.w3.org/2001/XMLSchema#dateTime"
+					}
+				],
+				"https://www.w3.org/2018/credentials#issuer": [
+					{
+						"@id": "https://www.handelsregister.de/"
+					}
+				]
+			},
+			{
+				"@id": "http://example.org/test-issuer",
+				"@type": [
+					"http://w3id.org/gaia-x/participant#Provider"
+				],
+				"http://w3id.org/gaia-x/participant#legalAddress": [
+					{
+						"@id": "_:b6"
+					}
+				],
+				"http://w3id.org/gaia-x/participant#legalName": [
+					{
+						"@value": "deltaDAO AG",
+						"@type": "http://www.w3.org/2001/XMLSchema#string"
+					}
+				],
+				"http://w3id.org/gaia-x/participant#name": [
+					{
+						"@value": "deltaDAO AG",
+						"@type": "http://www.w3.org/2001/XMLSchema#string"
+					}
+				]
+			},
+			{
+				"@id": "_:b6",
+				"@type": [
+					"http://w3id.org/gaia-x/participant#Address"
+				],
+				"http://w3id.org/gaia-x/participant#country": [
+					{
+						"@value": "DE",
+						"@type": "http://www.w3.org/2001/XMLSchema#string"
+					}
+				],
+				"http://w3id.org/gaia-x/participant#locality": [
+					{
+						"@value": "Hamburg",
+						"@type": "http://www.w3.org/2001/XMLSchema#string"
+					}
+				],
+				"http://w3id.org/gaia-x/participant#postal-code": [
+					{
+						"@value": "22303",
+						"@type": "http://www.w3.org/2001/XMLSchema#string"
+					}
+				],
+				"http://w3id.org/gaia-x/participant#street-address": [
+					{
+						"@value": "Geibelstra?e 46b",
+						"@type": "http://www.w3.org/2001/XMLSchema#string"
+					}
+				]
+			}
+		]
+	},
+	{
+		"@id": "_:b4",
+		"@graph": [
+			{
+				"@id": "_:b5",
+				"@type": [
+					"JsonWebSignature2020"
+				]
+			}
+		]
+	}
+]

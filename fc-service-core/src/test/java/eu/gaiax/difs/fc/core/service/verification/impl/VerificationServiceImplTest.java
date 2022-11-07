@@ -87,6 +87,7 @@ public class VerificationServiceImplTest {
 
   @Test
   void invalidSyntax_MissingQuote() throws Exception {
+    log.debug("invalidSyntax_MissingQuote");
     String path = "VerificationService/syntax/missingQuote.jsonld";
     ContentAccessor content = getAccessor(path);
     Exception ex = assertThrowsExactly(ClientException.class, ()
@@ -97,6 +98,7 @@ public class VerificationServiceImplTest {
 
   @Test
   void invalidSyntax_NoVCinSD() {
+    log.debug("invalidSyntax_NoVCinSD");
     String path = "VerificationService/syntax/smallExample.jsonld";
 
     Exception ex = assertThrowsExactly(VerificationException.class, ()
@@ -107,6 +109,7 @@ public class VerificationServiceImplTest {
 
   @Test
   void validSyntax_Participant() throws Exception {
+    log.debug("validSyntax_Participant");
     String path = "VerificationService/syntax/participantSD2.jsonld";
     VerificationResult vr = verificationService.verifySelfDescription(getAccessor(path));
     assertNotNull(vr);
@@ -119,6 +122,7 @@ public class VerificationServiceImplTest {
 
   @Test
   void validSyntax_ValidSDVP() throws Exception {
+    log.debug("validSyntax_ValidSDVP");
     String path = "VerificationService/syntax/input.vp.jsonld";
     VerificationResult vr = verificationService.verifySelfDescription(getAccessor(path), true, true, false);
     assertNotNull(vr);
@@ -132,6 +136,7 @@ public class VerificationServiceImplTest {
   @Test
   @Disabled("invalid SO generated")
   void validSyntax_ValidService() throws Exception {
+    log.debug("validSyntax_ValidService");
     String path = "VerificationService/syntax/service1.jsonld";
     VerificationResult vr = verificationService.verifySelfDescription(getAccessor(path), true, true, false);
     assertNotNull(vr);
@@ -147,6 +152,7 @@ public class VerificationServiceImplTest {
   @Test
   //@Disabled("invalid SO generated")
   void validSyntax_ValidService2() throws Exception {
+    log.debug("validSyntax_ValidService2");
     String path = "VerificationService/syntax/service2.jsonld";
     VerificationResult vr = verificationService.verifySelfDescription(getAccessor(path), true, true, false);
     assertNotNull(vr);
@@ -160,6 +166,7 @@ public class VerificationServiceImplTest {
   @Test
   @Disabled("invalid LP generated")
   void validSyntax_ValidPerson() throws Exception {
+    log.debug("validSyntax_ValidPerson");
     String path = "VerificationService/syntax/legalPerson1.jsonld";
     VerificationResult vr = verificationService.verifySelfDescription(getAccessor(path), true, true, false);
     assertNotNull(vr);
@@ -174,6 +181,7 @@ public class VerificationServiceImplTest {
 
   @Test
   void invalidProof_InvalidSignatureType() throws Exception {
+    log.debug("invalidProof_InvalidSignatureType");
     String path = "VerificationService/syntax/input.vp.jsonld";
     Exception ex = assertThrowsExactly(VerificationException.class, ()
         -> verificationService.verifySelfDescription(getAccessor(path)));
@@ -182,6 +190,7 @@ public class VerificationServiceImplTest {
 
   @Test
   void invalidProof_MissingProofs() throws IOException {
+    log.debug("invalidProof_MissingProofs");
     String path = "VerificationService/sign/hasNoSignature1.json";
 
     Exception ex = assertThrowsExactly(VerificationException.class, ()
@@ -192,6 +201,7 @@ public class VerificationServiceImplTest {
 
   @Test
   void invalidProof_UnknownVerificationMethod() throws Exception {
+    log.debug("invalidProof_UnknownVerificationMethod");
     String path = "VerificationService/sign/hasInvalidSignatureType.json";
 
     Exception ex = assertThrowsExactly(VerificationException.class, ()
@@ -202,6 +212,7 @@ public class VerificationServiceImplTest {
 
   @Test
   void invalidProof_SignaturesMissing2() throws IOException {
+    log.debug("invalidProof_SignaturesMissing2");
     String path = "VerificationService/sign/lacksSomeSignatures.json";
 
     Exception ex = assertThrowsExactly(VerificationException.class, ()
@@ -212,6 +223,7 @@ public class VerificationServiceImplTest {
 
   @Test
   void verifySignature_InvalidSignature() throws UnsupportedEncodingException {
+    log.debug("verifySignature_InvalidSignature");
     String path = "VerificationService/sign/hasInvalidSignature.json";
 
     Exception ex = assertThrowsExactly(VerificationException.class, ()
@@ -221,19 +233,23 @@ public class VerificationServiceImplTest {
 
   @Test
   void validSD() throws UnsupportedEncodingException {
+    log.debug("validSD");
     String path = "VerificationService/sign/valid_signature.json";
-    verificationService.verifySelfDescription(getAccessor(path));
+    VerificationResult result = verificationService.verifySelfDescription(getAccessor(path));
+    assertEquals(1, result.getValidators().size(), "Incorrect number of validators found");
   }
 
   @Test
   void validComplexSD() throws UnsupportedEncodingException {
+    log.debug("validComplexSD");
     String path = "VerificationService/sign/valid_complex_signature.json";
-    verificationService.verifySelfDescription(getAccessor(path));
+    VerificationResult result = verificationService.verifySelfDescription(getAccessor(path));
+    assertEquals(1, result.getValidators().size(), "Incorrect number of validators found");
   }
 
   @Test
-  @Disabled("The test fails locally")
   void extractClaims_providerTest() throws Exception {
+    log.debug("extractClaims_providerTest");
     ContentAccessor content = getAccessor("Claims-Extraction-Tests/providerTest.jsonld");
     VerificationResult result = verificationService.verifySelfDescription(content, true, true, false);
     List<SdClaim> actualClaims = result.getClaims();
@@ -255,6 +271,7 @@ public class VerificationServiceImplTest {
 
   @Test
   void extractClaims_participantTest() throws Exception {
+    log.debug("extractClaims_participantTest");
     ContentAccessor content = getAccessor("Claims-Extraction-Tests/participantSD.jsonld");
     VerificationResult result = verificationService.verifySelfDescription(content, true, false, false);
     List<SdClaim> actualClaims = result.getClaims();
@@ -287,6 +304,7 @@ public class VerificationServiceImplTest {
 
   @Test
   void extractClaims_participantTwoVCsTest() throws Exception {
+    log.debug("extractClaims_participantTwoVCsTest");
     ContentAccessor content = getAccessor("Claims-Extraction-Tests/participantTwoVCs.jsonld");
     VerificationResult result = verificationService.verifySelfDescription(content, true, true, false);
     List<SdClaim> actualClaims = result.getClaims();
@@ -308,6 +326,7 @@ public class VerificationServiceImplTest {
 
   @Test
   void extractClaims_participantTwoCSsTest() throws Exception {
+    log.debug("extractClaims_participantTwoCSsTest");
     ContentAccessor content = getAccessor("Claims-Extraction-Tests/participantTwoCSs.jsonld");
     VerificationResult result = verificationService.verifySelfDescription(content, true, true, false);
     List<SdClaim> actualClaims = result.getClaims();
@@ -334,29 +353,28 @@ public class VerificationServiceImplTest {
   }
 
   @Test
-  void verifyValidationResult() throws IOException {
-    schemaStore.addSchema(getAccessor("Validation-Tests/physical-resourceShape.ttl"));
-    SemanticValidationResult validationResult = verificationService.validatePayloadAgainstCompositeSchema(
-        getAccessor("Validation-Tests/DataCenterDataGraph.jsonld"));
-    assertFalse(validationResult.isConforming());
-    assertTrue(validationResult.getValidationReport().contains("Property needs to have at least 1 value"));
-  }
-
-  @Test
   void verifyInvalidSDValidation_Result_Against_CompositeSchema() throws IOException {
+    log.debug("verifyInvalidSDValidation_Result_Against_CompositeSchema");
     schemaStore.addSchema(getAccessor("Schema-Tests/FirstValidSchemaShape.ttl"));
     schemaStore.addSchema(getAccessor("Schema-Tests/SecondValidSchemaShape.ttl"));
-    Exception ex = assertThrowsExactly(VerificationException.class, () -> verificationService.validatePayloadAgainstCompositeSchema(
-        getAccessor("Validation-Tests/DataCenterDataGraph.jsonld")));
-    assertTrue(ex.getMessage().contains("Schema error; Shacl shape schema violated"));
+//    Exception ex = assertThrowsExactly(VerificationException.class, () -> verificationService.validatePayloadAgainstCompositeSchema(
+//        getAccessor("Validation-Tests/DataCenterDataGraph.jsonld")));
+//    assertTrue(ex.getMessage().contains("Schema error; Shacl shape schema violated"));
+    SemanticValidationResult result = verificationService.verifySelfDescriptionAgainstCompositeSchema(
+        getAccessor("Validation-Tests/DataCenterDataGraph.jsonld"));
+    assertFalse(result.isConforming(), "Validation should have failed.");
+    assertTrue(result.getValidationReport().contains("Property needs to have at least 1 value"));
   }
 
   @Test
   void verifyValidVP_SDValidationCompositeSchema() throws IOException {
+    log.debug("verifyValidVP_SDValidationCompositeSchema");
     schemaStore.addSchema(getAccessor("Validation-Tests/legal-personShape.ttl"));
     schemaStore.addSchema(getAccessor("Schema-Tests/FirstValidSchemaShape.ttl"));
-    SemanticValidationResult validationResult = verificationService.validatePayloadAgainstCompositeSchema(
+    SemanticValidationResult validationResult = verificationService.verifySelfDescriptionAgainstCompositeSchema(
         getAccessor("Claims-Extraction-Tests/providerTest.jsonld"));
     assertTrue(validationResult.isConforming());
+    assertNull(validationResult.getValidationReport());
   }
+  
 }

@@ -27,11 +27,11 @@ import eu.gaiax.difs.fc.core.pojo.VerificationResultOffering;
 import eu.gaiax.difs.fc.core.service.filestore.FileStore;
 import eu.gaiax.difs.fc.core.service.sdstore.SelfDescriptionStore;
 import eu.gaiax.difs.fc.core.service.verification.VerificationService;
+import eu.gaiax.difs.fc.core.service.verification.impl.VerificationServiceImpl;
 import eu.gaiax.difs.fc.core.util.HashUtils;
 import eu.gaiax.difs.fc.testsupport.config.EmbeddedNeo4JConfig;
 import io.zonky.test.db.AutoConfigureEmbeddedDatabase;
 import io.zonky.test.db.AutoConfigureEmbeddedDatabase.DatabaseProvider;
-import lombok.extern.slf4j.Slf4j;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -44,7 +44,6 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
-import javax.transaction.Transactional;
 
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -57,7 +56,6 @@ import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.event.annotation.BeforeTestClass;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
@@ -65,7 +63,6 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
-@Slf4j
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
@@ -100,14 +97,11 @@ public class SelfDescriptionControllerTest {
     @Autowired
     private VerificationService verificationService;
 
-    @BeforeTestClass
-    public void setup() {
-        mockMvc = MockMvcBuilders.webAppContextSetup(context).apply(springSecurity()).build();
-    }
-
     @BeforeAll
-    static void initBeforeAll() throws IOException {
+    public void setup() throws IOException {
+        mockMvc = MockMvcBuilders.webAppContextSetup(context).apply(springSecurity()).build();
         sdMeta = createSdMetadata();
+        ((VerificationServiceImpl) verificationService).getSchemaStore().initializeDefaultSchemas();
     }
 
     @AfterAll
@@ -448,7 +442,7 @@ public class SelfDescriptionControllerTest {
         sdStore.deleteSelfDescription(metadata.getSdHash());
     }
 
-    private static SelfDescriptionMetadata createSdMetadata() throws IOException {
+    private SelfDescriptionMetadata createSdMetadata() throws IOException {
         SelfDescriptionMetadata sdMeta = new SelfDescriptionMetadata();
         sdMeta.setId("test id");
         sdMeta.setIssuer(TEST_ISSUER);
