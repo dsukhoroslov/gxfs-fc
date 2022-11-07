@@ -67,7 +67,6 @@ http://w3id.org/gaia-x/gax-trust-framework#dataAccountExport
 http://w3id.org/gaia-x/gax-trust-framework#content
 http://w3id.org/gaia-x/gax-trust-framework#ownedBy
 http://w3id.org/gaia-x/gax-trust-framework#portCapacity_A_Count
-http://w3id.org/gaia-x/core#
 http://w3id.org/gaia-x/gax-trust-framework#performanceClass
 http://w3id.org/gaia-x/gax-trust-framework#physicalResource
 http://w3id.org/gaia-x/gax-trust-framework#ServiceAccessPoint
@@ -87,13 +86,11 @@ http://w3id.org/gaia-x/gax-trust-framework#architecture
 http://w3id.org/gaia-x/gax-trust-framework#hasLocations
 http://w3id.org/gaia-x/gax-trust-framework#Infrastructure
 http://w3id.org/gaia-x/gax-trust-framework#location
-http://w3id.org/gaia-x/core#aggregationOf
 http://w3id.org/gaia-x/gax-trust-framework#allowedSocket
 http://w3id.org/gaia-x/gax-trust-framework#Catalogue
 http://w3id.org/gaia-x/gax-trust-framework#standardConformity
 http://w3id.org/gaia-x/gax-trust-framework#termsAndConditions
 http://w3id.org/gaia-x/gax-trust-framework#cpuFlag
-http://w3id.org/gaia-x/core#providedBy
 http://w3id.org/gaia-x/gax-trust-framework#leiCode
 http://w3id.org/gaia-x/gax-trust-framework#generation
 http://w3id.org/gaia-x/gax-trust-framework#hasComplianceReferenceManager
@@ -217,10 +214,8 @@ http://w3id.org/gaia-x/gax-trust-framework#connectedNetwork_A
 http://w3id.org/gaia-x/gax-trust-framework#cacheSize
 http://w3id.org/gaia-x/gax-trust-framework#hasComplianceCertificationScheme
 http://w3id.org/gaia-x/gax-trust-framework#hasLocatedServiceOffering
-http://w3id.org/gaia-x/core#operatedBy
 http://w3id.org/gaia-x/gax-trust-framework#Network
 http://w3id.org/gaia-x/gax-trust-framework#signing
-http://w3id.org/gaia-x/gax-trust-framework#
 http://w3id.org/gaia-x/gax-trust-framework#hasAdministrativeLocation
 http://w3id.org/gaia-x/gax-trust-framework#requiredOrGrantedCriteria
 http://w3id.org/gaia-x/core#Resource

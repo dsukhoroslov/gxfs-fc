@@ -94,12 +94,17 @@ public class SchemaManagementImplTest {
   public void testGaxCoreOntologyGraph() throws IOException {
     String pathTerms = "Schema-Tests/gax-core-ontology-terms.txt";
     String pathGraph = "Schema-Tests/gax-core-ontology.ttl";
+    ContentAccessor contentTerms = TestUtil.getAccessor(getClass(), pathTerms);
     ContentAccessor contentGraph = TestUtil.getAccessor(getClass(), pathGraph);
+    Set<String> expectedExtractedUrlsSet = getExtractedTermsSet(contentTerms);
     SchemaAnalysisResult result = schemaStore.analyseSchema(contentGraph);
-    assertFalse(result.isValid());
-    assertEquals(ONTOLOGY, result.getSchemaType());
-    assertNull(result.getExtractedId());
-    assertNull(result.getExtractedUrls());
+    boolean actual = schemaStore.isSchemaType(contentGraph, ONTOLOGY);
+    List<String> actualExtractedUrlsList = result.getExtractedUrls();
+    Set<String> actualExtractedUrlsSet = new HashSet<>(actualExtractedUrlsList);
+    assertTrue(result.isValid(), "valid result expected");
+    assertEquals(SchemaType.ONTOLOGY, result.getSchemaType());
+    assertEquals(expectedExtractedUrlsSet.size(), actualExtractedUrlsSet.size(), "Incorrect number of urls extracted.");
+    assertEquals(actualExtractedUrlsSet, expectedExtractedUrlsSet, "Incorrect set of urls extracted.");
   }
 
   @Test
