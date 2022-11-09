@@ -72,10 +72,6 @@ public class VerificationServiceImplTest {
   @Qualifier("schemaFileStore")
   private FileStore fileStore;
 
-  @BeforeEach
-  public void addSchema () {
-    schemaStore.addSchema(getAccessor("Schema-Tests/gax-test-ontology.ttl"));
-  }
   @AfterEach
   public void storageSelfCleaning() throws IOException {
     Map<SchemaStore.SchemaType, List<String>> schemaList = schemaStore.getSchemaList();
@@ -90,6 +86,7 @@ public class VerificationServiceImplTest {
   @Test
   void invalidSyntax_MissingQuote() throws Exception {
     log.debug("invalidSyntax_MissingQuote");
+    schemaStore.addSchema(getAccessor("Schema-Tests/gax-test-ontology.ttl"));
     String path = "VerificationService/syntax/missingQuote.jsonld";
     ContentAccessor content = getAccessor(path);
     Exception ex = assertThrowsExactly(ClientException.class, ()
@@ -102,7 +99,7 @@ public class VerificationServiceImplTest {
   void invalidSyntax_NoVCinSD() {
     log.debug("invalidSyntax_NoVCinSD");
     String path = "VerificationService/syntax/smallExample.jsonld";
-
+    schemaStore.addSchema(getAccessor("Schema-Tests/gax-test-ontology.ttl"));
     Exception ex = assertThrowsExactly(VerificationException.class, ()
         -> verificationService.verifySelfDescription(getAccessor(path)));
     assertTrue(ex.getMessage().contains("VerifiablePresentation must contain 'type' property"));
@@ -113,6 +110,7 @@ public class VerificationServiceImplTest {
   @Disabled("new proof should be generated after updating the participantSD2.jsonld ?")
   void validSyntax_Participant() throws Exception {
     log.debug("validSyntax_Participant");
+    schemaStore.addSchema(getAccessor("Schema-Tests/gax-test-ontology.ttl"));
     String path = "VerificationService/syntax/participantSD2.jsonld";
     VerificationResult vr = verificationService.verifySelfDescription(getAccessor(path));
     assertNotNull(vr);
@@ -126,6 +124,7 @@ public class VerificationServiceImplTest {
   @Test
   void validSyntax_ValidSDVP() throws Exception {
     log.debug("validSyntax_ValidSDVP");
+    schemaStore.addSchema(getAccessor("Schema-Tests/gax-test-ontology.ttl"));
     String path = "VerificationService/syntax/input.vp.jsonld";
     VerificationResult vr = verificationService.verifySelfDescription(getAccessor(path), true, true, false);
     assertNotNull(vr);
@@ -140,6 +139,7 @@ public class VerificationServiceImplTest {
   @Disabled("invalid SO generated")
   void validSyntax_ValidService() throws Exception {
     log.debug("validSyntax_ValidService");
+    schemaStore.addSchema(getAccessor("Schema-Tests/gax-test-ontology.ttl"));
     String path = "VerificationService/syntax/service1.jsonld";
     VerificationResult vr = verificationService.verifySelfDescription(getAccessor(path), true, true, false);
     assertNotNull(vr);
@@ -156,6 +156,7 @@ public class VerificationServiceImplTest {
   //@Disabled("invalid SO generated")
   void validSyntax_ValidService2() throws Exception {
     log.debug("validSyntax_ValidService2");
+    schemaStore.addSchema(getAccessor("Schema-Tests/gax-test-ontology.ttl"));
     String path = "VerificationService/syntax/service2.jsonld";
     VerificationResult vr = verificationService.verifySelfDescription(getAccessor(path), true, true, false);
     assertNotNull(vr);
@@ -170,6 +171,7 @@ public class VerificationServiceImplTest {
   @Disabled("invalid LP generated")
   void validSyntax_ValidPerson() throws Exception {
     log.debug("validSyntax_ValidPerson");
+    schemaStore.addSchema(getAccessor("Schema-Tests/gax-test-ontology.ttl"));
     String path = "VerificationService/syntax/legalPerson1.jsonld";
     VerificationResult vr = verificationService.verifySelfDescription(getAccessor(path), true, true, false);
     assertNotNull(vr);
@@ -185,6 +187,7 @@ public class VerificationServiceImplTest {
   @Test
   void invalidProof_InvalidSignatureType() throws Exception {
     log.debug("invalidProof_InvalidSignatureType");
+    schemaStore.addSchema(getAccessor("Schema-Tests/gax-test-ontology.ttl"));
     String path = "VerificationService/syntax/input.vp.jsonld";
     Exception ex = assertThrowsExactly(VerificationException.class, ()
         -> verificationService.verifySelfDescription(getAccessor(path)));
@@ -194,6 +197,7 @@ public class VerificationServiceImplTest {
   @Test
   void invalidProof_MissingProofs() throws IOException {
     log.debug("invalidProof_MissingProofs");
+    schemaStore.addSchema(getAccessor("Schema-Tests/gax-test-ontology.ttl"));
     String path = "VerificationService/sign/hasNoSignature1.json";
 
     Exception ex = assertThrowsExactly(VerificationException.class, ()
@@ -205,6 +209,7 @@ public class VerificationServiceImplTest {
   @Test
   void invalidProof_UnknownVerificationMethod() throws Exception {
     log.debug("invalidProof_UnknownVerificationMethod");
+    schemaStore.addSchema(getAccessor("Schema-Tests/gax-test-ontology.ttl"));
     String path = "VerificationService/sign/hasInvalidSignatureType.json";
 
     Exception ex = assertThrowsExactly(VerificationException.class, ()
@@ -216,6 +221,7 @@ public class VerificationServiceImplTest {
   @Test
   void invalidProof_SignaturesMissing2() throws IOException {
     log.debug("invalidProof_SignaturesMissing2");
+    schemaStore.addSchema(getAccessor("Schema-Tests/gax-test-ontology.ttl"));
     String path = "VerificationService/sign/lacksSomeSignatures.json";
 
     Exception ex = assertThrowsExactly(VerificationException.class, ()
@@ -227,8 +233,8 @@ public class VerificationServiceImplTest {
   @Test
   void verifySignature_InvalidSignature() throws UnsupportedEncodingException {
     log.debug("verifySignature_InvalidSignature");
+    schemaStore.addSchema(getAccessor("Schema-Tests/gax-test-ontology.ttl"));
     String path = "VerificationService/sign/hasInvalidSignature.json";
-
     Exception ex = assertThrowsExactly(VerificationException.class, ()
         -> verificationService.verifySelfDescription(getAccessor(path)));
     assertEquals("Signatures error; com.danubetech.verifiablecredentials.VerifiableCredential does not match with proof", ex.getMessage());
@@ -238,6 +244,7 @@ public class VerificationServiceImplTest {
   @Disabled("new proof should be generated after updating the valid_signature.json ?")
   void validSD() throws UnsupportedEncodingException {
     log.debug("validSD");
+    schemaStore.addSchema(getAccessor("Schema-Tests/gax-test-ontology.ttl"));
     String path = "VerificationService/sign/valid_signature.json";
     VerificationResult result = verificationService.verifySelfDescription(getAccessor(path));
     assertEquals(1, result.getValidators().size(), "Incorrect number of validators found");
@@ -246,6 +253,7 @@ public class VerificationServiceImplTest {
   @Test
   void validComplexSD() throws UnsupportedEncodingException {
     log.debug("validComplexSD");
+    schemaStore.addSchema(getAccessor("Schema-Tests/gax-test-ontology.ttl"));
     String path = "VerificationService/sign/valid_complex_signature.json";
     VerificationResult result = verificationService.verifySelfDescription(getAccessor(path));
     assertEquals(1, result.getValidators().size(), "Incorrect number of validators found");
@@ -254,6 +262,7 @@ public class VerificationServiceImplTest {
   @Test
   void extractClaims_providerTest() throws Exception {
     log.debug("extractClaims_providerTest");
+    schemaStore.addSchema(getAccessor("Schema-Tests/gax-test-ontology.ttl"));
     ContentAccessor content = getAccessor("Claims-Extraction-Tests/providerTest.jsonld");
     VerificationResult result = verificationService.verifySelfDescription(content, true, true, false);
     List<SdClaim> actualClaims = result.getClaims();
@@ -276,6 +285,7 @@ public class VerificationServiceImplTest {
   @Test
   void extractClaims_participantTest() throws Exception {
     log.debug("extractClaims_participantTest");
+    schemaStore.addSchema(getAccessor("Schema-Tests/gax-test-ontology.ttl"));
     ContentAccessor content = getAccessor("Claims-Extraction-Tests/participantSD.jsonld");
     VerificationResult result = verificationService.verifySelfDescription(content, true, false, false);
     List<SdClaim> actualClaims = result.getClaims();
@@ -309,6 +319,7 @@ public class VerificationServiceImplTest {
   @Test
   void extractClaims_participantTwoVCsTest() throws Exception {
     log.debug("extractClaims_participantTwoVCsTest");
+    schemaStore.addSchema(getAccessor("Schema-Tests/gax-test-ontology.ttl"));
     ContentAccessor content = getAccessor("Claims-Extraction-Tests/participantTwoVCs.jsonld");
     VerificationResult result = verificationService.verifySelfDescription(content, true, true, false);
     List<SdClaim> actualClaims = result.getClaims();
@@ -331,6 +342,7 @@ public class VerificationServiceImplTest {
   @Test
   void extractClaims_participantTwoCSsTest() throws Exception {
     log.debug("extractClaims_participantTwoCSsTest");
+    schemaStore.addSchema(getAccessor("Schema-Tests/gax-test-ontology.ttl"));
     ContentAccessor content = getAccessor("Claims-Extraction-Tests/participantTwoCSs.jsonld");
     VerificationResult result = verificationService.verifySelfDescription(content, true, true, false);
     List<SdClaim> actualClaims = result.getClaims();
