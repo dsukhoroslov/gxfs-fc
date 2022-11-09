@@ -81,6 +81,12 @@ public class SelfDescriptionStoreCompositeTest {
 
   @AfterEach
   public void storageSelfCleaning() throws IOException {
+    Map<SchemaStore.SchemaType, List<String>> schemaList = schemaStore.getSchemaList();
+    for (List<String> typeList : schemaList.values()) {
+      for (String schema : typeList) {
+        schemaStore.deleteSchema(schema);
+      }
+    }
     fileStore.clearStorage();
   }
 
