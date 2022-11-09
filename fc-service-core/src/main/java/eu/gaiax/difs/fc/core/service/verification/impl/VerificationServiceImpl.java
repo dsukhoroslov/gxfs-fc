@@ -10,8 +10,6 @@ import com.danubetech.keyformats.keytypes.KeyTypeName_for_JWK;
 import com.danubetech.verifiablecredentials.CredentialSubject;
 import com.danubetech.verifiablecredentials.VerifiableCredential;
 import com.danubetech.verifiablecredentials.VerifiablePresentation;
-import com.github.jsonldjava.core.JsonLdOptions;
-import com.github.jsonldjava.core.JsonLdProcessor;
 import eu.gaiax.difs.fc.api.generated.model.SelfDescriptionStatus;
 import eu.gaiax.difs.fc.core.exception.ClientException;
 import eu.gaiax.difs.fc.core.exception.VerificationException;
@@ -37,16 +35,12 @@ import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.message.BasicNameValuePair;
-import org.apache.jena.query.DatasetFactory;
-import org.apache.jena.rdf.model.Model;
-import org.apache.jena.rdf.model.ModelFactory;
-import org.apache.jena.rdf.model.NodeIterator;
-import org.apache.jena.rdf.model.Resource;
-import org.apache.jena.riot.RDFFormat;
-import org.apache.jena.sparql.core.DatasetGraph;
+import org.apache.jena.ontology.OntModel;
+import org.apache.jena.ontology.OntModelSpec;
+import org.apache.jena.query.*;
+import org.apache.jena.rdf.model.*;
 import org.apache.jena.vocabulary.RDF;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
-import org.eclipse.rdf4j.rio.RDFWriter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.topbraid.shacl.validation.ValidationUtil;
@@ -70,8 +64,6 @@ import org.apache.jena.riot.RDFParser;
 import org.apache.jena.riot.system.stream.StreamManager;
 import org.springframework.beans.factory.annotation.Qualifier;
 
-import static org.apache.jena.riot.RDFFormat.JSONLD_EXPAND_PRETTY;
-
 /**
  * Implementation of the {@link VerificationService} interface.
  */
@@ -81,11 +73,7 @@ public class VerificationServiceImpl implements VerificationService {
 
   private static final Lang SD_LANG = Lang.JSONLD11;
   private static final Lang SHAPES_LANG = Lang.TURTLE;
-  private static final String[] TYPE_KEYS = {"type", "types", "@type", "@types"};
   private static final String[] ID_KEYS = {"id", "@id"};
-  // This sniffing is extremely unreliable, since namespace-names are not fixed.
-  private static final Set<String> PARTICIPANT_TYPES = Set.of("http://w3id.org/gaia-x/participant#LegalPerson");
-  private static final Set<String> SERVICE_OFFERING_TYPES = Set.of("ServiceOfferingExperimental", "http://w3id.org/gaia-x/service#ServiceOffering", "gax-service:ServiceOffering");
   private static final Set<String> SIGNATURES = Set.of("JsonWebSignature2020"); //, "Ed25519Signature2018");
 
   private static final ClaimExtractor[] extractors = new ClaimExtractor[]{new TitaniumClaimExtractor(), new DanubeTechClaimExtractor()};
@@ -358,10 +346,46 @@ public class VerificationServiceImpl implements VerificationService {
     }
     return result ? Pair.of(true, false) : Pair.of(false, true);
   }
-  private Boolean checkTypeSubClass(String type) {
-  //  ContentAccessor gaxOntology = schemaStore.getCompositeSchema(SchemaStore.SchemaType.ONTOLOGY);
-    //TODO check the subclass after updating the gax-core-ontology or the SDs
-    return true;
+  private Boolean checkTypeSubClass(String type, String parent) {
+    ContentAccessor gaxOntology = schemaStore.getCompositeSchema(SchemaStore.SchemaType.ONTOLOGY);
+    OntModel model = ModelFactory.createOntologyModel(OntModelSpec.OWL_MEM_MICRO_RULE_INF);
+    model.read(new StringReader(gaxOntology.getContentAsString()), null, "TTl");
+
+    String queryString =" ";
+    if(parent.equals("Participant")) {
+      if (type.equals("http://w3id.org/gaia-x/participant#Participant")) {
+        return true;
+      }
+
+      queryString =
+              "PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#> " +
+                      "select ?uri " +
+                      "where { " +
+                      "?uri rdfs:subClassOf <http://w3id.org/gaia-x/participant#Participant> " +
+                      "} \n ";
+    } else if (parent.equals("ServiceOffering")) {
+        if (type.equals("http://w3id.org/gaia-x/service#ServiceOffering")) {
+          return true;
+        }
+
+      queryString =
+              "PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#> " +
+                      "select ?uri " +
+                      "where { " +
+                      "?uri rdfs:subClassOf <http://w3id.org/gaia-x/service#ServiceOffering> " +
+                      "} \n ";
+    }
+    Query query = QueryFactory.create(queryString);
+    QueryExecution qe = QueryExecutionFactory.create(query, model);
+    ResultSet results = qe.execSelect();
+    List <QuerySolution> list = ResultSetFormatter.toList(results);
+    for (QuerySolution q :list){
+     String node =  q.get("uri").toString();
+      if(node.equals(type)) {
+        return true;
+      }
+    }
+    return false;
   }
   private Boolean getSDType(JsonLDObject container) {
     try {
@@ -371,39 +395,27 @@ public class VerificationServiceImpl implements VerificationService {
               .source(new StringReader(container.toJson()))
               .lang(SD_LANG)
               .parse(data);
-      NodeIterator node = data.listObjectsOfProperty(RDF.type);
-      StringBuilder s = new StringBuilder();
-      while (node.hasNext()) {
-        s.append(node.nextNode().asResource().getURI());
-      }
-      for (String key : TYPE_KEYS) {
-        Object _type = container.getJsonObject().get(key);
-        log.debug("getSDType; key: {}, value: {}", key, _type);
-        if (_type == null) {
-          continue;
-        }
-
-        List<String> types;
-        if (_type instanceof List) {
-          types = (List<String>) _type;
-        } else {
-          types = List.of((String) _type);
-        }
-
-        for (String type : types) {
-          // This should properly expand the namespace before matching.
-          if (PARTICIPANT_TYPES.contains(type)) {
-            return Boolean.TRUE;
-          }
-          if (SERVICE_OFFERING_TYPES.contains(type)) {
-            return Boolean.FALSE;
+      NodeIterator node = data.listObjectsOfProperty(data.createProperty("https://www.w3.org/2018/credentials#credentialSubject"));
+      while (node.hasNext()){
+        NodeIterator typeNode = data.listObjectsOfProperty(node.nextNode().asResource(), RDF.type);
+        while(typeNode.hasNext()){
+          List <String> types = new ArrayList<>();
+          types.add(typeNode.nextNode().asResource().getURI());
+          for ( String typeString : types ) {
+            if (checkTypeSubClass(typeString, "Participant")) {
+              return true;
+            }
+            if (checkTypeSubClass(typeString, "ServiceOffering")) {
+              return false;
+            }
           }
         }
+
       }
     } catch (Exception e) {
       log.debug("getSDType.error: {}", e.getMessage());
     }
-    return null;
+  return null ;
   }
 
 

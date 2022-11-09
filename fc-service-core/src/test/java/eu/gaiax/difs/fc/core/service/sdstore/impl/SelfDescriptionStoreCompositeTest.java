@@ -7,15 +7,10 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
+import eu.gaiax.difs.fc.core.service.schemastore.SchemaStore;
 import eu.gaiax.difs.fc.core.service.validatorcache.impl.ValidatorCacheImpl;
 import org.apache.commons.lang3.mutable.MutableInt;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.MethodOrderer;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInstance;
-import org.junit.jupiter.api.TestMethodOrder;
+import org.junit.jupiter.api.*;
 import org.neo4j.harness.Neo4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -72,6 +67,8 @@ public class SelfDescriptionStoreCompositeTest {
   private VerificationService verificationService;
   @Autowired
   private SelfDescriptionStore sdStore;
+  @Autowired
+  private SchemaStoreImpl schemaStore;
 
   @Autowired
   private Neo4j embeddedDatabaseServer;
@@ -130,6 +127,7 @@ public class SelfDescriptionStoreCompositeTest {
   @Test
   void test01StoreSelfDescription() throws Exception {
     log.info("test01StoreSelfDescription");
+    schemaStore.addSchema(getAccessor("Schema-Tests/gax-test-ontology.ttl"));
     ContentAccessor content = getAccessor("Claims-Extraction-Tests/participantSD.jsonld");
     // Only verify semantics, not schema or signatures
     VerificationResultParticipant result = (VerificationResultParticipant) verificationService.verifySelfDescription(content, true, false, false);

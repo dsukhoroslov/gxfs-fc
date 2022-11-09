@@ -28,10 +28,6 @@
         "@type": [
           "gx-participant:LegalPerson"
         ],
-        "gx-participant:name": {
-          "@value": "deltaDAO AG",
-          "@type": "xsd:string"
-        },
         "gx-participant:legalName": {
           "@value": "deltaDAO AG",
           "@type": "xsd:string"

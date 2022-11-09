@@ -23,7 +23,7 @@
         "xsd": "http://www.w3.org/2001/XMLSchema#"
       },
       "id": "http://example.org/test-issuer",
-      "@type": "LegalPerson",
+      "@type": "gax-participant:LegalPerson",
       "gax-participant:name": {
         "@value": "deltaDAO AG",
         "@type": "xsd:string"

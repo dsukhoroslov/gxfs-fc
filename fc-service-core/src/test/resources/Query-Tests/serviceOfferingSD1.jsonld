@@ -15,11 +15,11 @@
       "issuanceDate": "2010-01-01T19:73:24Z",
       "credentialSubject": {
         "@context": {
-          "gax": "http://w3id.org/gaia-x/participant#",
+          "gax": "http://w3id.org/gaia-x/service#",
           "vcard": "http://www.w3.org/2006/vcard/ns#"
         },
         "@id": "http://example.org/test-issuer2",
-        "@type": "gax:ServiceOfferingExperimental",
+        "@type": "gax:ServiceOffering",
         "gax:hasLegallyBindingName": "My example provider3",
         "gax:hasLegallyBindingAddress": {
           "id": "_:b0",

@@ -1627,7 +1627,7 @@ gax-service:DataResource a owl:Class ;
 
 gax-participant:Participant a owl:Class ;
     rdfs:label "Participant"@en ;
-    rdfs:subClassOf gax-participant:foaf:Agent .
+    rdfs:subClassOf foaf:Agent .
 
 gax-resource:Image a owl:Class ;
     rdfs:label "Image"@en ;
@@ -1659,6 +1659,10 @@ gax-service:TrustedCloudServiceOfferingSubCompanies a owl:Class ;
 
 gax-participant:TrustedCloudProvider a owl:Class ;
     rdfs:label "Trusted Cloud Provider"@en ;
+    rdfs:subClassOf gax-participant:Participant .
+
+gax-participant:Provider a owl:Class ;
+    rdfs:label "Provider"@en ;
     rdfs:subClassOf gax-participant:Participant .
 
 gax-service:ServiceOffering a owl:Class ;
