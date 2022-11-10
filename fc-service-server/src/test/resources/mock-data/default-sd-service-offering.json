@@ -15,7 +15,7 @@
       "issuanceDate": "2010-01-01T19:73:24Z",
       "credentialSubject": {
         "@id": "http://example.org/test-issuer2",
-        "@type": "ServiceOfferingExperimental",
+        "@type": "http://w3id.org/gaia-x/service#ServiceOffering",
         "gax:hasLegallyBindingName": "My example provider2",
         "gax:hasLegallyBindingAddress": {
           "id": "_:b0",

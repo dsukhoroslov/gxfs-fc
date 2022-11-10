@@ -1,9 +1,14 @@
 package eu.gaiax.difs.fc.server.controller;
 
+import eu.gaiax.difs.fc.core.service.filestore.FileStore;
+import eu.gaiax.difs.fc.core.service.schemastore.SchemaStore;
+import eu.gaiax.difs.fc.core.service.schemastore.impl.SchemaStoreImpl;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
@@ -23,13 +28,17 @@ import io.zonky.test.db.AutoConfigureEmbeddedDatabase;
 import io.zonky.test.db.AutoConfigureEmbeddedDatabase.DatabaseProvider;
 
 import static eu.gaiax.difs.fc.server.helper.FileReaderHelper.getMockFileDataAsString;
+import static eu.gaiax.difs.fc.server.util.TestUtil.getAccessor;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import java.io.IOException;
 import java.time.Instant;
+import java.util.List;
+import java.util.Map;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -44,12 +53,30 @@ public class VerificationControllerTest {
     private ObjectMapper objectMapper;
     @Autowired
     private MockMvc mockMvc;
+    @Autowired
+    private SchemaStoreImpl schemaStore;
+
+    @Autowired
+    @Qualifier("schemaFileStore")
+    private FileStore fileStore;
+
+
+
 
     @BeforeTestClass
     public void setup() {
         mockMvc = MockMvcBuilders.webAppContextSetup(context).apply(springSecurity()).build();
     }
-
+    @AfterEach
+    public void storageSelfCleaning() throws IOException {
+        Map<SchemaStore.SchemaType, List<String>> schemaList = schemaStore.getSchemaList();
+        for (List<String> typeList : schemaList.values()) {
+            for (String schema : typeList) {
+                schemaStore.deleteSchema(schema);
+            }
+        }
+        fileStore.clearStorage();
+    }
     @Test
     public void getVerifyPageShouldReturnSuccessResponse() throws Exception {
         mockMvc.perform(MockMvcRequestBuilders.get("/verification")
@@ -62,6 +89,7 @@ public class VerificationControllerTest {
     @Test
     public void verifyParticipantShouldReturnSuccessResponse() throws Exception {
         String json = getMockFileDataAsString("default_participant.json");
+    schemaStore.addSchema(getAccessor("mock-data/gax-test-ontology.ttl"));
         String response = mockMvc.perform(MockMvcRequestBuilders.post("/verification")
                .contentType(MediaType.APPLICATION_JSON)
                .accept(MediaType.APPLICATION_JSON)
@@ -78,6 +106,7 @@ public class VerificationControllerTest {
     @Test
     public void verifyNoProofsShouldReturnUnprocessibleEntity() throws Exception {
         String json = getMockFileDataAsString("participant_without_proofs.json");
+        schemaStore.addSchema(getAccessor("mock-data/gax-test-ontology.ttl"));
         mockMvc.perform(MockMvcRequestBuilders.post("/verification")
                .contentType(MediaType.APPLICATION_JSON)
                .accept(MediaType.APPLICATION_JSON)
@@ -88,6 +117,7 @@ public class VerificationControllerTest {
     @Test
     public void verifyNoProofsNoSignsShouldReturnSuccessResponse() throws Exception {
         String json = getMockFileDataAsString("participant_without_proofs.json");
+        schemaStore.addSchema(getAccessor("mock-data/gax-test-ontology.ttl"));
         mockMvc.perform(MockMvcRequestBuilders.post("/verification")
                .queryParam("verifySemantics", "false")
                .queryParam("verifySignatures", "false")

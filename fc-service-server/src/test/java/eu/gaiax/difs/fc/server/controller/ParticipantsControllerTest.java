@@ -4,6 +4,7 @@ import static eu.gaiax.difs.fc.server.helper.FileReaderHelper.getMockFileDataAsS
 import static eu.gaiax.difs.fc.server.helper.UserServiceHelper.getAllRoles;
 import static eu.gaiax.difs.fc.server.util.CommonConstants.*;
 import static eu.gaiax.difs.fc.server.util.TestCommonConstants.SD_ADMIN_ROLE_WITH_PREFIX;
+import static eu.gaiax.difs.fc.server.util.TestUtil.getAccessor;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.doThrow;
@@ -29,6 +30,8 @@ import eu.gaiax.difs.fc.core.pojo.ParticipantMetaData;
 import eu.gaiax.difs.fc.core.pojo.SelfDescriptionMetadata;
 import eu.gaiax.difs.fc.core.pojo.VerificationResultParticipant;
 import eu.gaiax.difs.fc.core.service.filestore.FileStore;
+import eu.gaiax.difs.fc.core.service.schemastore.SchemaStore;
+import eu.gaiax.difs.fc.core.service.schemastore.impl.SchemaStoreImpl;
 import eu.gaiax.difs.fc.core.service.sdstore.impl.SelfDescriptionStoreImpl;
 import eu.gaiax.difs.fc.core.service.verification.VerificationService;
 import eu.gaiax.difs.fc.testsupport.config.EmbeddedNeo4JConfig;
@@ -51,13 +54,7 @@ import java.util.Map;
 import javax.ws.rs.core.Response;
 import org.apache.http.HttpStatus;
 
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.MethodOrderer;
-import org.junit.jupiter.api.Order;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInstance;
-import org.junit.jupiter.api.TestMethodOrder;
+import org.junit.jupiter.api.*;
 import org.keycloak.admin.client.Keycloak;
 import org.keycloak.admin.client.KeycloakBuilder;
 import org.keycloak.admin.client.resource.GroupResource;
@@ -103,6 +100,9 @@ public class ParticipantsControllerTest {
     @Qualifier("sdFileStore")
     private FileStore fileStore;
     @Autowired
+    @Qualifier("schemaFileStore")
+    private FileStore schemaFileStore;
+    @Autowired
     private SelfDescriptionStoreImpl selfDescriptionStore;
     @Autowired
     private Neo4j embeddedDatabaseServer;
@@ -114,7 +114,10 @@ public class ParticipantsControllerTest {
     private ObjectMapper objectMapper;
     @Autowired
     private MockMvc mockMvc;
-    
+    @Autowired
+    private SchemaStoreImpl schemaStore;
+
+
     @MockBean
     private KeycloakBuilder builder;
     @MockBean
@@ -145,7 +148,16 @@ public class ParticipantsControllerTest {
     public void setup() {
         mockMvc = MockMvcBuilders.webAppContextSetup(context).apply(springSecurity()).build();
     }
-
+    @AfterEach
+    public void schemaStorageCleaning() throws IOException {
+        Map<SchemaStore.SchemaType, List<String>> schemaList = schemaStore.getSchemaList();
+        for (List<String> typeList : schemaList.values()) {
+            for (String schema : typeList) {
+                schemaStore.deleteSchema(schema);
+            }
+        }
+          schemaFileStore.clearStorage();
+    }
     @AfterAll
     public void storageSelfCleaning() throws IOException {
         fileStore.clearStorage();
@@ -168,6 +180,7 @@ public class ParticipantsControllerTest {
     @WithMockUser(authorities = {CATALOGUE_ADMIN_ROLE_WITH_PREFIX})
     @Order(10)
     public void addParticipantShouldReturnCreatedResponse() throws Exception {
+        schemaStore.addSchema(getAccessor("mock-data/gax-test-ontology.ttl"));
         String json = getMockFileDataAsString(DEFAULT_PARTICIPANT_FILE);
         ParticipantMetaData part = new ParticipantMetaData("did:example:issuer", "did:example:holder", "did:example:holder#key", json);
         setupKeycloak(HttpStatus.SC_CREATED, part);
@@ -197,6 +210,7 @@ public class ParticipantsControllerTest {
     @WithMockUser(authorities = {CATALOGUE_ADMIN_ROLE_WITH_PREFIX})
     @Order(10)
     public void addDuplicateParticipantShouldReturnConflictResponse() throws Exception {
+        schemaStore.addSchema(getAccessor("mock-data/gax-test-ontology.ttl"));
         String json = getMockFileDataAsString(DEFAULT_PARTICIPANT_FILE);
         ParticipantMetaData part = new ParticipantMetaData("did:example:issuer", "did:example:holder", "did:example:holder#key", json);
         setupKeycloak(HttpStatus.SC_CREATED, part);
@@ -219,6 +233,7 @@ public class ParticipantsControllerTest {
     @WithMockUser(authorities = {CATALOGUE_ADMIN_ROLE_WITH_PREFIX})
     @Order(20)
     public void getParticipantShouldReturnSuccessResponse() throws Exception {
+        schemaStore.addSchema(getAccessor("mock-data/gax-test-ontology.ttl"));
         String json = getMockFileDataAsString(DEFAULT_PARTICIPANT_FILE);
         ParticipantMetaData part = new ParticipantMetaData("did:example:issuer", "did:example:holder", "did:example:holder#key", json);
         setupKeycloak(HttpStatus.SC_OK, part);
@@ -243,7 +258,7 @@ public class ParticipantsControllerTest {
     @WithMockUser(authorities = {CATALOGUE_ADMIN_ROLE_WITH_PREFIX})
     @Order(20)
     public void getAddedParticipantSDShouldReturnSuccessResponseWithSameSD() throws Exception {
-
+        schemaStore.addSchema(getAccessor("mock-data/gax-test-ontology.ttl"));
         String json = getMockFileDataAsString(DEFAULT_PARTICIPANT_FILE);
         ParticipantMetaData part = new ParticipantMetaData("did:example:issuer", "did:example:holder", "did:example:holder#key", json);
         setupKeycloak(HttpStatus.SC_OK, part);
@@ -286,6 +301,7 @@ public class ParticipantsControllerTest {
     @WithMockUser(authorities = {CATALOGUE_ADMIN_ROLE_WITH_PREFIX})
     @Order(20)
     public void getParticipantsShouldReturnCorrectNumber() throws Exception {
+        schemaStore.addSchema(getAccessor("mock-data/gax-test-ontology.ttl"));
         String json = getMockFileDataAsString(DEFAULT_PARTICIPANT_FILE);
         ParticipantMetaData part = new ParticipantMetaData("did:example:issuer", "did:example:holder", "did:example:holder#key", json);
         setupKeycloak(HttpStatus.SC_OK, part);
@@ -335,6 +351,7 @@ public class ParticipantsControllerTest {
     @WithMockUser(authorities = {CATALOGUE_ADMIN_ROLE_WITH_PREFIX})
     @Order(25)
     public void addParticipantFailWithSameSDShouldReturnConflictFromKeyCloakWithoutDBStore() throws Exception {
+        schemaStore.addSchema(getAccessor("mock-data/gax-test-ontology.ttl"));
         String json = getMockFileDataAsString(DEFAULT_PARTICIPANT_FILE);
         ParticipantMetaData partNew = new ParticipantMetaData("did:example:issuer", "did:example:holder", "did:example:holder#key", json);
         selfDescriptionStore.deleteSelfDescription(partNew.getSdHash());
@@ -359,7 +376,7 @@ public class ParticipantsControllerTest {
     @WithMockUser(authorities = {CATALOGUE_ADMIN_ROLE_WITH_PREFIX})
     @Order(26)
     public void addParticipantFailWithKeyCloakErrorShouldReturnErrorWithoutDBStore() throws Exception {
-
+        schemaStore.addSchema(getAccessor("mock-data/gax-test-ontology.ttl"));
         String json = getMockFileDataAsString(DEFAULT_PARTICIPANT_FILE);
         ParticipantMetaData part = new ParticipantMetaData("did:example:wrong-issuer", "did:example:holder",
             "did:example:holder#key", json);
@@ -386,7 +403,7 @@ public class ParticipantsControllerTest {
             {@StringClaim(name = "participant_id", value = "did:example:issuer")})))
     @Order(30)
     public void updateParticipantShouldReturnSuccessResponse() throws Exception {
-
+        schemaStore.addSchema(getAccessor("mock-data/gax-test-ontology.ttl"));
         String json = getMockFileDataAsString(DEFAULT_PARTICIPANT_FILE);
         ParticipantMetaData part = new ParticipantMetaData("did:example:issuer", "did:example:holder", "did:example:holder#key", json);
         setupKeycloak(HttpStatus.SC_OK, part);
@@ -459,7 +476,6 @@ public class ParticipantsControllerTest {
             {@StringClaim(name = "participant_id", value = "did:example:new-issuer")})))
     @Order(30)
     public void updateParticipantFailWithKeycloakErrorShouldReturnErrorWithoutDBStore() throws Exception {
-
         String json = getMockFileDataAsString(DEFAULT_PARTICIPANT_FILE).replace("did:example:issuer", "did:example:new-issuer");
         ParticipantMetaData part = new ParticipantMetaData("did:example:new-issuer", "did:example:holder", "did:example:holder#key", json);
         setupKeycloak(HttpStatus.SC_INTERNAL_SERVER_ERROR, part);

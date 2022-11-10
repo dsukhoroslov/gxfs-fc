@@ -10,25 +10,27 @@
     "verifiableCredential": [
         {
             "@context": [
-                "https://www.w3.org/2018/credentials/v1",
-                "https://www.w3.org/2018/credentials/examples/v1"
+                "https://www.w3.org/2018/credentials/v1"
             ],
-            "id": "ebc6f1c2",
+            "@id": "http://example.edu/credentials/1872",
             "type": [
-                "VerifiableCredential",
-                "IDCardCredential"
+                "VerifiableCredential"
             ],
-            "issuer": {
-                "id": "did:example:issuer"
-            },
+            "issuer": "did:example:issuer",
             "issuanceDate": "2010-01-01T19:23:24Z",
             "credentialSubject": {
+                "@context": {
+                    "gax": "http://w3id.org/gaia-x/participant#",
+                    "foaf": "http://xmlns.com/foaf/0.1/",
+                    "schema": "http://schema.org/"
+                },
+                "@id": "did:example:credSub",
                 "@type": [
-                    "LegalPerson"
+                    "http://w3id.org/gaia-x/participant#LegalPerson"
                 ],
-                "given_name": "Fredrik",
-                "family_name": "Str&#246;mberg",
-                "birthdate": "1949-01-22"
+                "foaf:givenname": "Fredrik",
+                "foaf:family_name": "Str&#246;mberg",
+                "schema:birthdate": "1949-01-22"
             },
             "proof": {
                 "type": "JsonWebSignature2020",
@@ -39,14 +41,12 @@
             }
         }
     ],
-    "id": "ebc6f1c2vp",
+    "@id": "ebc6f1c2vp",
     "holder": "did:example:holder",
     "presentation_submission": {
-        "id": "Selective disclosure example presentation",
         "definition_id": "Selective disclosure example",
         "descriptor_map": [
             {
-                "id": "ID Card with constraints",
                 "format": "ldp_vc",
                 "path": "$.verifiableCredential[0]"
             }
