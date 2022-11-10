@@ -75,9 +75,14 @@ public class SelfDescriptionStoreCompositeTest {
 
   @Autowired
   private Neo4jGraphStore graphStore;
+
   @Autowired
   @Qualifier("sdFileStore")
   private FileStore fileStore;
+
+  @Autowired
+  @Qualifier("schemaFileStore")
+  private FileStore schemaFileStore;
 
   @AfterEach
   public void storageSelfCleaning() throws IOException {
@@ -87,6 +92,7 @@ public class SelfDescriptionStoreCompositeTest {
         schemaStore.deleteSchema(schema);
       }
     }
+    schemaFileStore.clearStorage();
     fileStore.clearStorage();
   }
 
