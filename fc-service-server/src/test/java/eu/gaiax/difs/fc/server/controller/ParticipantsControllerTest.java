@@ -450,6 +450,7 @@ public class ParticipantsControllerTest {
             {@StringClaim(name = "participant_id", value = "did:example:issuer")})))
     @Order(30)
     public void updateParticipantWithOtherIdShouldReturnBadClientResponse() throws Exception {
+        schemaStore.addSchema(getAccessor("mock-data/gax-test-ontology.ttl"));
         String json = getMockFileDataAsString(DEFAULT_PARTICIPANT_FILE).replace("did:example:issuer", "did:example:new-issuer");
         ParticipantMetaData part = new ParticipantMetaData("did:example:new-issuer", "did:example:holder", "did:example:holder#key", json);
 //        selfDescriptionStore.deleteSelfDescription(part.getSdHash());
@@ -476,6 +477,7 @@ public class ParticipantsControllerTest {
             {@StringClaim(name = "participant_id", value = "did:example:new-issuer")})))
     @Order(30)
     public void updateParticipantFailWithKeycloakErrorShouldReturnErrorWithoutDBStore() throws Exception {
+        schemaStore.addSchema(getAccessor("mock-data/gax-test-ontology.ttl"));
         String json = getMockFileDataAsString(DEFAULT_PARTICIPANT_FILE).replace("did:example:issuer", "did:example:new-issuer");
         ParticipantMetaData part = new ParticipantMetaData("did:example:new-issuer", "did:example:holder", "did:example:holder#key", json);
         setupKeycloak(HttpStatus.SC_INTERNAL_SERVER_ERROR, part);
@@ -556,7 +558,7 @@ public class ParticipantsControllerTest {
             {@StringClaim(name = "participant_id", value = "did:example:issuer")})))
     @Order(50)
     public void deleteParticipantSuccessShouldReturnSuccessResponse() throws Exception {
-
+        schemaStore.addSchema(getAccessor("mock-data/gax-test-ontology.ttl"));
         String json = getMockFileDataAsString(DEFAULT_PARTICIPANT_FILE).replace("did:example:issuer", "did:example:unique-issuer");
         ParticipantMetaData part = new ParticipantMetaData("did:example:unique-issuer", "did:example:holder", "did:example:holder#key", json);
 //        setupKeycloak(HttpStatus.SC_CREATED, part);

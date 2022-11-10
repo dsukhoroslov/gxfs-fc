@@ -1,5 +1,6 @@
 package eu.gaiax.difs.fc.server.controller;
 
+import static eu.gaiax.difs.fc.server.util.TestUtil.getAccessor;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
@@ -17,6 +18,8 @@ import eu.gaiax.difs.fc.core.pojo.SelfDescriptionMetadata;
 import eu.gaiax.difs.fc.core.pojo.VerificationResultOffering;
 import eu.gaiax.difs.fc.core.pojo.VerificationResultParticipant;
 import eu.gaiax.difs.fc.core.service.filestore.FileStore;
+import eu.gaiax.difs.fc.core.service.schemastore.SchemaStore;
+import eu.gaiax.difs.fc.core.service.schemastore.impl.SchemaStoreImpl;
 import eu.gaiax.difs.fc.core.service.sdstore.SelfDescriptionStore;
 import eu.gaiax.difs.fc.core.service.verification.VerificationService;
 import eu.gaiax.difs.fc.server.helper.FileReaderHelper;
@@ -26,6 +29,8 @@ import io.zonky.test.db.AutoConfigureEmbeddedDatabase.DatabaseProvider;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
@@ -74,9 +79,12 @@ public class QueryControllerTest {
     @Qualifier("sdFileStore")
     private FileStore fileStore;
     @Autowired
+    @Qualifier("schemaFileStore")
+    private FileStore schemaFileStore;
+    @Autowired
     private  ObjectMapper objectMapper;
-    //@Autowired
-    //private  SchemaStore schemaStore;
+    @Autowired
+    private SchemaStoreImpl schemaStore;
 
     
     @BeforeAll
@@ -91,7 +99,14 @@ public class QueryControllerTest {
 
     @AfterEach
     public void storageSelfCleaning() throws IOException {
+        Map<SchemaStore.SchemaType, List<String>> schemaList = schemaStore.getSchemaList();
+        for (List<String> typeList : schemaList.values()) {
+            for (String schema : typeList) {
+                schemaStore.deleteSchema(schema);
+            }
+        }
         fileStore.clearStorage();
+        schemaFileStore.clearStorage();
     }
 
     @AfterAll
@@ -266,7 +281,7 @@ public class QueryControllerTest {
     private void initialiseAllDataBaseWithManuallyAddingSDFromRepository() throws Exception {
 
         fileStore.clearStorage();
-
+        schemaStore.addSchema(getAccessor("mock-data/gax-test-ontology.ttl"));
         ContentAccessorDirect contentAccessor = new ContentAccessorDirect(FileReaderHelper.getMockFileDataAsString("default_participant.json")); 
         //try {
         VerificationResultParticipant verificationResult = verificationService.verifyParticipantSelfDescription(contentAccessor);
