@@ -451,7 +451,8 @@ public class ParticipantsControllerTest {
     @Order(30)
     public void updateParticipantWithOtherIdShouldReturnBadClientResponse() throws Exception {
         schemaStore.addSchema(getAccessor("mock-data/gax-test-ontology.ttl"));
-        String json = getMockFileDataAsString(DEFAULT_PARTICIPANT_FILE).replace("did:example:issuer", "did:example:new-issuer");
+        String json = getMockFileDataAsString("alternative_participant.json");
+
         ParticipantMetaData part = new ParticipantMetaData("did:example:new-issuer", "did:example:holder", "did:example:holder#key", json);
 //        selfDescriptionStore.deleteSelfDescription(part.getSdHash());
         setupKeycloak(HttpStatus.SC_OK, part);
@@ -461,7 +462,7 @@ public class ParticipantsControllerTest {
         SelfDescriptionMetadata sdMetadata = new SelfDescriptionMetadata(contentAccessor, verResult);
         selfDescriptionStore.storeSelfDescription(sdMetadata, verResult);
 
-        String updatedParticipant = getMockFileDataAsString(DEFAULT_PARTICIPANT_FILE).replace("did:example:new-issuer", "did:example:extra-issuer");
+        String updatedParticipant = getMockFileDataAsString("alternative2_participant.json");
         String partId = URLEncoder.encode(part.getId(), Charset.defaultCharset());
 
         mockMvc
