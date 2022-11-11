@@ -533,13 +533,12 @@ public class ParticipantsControllerTest {
     @Test
     @WithMockJwtAuth(authorities = {CATALOGUE_ADMIN_ROLE_WITH_PREFIX},
         claims = @OpenIdClaims(otherClaims = @Claims(stringClaims =
-            {@StringClaim(name = "participant_id", value = "did:example:new-issuer")})))
+            {@StringClaim(name = "participant_id", value = "did:example:wrong-issuer")})))
     @Order(40)
     public void deleteParticipantFailWithWrongParticipantIdShouldReturnNotFoundResponse() throws Exception {
-        schemaStore.addSchema(getAccessor("mock-data/gax-test-ontology.ttl"));
-        //String json = getMockFileDataAsString(DEFAULT_PARTICIPANT_FILE).replace("did:example:issuer", "did:example:wrong-issuer");
-        String json = getMockFileDataAsString(ALTERNATIVE_PARTICIPANT_FILE);
-        ParticipantMetaData part = new ParticipantMetaData("did:example:new-issuer", "did:example:updated", "did:example:holder#key", json);
+        String json = getMockFileDataAsString(DEFAULT_PARTICIPANT_FILE).replace("did:example:issuer", "did:example:wrong-issuer");
+        //String json = getMockFileDataAsString(ALTERNATIVE_PARTICIPANT_FILE);
+        ParticipantMetaData part = new ParticipantMetaData("did:example:wrong-issuer", "did:example:updated", "did:example:holder#key", json);
         setupKeycloak(HttpStatus.SC_NOT_FOUND, part);
         String partId = URLEncoder.encode(part.getId(), Charset.defaultCharset());
 
@@ -566,8 +565,8 @@ public class ParticipantsControllerTest {
     public void deleteParticipantSuccessShouldReturnSuccessResponse() throws Exception {
         schemaStore.addSchema(getAccessor("mock-data/gax-test-ontology.ttl"));
         //String json = getMockFileDataAsString(DEFAULT_PARTICIPANT_FILE).replace("did:example:issuer", "did:example:unique-issuer");
-        String json = getMockFileDataAsString(ALTERNATIVE_PARTICIPANT_FILE);
-        ParticipantMetaData part = new ParticipantMetaData("did:example:new-issuer", "did:example:holder", "did:example:holder#key", json);
+        String json = getMockFileDataAsString(ALTERNATIVE2_PARTICIPANT_FILE);
+        ParticipantMetaData part = new ParticipantMetaData("did:example:extra-issuer", "did:example:holder", "did:example:holder#key", json);
 //        setupKeycloak(HttpStatus.SC_CREATED, part);
 //        participantDao.create(part);
         ContentAccessorDirect contentAccessor = new ContentAccessorDirect(json);
@@ -587,7 +586,7 @@ public class ParticipantsControllerTest {
             .getContentAsString();
         ParticipantMetaData  participantMetaData = objectMapper.readValue(response, ParticipantMetaData.class);
         assertNotNull(part);
-        assertEquals("did:example:new-issuer", participantMetaData.getId());
+        assertEquals("did:example:extra-issuer", participantMetaData.getId());
         assertEquals("did:example:holder", participantMetaData.getName());
         assertEquals("did:example:holder#key", participantMetaData.getPublicKey());
 
