@@ -141,6 +141,8 @@ public class ParticipantsControllerTest {
 
     private final String userId = "ae366624-8371-401d-b2c4-518d2f308a15";
     private final String DEFAULT_PARTICIPANT_FILE = "default_participant.json";
+    private final String ALTERNATIVE_PARTICIPANT_FILE = "alternative_participant.json";
+    private final String ALTERNATIVE2_PARTICIPANT_FILE = "alternative2_participant.json";
 
     private final String PUBLIC_KEY_AS_JWK = "{\"kty\":\"RSA\",\"e\":\"AQAB\",\"alg\":\"PS256\",\"n\":\"0nYZU6EuuzHKBCzkcBZqsMkVZXngYO7VujfLU_4ys7onF4HxTJPP3OGKEjbjbMgmpa7vKaWRomt_XXTjemA3r3f5t8bj0IoqFfvbTIq65GUIIh4y2mVbomdcQLRK2Auf79vDiqiONknTSstoPjAiCg6t6z_KruGFZbDOhYkZwqrjGnmB_LfFSlpeLwkQQ-5dVLhhXkImmWhnACoAo8ECny24Ap7wLbN9i9o1fNSz2uszACj0zxFhl3NGunHFUm3YkGd0URvoToXpK9a4zfihSUxHjeT0_7a9puVF4E3w1AAjSh4nV3pLE0cJyDITVb2M4d3m9tjjz_3XwjYiAAJ1MKVBSKDM27pexRFCJj_Dvb-dr-AImhqBhPDHn_gjdaRZIVoADC4zwBULkpvUaUIKmNFyYOjDYWWTBzTf4Gs9QL5adlVfVyK14MZPBOyq-cqIIymgp6A5_R3hKnCCBP8C_S0-VDidhI6Pr5VJPx9DydI0eB2DiOyOZvbfg7sKVkJXFUEJRiBTMhujyjYqeTtCHjCFHctZVQ8hU279eyk7mpmpDrktfCFJFi-00ZzQWTgtzBoGhke5hj0hjtG1n4jN6BfypdT5oB-DeXl2P1hp_hNC9I5gveWUYHAqN4VKve_52A3ub8vBlISQhEUeZoFUterTiDA3NyK7wsj_V7-KM6U\"}";
     
@@ -451,7 +453,7 @@ public class ParticipantsControllerTest {
     @Order(30)
     public void updateParticipantWithOtherIdShouldReturnBadClientResponse() throws Exception {
         schemaStore.addSchema(getAccessor("mock-data/gax-test-ontology.ttl"));
-        String json = getMockFileDataAsString("alternative_participant.json");
+        String json = getMockFileDataAsString(ALTERNATIVE_PARTICIPANT_FILE);
 
         ParticipantMetaData part = new ParticipantMetaData("did:example:new-issuer", "did:example:holder", "did:example:holder#key", json);
 //        selfDescriptionStore.deleteSelfDescription(part.getSdHash());
@@ -462,7 +464,7 @@ public class ParticipantsControllerTest {
         SelfDescriptionMetadata sdMetadata = new SelfDescriptionMetadata(contentAccessor, verResult);
         selfDescriptionStore.storeSelfDescription(sdMetadata, verResult);
 
-        String updatedParticipant = getMockFileDataAsString("alternative2_participant.json");
+        String updatedParticipant = getMockFileDataAsString(ALTERNATIVE2_PARTICIPANT_FILE);
         String partId = URLEncoder.encode(part.getId(), Charset.defaultCharset());
 
         mockMvc
@@ -479,7 +481,7 @@ public class ParticipantsControllerTest {
     @Order(30)
     public void updateParticipantFailWithKeycloakErrorShouldReturnErrorWithoutDBStore() throws Exception {
         schemaStore.addSchema(getAccessor("mock-data/gax-test-ontology.ttl"));
-        String json = getMockFileDataAsString(DEFAULT_PARTICIPANT_FILE).replace("did:example:issuer", "did:example:new-issuer");
+        String json = getMockFileDataAsString(ALTERNATIVE_PARTICIPANT_FILE);
         ParticipantMetaData part = new ParticipantMetaData("did:example:new-issuer", "did:example:holder", "did:example:holder#key", json);
         setupKeycloak(HttpStatus.SC_INTERNAL_SERVER_ERROR, part);
         String partId = URLEncoder.encode(part.getId(), Charset.defaultCharset());
@@ -530,11 +532,12 @@ public class ParticipantsControllerTest {
     @Test
     @WithMockJwtAuth(authorities = {CATALOGUE_ADMIN_ROLE_WITH_PREFIX},
         claims = @OpenIdClaims(otherClaims = @Claims(stringClaims =
-            {@StringClaim(name = "participant_id", value = "did:example:wrong-issuer")})))
+            {@StringClaim(name = "participant_id", value = "did:example:new-issuer")})))
     @Order(40)
     public void deleteParticipantFailWithWrongParticipantIdShouldReturnNotFoundResponse() throws Exception {
-        String json = getMockFileDataAsString(DEFAULT_PARTICIPANT_FILE).replace("did:example:issuer", "did:example:wrong-issuer");
-        ParticipantMetaData part = new ParticipantMetaData("did:example:wrong-issuer", "did:example:updated", "did:example:holder#key", json);
+        //String json = getMockFileDataAsString(DEFAULT_PARTICIPANT_FILE).replace("did:example:issuer", "did:example:wrong-issuer");
+        String json = getMockFileDataAsString(ALTERNATIVE_PARTICIPANT_FILE);
+        ParticipantMetaData part = new ParticipantMetaData("did:example:new-issuer", "did:example:updated", "did:example:holder#key", json);
         setupKeycloak(HttpStatus.SC_NOT_FOUND, part);
         String partId = URLEncoder.encode(part.getId(), Charset.defaultCharset());
 
@@ -560,8 +563,9 @@ public class ParticipantsControllerTest {
     @Order(50)
     public void deleteParticipantSuccessShouldReturnSuccessResponse() throws Exception {
         schemaStore.addSchema(getAccessor("mock-data/gax-test-ontology.ttl"));
-        String json = getMockFileDataAsString(DEFAULT_PARTICIPANT_FILE).replace("did:example:issuer", "did:example:unique-issuer");
-        ParticipantMetaData part = new ParticipantMetaData("did:example:unique-issuer", "did:example:holder", "did:example:holder#key", json);
+        //String json = getMockFileDataAsString(DEFAULT_PARTICIPANT_FILE).replace("did:example:issuer", "did:example:unique-issuer");
+        String json = getMockFileDataAsString(ALTERNATIVE_PARTICIPANT_FILE);
+        ParticipantMetaData part = new ParticipantMetaData("did:example:new-issuer", "did:example:holder", "did:example:holder#key", json);
 //        setupKeycloak(HttpStatus.SC_CREATED, part);
 //        participantDao.create(part);
         ContentAccessorDirect contentAccessor = new ContentAccessorDirect(json);
@@ -580,7 +584,7 @@ public class ParticipantsControllerTest {
             .getContentAsString();
         ParticipantMetaData  participantMetaData = objectMapper.readValue(response, ParticipantMetaData.class);
         assertNotNull(part);
-        assertEquals("did:example:unique-issuer", participantMetaData.getId());
+        assertEquals("did:example:new-issuer", participantMetaData.getId());
         assertEquals("did:example:holder", participantMetaData.getName());
         assertEquals("did:example:holder#key", participantMetaData.getPublicKey());
 
