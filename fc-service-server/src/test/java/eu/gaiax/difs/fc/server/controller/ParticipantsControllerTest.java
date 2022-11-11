@@ -457,7 +457,8 @@ public class ParticipantsControllerTest {
         setupKeycloak(HttpStatus.SC_OK, part);
 
         ContentAccessorDirect contentAccessor = new ContentAccessorDirect(json);
-        VerificationResultParticipant verResult = verificationService.verifyParticipantSelfDescription(contentAccessor);
+        VerificationResultParticipant verResult = (VerificationResultParticipant) verificationService.verifySelfDescription(contentAccessor, true, true,false);
+        //VerificationResultParticipant verResult = verificationService.verifyParticipantSelfDescription(contentAccessor);
         SelfDescriptionMetadata sdMetadata = new SelfDescriptionMetadata(contentAccessor, verResult);
         selfDescriptionStore.storeSelfDescription(sdMetadata, verResult);
 
@@ -564,7 +565,8 @@ public class ParticipantsControllerTest {
 //        setupKeycloak(HttpStatus.SC_CREATED, part);
 //        participantDao.create(part);
         ContentAccessorDirect contentAccessor = new ContentAccessorDirect(json);
-        VerificationResultParticipant verResult = verificationService.verifyParticipantSelfDescription(contentAccessor);
+        VerificationResultParticipant verResult = (VerificationResultParticipant) verificationService.verifySelfDescription(contentAccessor, true, true,false);
+        //VerificationResultParticipant verResult = verificationService.verifyParticipantSelfDescription(contentAccessor);
         SelfDescriptionMetadata sdMetadata = new SelfDescriptionMetadata(contentAccessor, verResult);
         selfDescriptionStore.storeSelfDescription(sdMetadata, verResult);
 
