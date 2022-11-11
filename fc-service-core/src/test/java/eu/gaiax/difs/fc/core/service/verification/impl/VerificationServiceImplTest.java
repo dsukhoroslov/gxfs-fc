@@ -107,7 +107,6 @@ public class VerificationServiceImplTest {
   }
 
   @Test
-  @Disabled("new proof should be generated after updating the participantSD2.jsonld ?")
   void validSyntax_Participant() throws Exception {
     log.debug("validSyntax_Participant");
     schemaStore.addSchema(getAccessor("Schema-Tests/gax-test-ontology.ttl"));
@@ -241,7 +240,7 @@ public class VerificationServiceImplTest {
   }
 
   @Test
-  @Disabled("new proof should be generated after updating the valid_signature.json ?")
+
   void validSD() throws UnsupportedEncodingException {
     log.debug("validSD");
     schemaStore.addSchema(getAccessor("Schema-Tests/gax-test-ontology.ttl"));
