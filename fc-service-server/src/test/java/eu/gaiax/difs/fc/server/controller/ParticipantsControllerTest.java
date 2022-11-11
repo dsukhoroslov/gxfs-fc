@@ -536,6 +536,7 @@ public class ParticipantsControllerTest {
             {@StringClaim(name = "participant_id", value = "did:example:new-issuer")})))
     @Order(40)
     public void deleteParticipantFailWithWrongParticipantIdShouldReturnNotFoundResponse() throws Exception {
+        schemaStore.addSchema(getAccessor("mock-data/gax-test-ontology.ttl"));
         //String json = getMockFileDataAsString(DEFAULT_PARTICIPANT_FILE).replace("did:example:issuer", "did:example:wrong-issuer");
         String json = getMockFileDataAsString(ALTERNATIVE_PARTICIPANT_FILE);
         ParticipantMetaData part = new ParticipantMetaData("did:example:new-issuer", "did:example:updated", "did:example:holder#key", json);

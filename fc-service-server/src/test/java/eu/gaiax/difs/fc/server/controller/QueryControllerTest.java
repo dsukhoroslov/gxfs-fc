@@ -188,7 +188,7 @@ public class QueryControllerTest {
 
         Results result = objectMapper.readValue(response, Results.class);
         assertEquals(1, result.getItems().size());
-        assertEquals(3, result.getTotalCount());
+        assertEquals(4, result.getTotalCount());
     }
 
     @Test
