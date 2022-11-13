@@ -19,9 +19,10 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-
 import org.apache.commons.collections.CollectionUtils;
 import org.junit.FixMethodOrder;
 import org.junit.jupiter.api.AfterAll;
@@ -177,6 +178,170 @@ public class Neo4jGraphStoreAccuracyTest {
 
     Assertions.assertEquals(5, responseList.size());
   }
+
+  @Test
+  void testQueryForGroupBYAndLocation() {
+    String credentialSubject1 = "http://example.org/test-issuer";
+    List<SdClaim> sdClaimList = Arrays.asList(
+        new SdClaim(
+            "<http://example.org/test-issuer>",
+            "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>",
+            "<http://w3id.org/gaia-x/participant#Provider>"
+        ),
+        new SdClaim(
+            "<http://example.org/test-issuer>",
+            "<http://w3id.org/gaia-x/participant#legalAddress>",
+            "_:23"
+        ),
+        new SdClaim(
+            "<http://example.org/test-issuer>",
+            "<http://w3id.org/gaia-x/participant#legalName>",
+            "\"deltaDAO AG\""
+        ),
+        new SdClaim(
+            "<http://example.org/test-issuer>",
+            "<http://w3id.org/gaia-x/participant#name>",
+            "\"deltaDAO AG\""
+        ),
+        new SdClaim("_:23",
+            "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>",
+            "<http://w3id.org/gaia-x/participant#Address>"
+        ),
+        new SdClaim("_:23",
+            "<http://w3id.org/gaia-x/participant#country>",
+            "\"DE\""
+        ),
+        new SdClaim("_:23",
+            "<http://w3id.org/gaia-x/participant#locality>",
+            "\"Hamburg\""
+        ),
+        new SdClaim("_:23",
+            "<http://w3id.org/gaia-x/participant#postal-code>",
+            "\"22303\""
+        ),
+        new SdClaim("_:23",
+            "<http://w3id.org/gaia-x/participant#street-address>",
+            "\"GeibelstraГџe 46b\""
+        )
+    );
+
+    String credentialSubject2 = "http://example.org/test-issuer2";
+    List<SdClaim> sdClaimList2 = Arrays.asList(
+        new SdClaim(
+            "<http://example.org/test-issuer2>",
+            "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>",
+            "<http://w3id.org/gaia-x/participant#Provider>"
+        ),
+        new SdClaim(
+            "<http://example.org/test-issuer2>",
+            "<http://w3id.org/gaia-x/participant#legalAddress>",
+            "_:b1"
+        ),
+        new SdClaim(
+            "<http://example.org/test-issuer2>",
+            "<http://w3id.org/gaia-x/participant#legalName>",
+            "\"deltaDAO AGE\""
+        ),
+        new SdClaim(
+            "<http://example.org/test-issuer2>",
+            "<http://w3id.org/gaia-x/participant#name>",
+            "\"deltaDAO AGE\""
+        ),
+        new SdClaim("_:b1",
+            "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>",
+            "<http://w3id.org/gaia-x/participant#Address>"
+        ),
+        new SdClaim("_:b1",
+            "<http://w3id.org/gaia-x/participant#country>",
+            "\"DE\""
+        ),
+        new SdClaim("_:b1",
+            "<http://w3id.org/gaia-x/participant#locality>",
+            "\"Dresden\""
+        ),
+        new SdClaim("_:b1",
+            "<http://w3id.org/gaia-x/participant#postal-code>",
+            "\"01067\""
+        ),
+        new SdClaim("_:b1",
+            "<http://w3id.org/gaia-x/participant#street-address>",
+            "\"Tried str 46b\""
+        )
+    );
+
+    String credentialSubject3 = "http://example.org/test-issuer3";
+    List<SdClaim> sdClaimList3 = Arrays.asList(
+        new SdClaim(
+            "<http://example.org/test-issuer3>",
+            "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>",
+            "<http://w3id.org/gaia-x/participant#Provider>"
+        ),
+        new SdClaim(
+            "<http://example.org/test-issuer3>",
+            "<http://w3id.org/gaia-x/participant#legalAddress>",
+            "_:b2"
+        ),
+        new SdClaim(
+            "<http://example.org/test-issuer3>",
+            "<http://w3id.org/gaia-x/participant#legalName>",
+            "\"deltaDAO AGEF\""
+        ),
+        new SdClaim(
+            "<http://example.org/test-issuer3>",
+            "<http://w3id.org/gaia-x/participant#name>",
+            "\"deltaDAO AGEF\""
+        ),
+        new SdClaim("_:b2",
+            "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>",
+            "<http://w3id.org/gaia-x/participant#Address>"
+        ),
+        new SdClaim("_:b2",
+            "<http://w3id.org/gaia-x/participant#country>",
+            "\"DE\""
+        ),
+        new SdClaim("_:b2",
+            "<http://w3id.org/gaia-x/participant#locality>",
+            "\"Dresden\""
+        ),
+        new SdClaim("_:b2",
+            "<http://w3id.org/gaia-x/participant#postal-code>",
+            "\"01069\""
+        ),
+        new SdClaim("_:b2",
+            "<http://w3id.org/gaia-x/participant#street-address>",
+            "\"Fried str 46b\""
+        )
+    );
+
+    neo4jGraphStore.addClaims(sdClaimList, credentialSubject1);
+    neo4jGraphStore.addClaims(sdClaimList2, credentialSubject2);
+    neo4jGraphStore.addClaims(sdClaimList3, credentialSubject3);
+
+    //Query for the group by locality
+    GraphQuery queryCypher = new GraphQuery("MATCH (n) where n.locality IS NOT NULL return COUNT(n.locality)  as countLocation ,n" +
+            ".locality as locality ORDER BY countLocation ASC ", null);
+
+    List<Map<String, Object>> responseCypher = neo4jGraphStore.queryData(queryCypher).getResults();
+    List<Map<String, Object>> resultListCountLocation = List.of(Map.of("countLocation", 1L, "locality", "Hamburg"), Map.of("countLocation", 2L, "locality", "Dresden"));
+    Assertions.assertEquals(resultListCountLocation, responseCypher);
+
+    //Query for the getting by locality
+    GraphQuery queryCypherByLocality = new GraphQuery("MATCH (n) where n.locality = $locality return n.claimsGraphUri" +
+        " ORDER BY n.locality", Map.of(
+        "locality", "Dresden"));
+
+    List<Map<String, Object>> responseCypherByLocality = neo4jGraphStore.queryData(queryCypherByLocality).getResults();
+    Map<String, Object>  resultActualMap = responseCypherByLocality.get(0);
+
+    Assertions.assertEquals(2,responseCypherByLocality.size());
+    Assertions.assertEquals(Collections.singletonList("http://example.org/test-issuer2"), resultActualMap.get("n.claimsGraphUri"));
+
+    //cleanup
+    neo4jGraphStore.deleteClaims(credentialSubject1);
+    neo4jGraphStore.deleteClaims(credentialSubject2);
+    neo4jGraphStore.deleteClaims(credentialSubject3);
+  }
+
 
   private void initialiseAllDataBaseWithManuallyAddingSD() throws Exception {
 
