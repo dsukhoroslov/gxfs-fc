@@ -69,7 +69,7 @@ public class Neo4jGraphStore implements GraphStore {
                 String query = "CALL n10s.rdf.import.inline($payload, \"N-Triples\")\n"
                         + "YIELD terminationStatus, triplesLoaded, triplesParsed, namespaces, extraInfo\n"
                         + "RETURN terminationStatus, triplesLoaded, triplesParsed, namespaces, extraInfo";
-                log.debug("addClaims; query: {}", query);
+                log.debug("addClaims; payload: {}", payload.toString());
                 Result rs = session.run(query, Map.of("payload", payload.toString()));
                 log.debug("addClaims; response: {}", rs.list());
             }
@@ -91,8 +91,8 @@ public class Neo4jGraphStore implements GraphStore {
         try (Session session = driver.session()) {
             Result rsDelelte = session.run(queryDelete, Map.of("uri", credentialSubject));
             Result rsUpdate = session.run(queryUpdate, Map.of("uri", credentialSubject));
-            log.debug("deleteClaims.exit; results: {}", rsDelelte.list());
-            log.debug("updateClaims.exit; results: {}", rsUpdate.list());
+            log.debug("deleteClaims.exit; delete results: {}", rsDelelte.list());
+            log.debug("deleteClaims.exit; update results: {}", rsUpdate.list());
         }
     }
 
@@ -129,13 +129,19 @@ public class Neo4jGraphStore implements GraphStore {
                             Map<String, Object> outputMap = new HashMap<>();
                             totalCount = (Long) map.getOrDefault("totalCount", resultList.size());
                             for (var entry : map.entrySet()) {
-                                if(entry.getKey().equals("totalCount"))
+                                log.debug("queryData; value: {}, {}", entry.getValue() == null ? "null" : entry.getValue().getClass(), entry.getValue());
+                                if (entry.getKey().equals("totalCount")) {
                                     continue;
+                                }
                                 if (entry.getValue() == null) {
                                     outputMap.put(entry.getKey(), null);
                                 } else if (entry.getValue() instanceof InternalNode) {
-                                    InternalNode SDNode = (InternalNode) entry.getValue();
-                                    outputMap.put("n.uri", SDNode.get("uri").toString().replace("\"", ""));
+                                    InternalNode sdNode = (InternalNode) entry.getValue();
+                                    log.debug("queryData; node as Map: {}", sdNode.asMap());
+                                    log.debug("queryData; node as Value: {}", sdNode.asValue());
+                                    log.debug("queryData; node id: {}, size: {}", sdNode.id(), sdNode.size());
+                                    log.debug("queryData; keys: {}, labels: {}, values: {}", sdNode.keys(), sdNode.labels(), sdNode.values());
+                                    outputMap.put("n.uri", sdNode.get("uri").toString().replace("\"", ""));
                                 } else {
                                     outputMap.put(entry.getKey(), entry.getValue());
                                 }
