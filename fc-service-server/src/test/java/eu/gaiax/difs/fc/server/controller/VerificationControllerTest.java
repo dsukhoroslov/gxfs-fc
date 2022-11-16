@@ -1,6 +1,5 @@
 package eu.gaiax.difs.fc.server.controller;
 
-import eu.gaiax.difs.fc.core.service.schemastore.impl.SchemaStoreImpl;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Disabled;
@@ -22,6 +21,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import eu.gaiax.difs.fc.api.generated.model.Error;
 import eu.gaiax.difs.fc.api.generated.model.VerificationResult;
+import eu.gaiax.difs.fc.core.service.schemastore.SchemaStore;
 import io.zonky.test.db.AutoConfigureEmbeddedDatabase;
 import io.zonky.test.db.AutoConfigureEmbeddedDatabase.DatabaseProvider;
 
@@ -54,7 +54,7 @@ public class VerificationControllerTest {
   private MockMvc mockMvc;
 
   @Autowired
-  private SchemaStoreImpl schemaStore;
+  private SchemaStore schemaStore;
 
   @BeforeAll
   public void setup() {
