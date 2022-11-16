@@ -23,13 +23,12 @@ import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import javax.persistence.EntityExistsException;
 import javax.persistence.LockModeType;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileExistsException;
+import org.apache.commons.lang3.mutable.MutableInt;
 import org.apache.jena.rdf.model.*;
 import org.apache.jena.riot.Lang;
 import org.apache.jena.riot.RDFDataMgr;
@@ -416,8 +415,12 @@ public class SchemaStoreImpl implements SchemaStore {
       }
     }
     try {
-      // In case of left over files, should not do anything.
-      fileStore.clearStorage();
+      final MutableInt count = new MutableInt(0);
+      fileStore.getFileIterable().forEach(file -> count.increment());
+      if (count.intValue() != 0) {
+        log.warn("SchemaStoreImpl: Found {} Files in FileStore after deleting all schemas.", count);
+        fileStore.clearStorage();
+      }
     } catch (IOException ex) {
       log.error("SchemaStoreImpl: Exception while clearing FileStore.");
     }

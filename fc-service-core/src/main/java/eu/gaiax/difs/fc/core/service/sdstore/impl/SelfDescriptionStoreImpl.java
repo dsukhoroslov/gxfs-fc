@@ -39,8 +39,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.vladmihalcea.hibernate.type.array.StringArrayType;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.hibernate.Transaction;
 
 /**
@@ -424,8 +422,12 @@ public class SelfDescriptionStoreImpl implements SelfDescriptionStore {
       t.commit();
     }
     try {
-      // In case of left over files, should not do anything.
-      fileStore.clearStorage();
+      final MutableInt count = new MutableInt(0);
+      fileStore.getFileIterable().forEach(file -> count.increment());
+      if (count.intValue() != 0) {
+        log.warn("SelfDescriptionStoreImpl: Found {} Files in FileStore after deleting all SelfDescriptions.", count);
+        fileStore.clearStorage();
+      }
     } catch (IOException ex) {
       log.error("SelfDescriptionStoreImpl: Exception while clearing FileStore.");
     }
