@@ -20,7 +20,6 @@ import org.springframework.context.annotation.Import;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.transaction.annotation.Transactional;
 
 import eu.gaiax.difs.fc.core.config.DatabaseConfig;
 import eu.gaiax.difs.fc.core.config.FileStoreConfig;
@@ -47,7 +46,6 @@ import lombok.extern.slf4j.Slf4j;
 @ContextConfiguration(classes = {SelfDescriptionStoreCompositeTest.TestApplication.class, FileStoreConfig.class, VerificationServiceImpl.class,
   SelfDescriptionStoreImpl.class, SelfDescriptionStoreCompositeTest.class, SchemaStoreImpl.class, DatabaseConfig.class, Neo4jGraphStore.class, ValidatorCacheImpl.class})
 @DirtiesContext
-@Transactional
 @Slf4j
 @AutoConfigureEmbeddedDatabase(provider = DatabaseProvider.ZONKY)
 @Import(EmbeddedNeo4JConfig.class)
@@ -81,7 +79,7 @@ public class SelfDescriptionStoreCompositeTest {
   private FileStore fileStore;
 
   @AfterEach
-  public void storageSelfCleaning() throws IOException {
+  public void storageSelfCleaning() {
     schemaStore.clear();
     sdStore.clear();
   }

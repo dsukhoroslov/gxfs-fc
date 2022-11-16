@@ -417,17 +417,18 @@ public class SelfDescriptionStoreImpl implements SelfDescriptionStore {
   @Override
   public void clear() {
     try ( Session session = sessionFactory.openSession()) {
-      Transaction t = session.beginTransaction();
-      session.createNativeQuery("delete from sdfiles").executeUpdate();
-      t.commit();
+      Transaction transaction = session.getTransaction();
+      // Transaction is sometimes not active. For instance when called from an @AfterAll Test method
+      if (transaction == null || !transaction.isActive()) {
+        transaction = session.beginTransaction();
+        session.createNativeQuery("delete from sdfiles").executeUpdate();
+        transaction.commit();
+      } else {
+        session.createNativeQuery("delete from sdfiles").executeUpdate();
+      }
     }
     try {
-      final MutableInt count = new MutableInt(0);
-      fileStore.getFileIterable().forEach(file -> count.increment());
-      if (count.intValue() != 0) {
-        log.warn("SelfDescriptionStoreImpl: Found {} Files in FileStore after deleting all SelfDescriptions.", count);
-        fileStore.clearStorage();
-      }
+      fileStore.clearStorage();
     } catch (IOException ex) {
       log.error("SelfDescriptionStoreImpl: Exception while clearing FileStore: {}.", ex.getMessage());
     }
