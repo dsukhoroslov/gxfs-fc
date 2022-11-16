@@ -12,34 +12,27 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.gaiax.difs.fc.api.generated.model.QueryLanguage;
 import eu.gaiax.difs.fc.api.generated.model.Results;
 import eu.gaiax.difs.fc.core.pojo.ContentAccessorDirect;
-import eu.gaiax.difs.fc.core.pojo.GraphQuery;
 import eu.gaiax.difs.fc.core.pojo.SdClaim;
 import eu.gaiax.difs.fc.core.pojo.SelfDescriptionMetadata;
 import eu.gaiax.difs.fc.core.pojo.VerificationResultOffering;
 import eu.gaiax.difs.fc.core.pojo.VerificationResultParticipant;
-import eu.gaiax.difs.fc.core.service.filestore.FileStore;
 import eu.gaiax.difs.fc.core.service.schemastore.SchemaStore;
-import eu.gaiax.difs.fc.core.service.schemastore.impl.SchemaStoreImpl;
 import eu.gaiax.difs.fc.core.service.sdstore.SelfDescriptionStore;
 import eu.gaiax.difs.fc.core.service.verification.VerificationService;
 import eu.gaiax.difs.fc.server.helper.FileReaderHelper;
 import eu.gaiax.difs.fc.testsupport.config.EmbeddedNeo4JConfig;
 import io.zonky.test.db.AutoConfigureEmbeddedDatabase;
 import io.zonky.test.db.AutoConfigureEmbeddedDatabase.DatabaseProvider;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.neo4j.harness.Neo4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
@@ -61,30 +54,28 @@ import org.springframework.web.context.WebApplicationContext;
 @Import(EmbeddedNeo4JConfig.class)
 public class QueryControllerTest {
 
-  private final static String SD_FILE_NAME = "new_participant.json"; //"default-sd.json"; //"default_participant.json"; //
-
   private final static String DEFAULT_SERVICE_SD_FILE_NAME = "default-sd-service-offering.json";
 
   @Autowired
   private WebApplicationContext context;
+
   @Autowired
   private MockMvc mockMvc;
+
   @Autowired
   private Neo4j embeddedDatabaseServer;
+
   @Autowired
   private SelfDescriptionStore sdStore;
+
   @Autowired
   private VerificationService verificationService;
-  @Autowired
-  @Qualifier("sdFileStore")
-  private FileStore fileStore;
-  @Autowired
-  @Qualifier("schemaFileStore")
-  private FileStore schemaFileStore;
+
   @Autowired
   private ObjectMapper objectMapper;
+
   @Autowired
-  private SchemaStoreImpl schemaStore;
+  private SchemaStore schemaStore;
 
   @BeforeTestClass
   public void setup() {
@@ -97,7 +88,7 @@ public class QueryControllerTest {
   }
 
   @AfterAll
-  void closeNeo4j() {
+  void cleanUpStores() {
     schemaStore.clear();
     sdStore.clear();
     embeddedDatabaseServer.close();
