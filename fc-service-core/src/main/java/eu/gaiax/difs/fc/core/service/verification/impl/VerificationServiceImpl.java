@@ -75,7 +75,8 @@ public class VerificationServiceImpl implements VerificationService {
   private static final Lang SHAPES_LANG = Lang.TURTLE;
   private static final String[] ID_KEYS = {"id", "@id"};
   private static final Set<String> SIGNATURES = Set.of("JsonWebSignature2020"); //, "Ed25519Signature2018");
-
+  private static final String PARTICIPANT_TYPE = "http://w3id.org/gaia-x/participant#Participant";
+  private static final String SERVICE_OFFERING_TYPE = "http://w3id.org/gaia-x/service#ServiceOffering";
   private static final ClaimExtractor[] extractors = new ClaimExtractor[]{new TitaniumClaimExtractor(), new DanubeTechClaimExtractor()};
 
   private static final int VRT_UNKNOWN = 0;
@@ -351,32 +352,27 @@ public class VerificationServiceImpl implements VerificationService {
   private Boolean checkTypeSubClass(String type, String parent) {
     ContentAccessor gaxOntology = schemaStore.getCompositeSchema(SchemaStore.SchemaType.ONTOLOGY);
     OntModel model = ModelFactory.createOntologyModel(OntModelSpec.OWL_MEM_MICRO_RULE_INF);
-    model.read(new StringReader(gaxOntology.getContentAsString()), null, "TTl");
+    model.read(new StringReader(gaxOntology.getContentAsString()), null, "TTL");
 
     String queryString =" ";
+    String gax_type = " ";
     if(parent.equals("Participant")) {
-      if (type.equals("http://w3id.org/gaia-x/participant#Participant")) {
-        return true;
-      }
+      gax_type = PARTICIPANT_TYPE;
 
-      queryString =
-              "PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#> " +
-                      "select ?uri " +
-                      "where { " +
-                      "?uri rdfs:subClassOf <http://w3id.org/gaia-x/participant#Participant> " +
-                      "} \n ";
     } else if (parent.equals("ServiceOffering")) {
-        if (type.equals("http://w3id.org/gaia-x/service#ServiceOffering")) {
-          return true;
-        }
-
-      queryString =
-              "PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#> " +
-                      "select ?uri " +
-                      "where { " +
-                      "?uri rdfs:subClassOf <http://w3id.org/gaia-x/service#ServiceOffering> " +
-                      "} \n ";
+      gax_type = SERVICE_OFFERING_TYPE;
+    } else {
+      return false ;
     }
+    if (type.equals(gax_type)) {
+      return true;
+    }
+    queryString =
+            "PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#> " +
+                    "select ?uri " +
+                    "where { " +
+                    "?uri rdfs:subClassOf <" + gax_type +">"+
+                    "} \n ";
     Query query = QueryFactory.create(queryString);
     QueryExecution qe = QueryExecutionFactory.create(query, model);
     ResultSet results = qe.execSelect();
