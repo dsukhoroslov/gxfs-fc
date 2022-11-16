@@ -429,7 +429,7 @@ public class SelfDescriptionStoreImpl implements SelfDescriptionStore {
         fileStore.clearStorage();
       }
     } catch (IOException ex) {
-      log.error("SelfDescriptionStoreImpl: Exception while clearing FileStore.");
+      log.error("SelfDescriptionStoreImpl: Exception while clearing FileStore: {}.", ex.getMessage());
     }
   }
 

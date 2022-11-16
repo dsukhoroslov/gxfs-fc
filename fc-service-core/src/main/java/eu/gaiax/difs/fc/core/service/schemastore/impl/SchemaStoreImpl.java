@@ -422,7 +422,7 @@ public class SchemaStoreImpl implements SchemaStore {
         fileStore.clearStorage();
       }
     } catch (IOException ex) {
-      log.error("SchemaStoreImpl: Exception while clearing FileStore.");
+      log.error("SchemaStoreImpl: Exception while clearing FileStore: {}.", ex.getMessage());
     }
   }
 
