@@ -18,7 +18,6 @@ import eu.gaiax.difs.fc.core.pojo.VerificationResultOffering;
 import eu.gaiax.difs.fc.core.service.filestore.FileStore;
 import eu.gaiax.difs.fc.core.service.graphdb.impl.Neo4jGraphStore;
 import eu.gaiax.difs.fc.core.service.sdstore.SelfDescriptionStore;
-import eu.gaiax.difs.fc.core.service.verification.VerificationService;
 import eu.gaiax.difs.fc.core.util.HashUtils;
 import eu.gaiax.difs.fc.testsupport.config.EmbeddedNeo4JConfig;
 import io.zonky.test.db.AutoConfigureEmbeddedDatabase;
@@ -28,7 +27,6 @@ import java.io.UnsupportedEncodingException;
 import java.time.Instant;
 import liquibase.repackaged.org.apache.commons.collections4.IterableUtils;
 
-import java.time.OffsetDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -44,7 +42,6 @@ import org.junit.jupiter.api.Assertions;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.fail;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Test;
@@ -129,7 +126,7 @@ public class SelfDescriptionStoreImplTest {
   }
 
   private static VerificationResult createVerificationResult(final int idSuffix, String subject) {
-      return new VerificationResultOffering(Instant.now(), SelfDescriptionStatus.ACTIVE.getValue(), "issuer" + idSuffix, Instant.now(), 
+      return new VerificationResultOffering(Instant.now(), SelfDescriptionStatus.ACTIVE.getValue(), "issuer" + idSuffix, Instant.now(),
               "id" + idSuffix, createClaims(subject), new ArrayList<>());
     }
 
@@ -711,7 +708,7 @@ public class SelfDescriptionStoreImplTest {
     signatures.add(new Validator("did:first", "", firstSigInstant));
     signatures.add(new Validator("did:second", "", Instant.now().plus(1, ChronoUnit.DAYS)));
     signatures.add(new Validator("did:third", "", Instant.now().plus(2, ChronoUnit.DAYS)));
-    return new VerificationResult(Instant.now(), SelfDescriptionStatus.ACTIVE.getValue(), "issuer", Instant.now(), 
+    return new VerificationResult(Instant.now(), SelfDescriptionStatus.ACTIVE.getValue(), "issuer", Instant.now(),
             id, new ArrayList<>(), signatures);
   }
 

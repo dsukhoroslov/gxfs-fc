@@ -39,6 +39,9 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.vladmihalcea.hibernate.type.array.StringArrayType;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.hibernate.Transaction;
 
 /**
  * File system based implementation of the self-description store interface.
@@ -411,6 +414,21 @@ public class SelfDescriptionStoreImpl implements SelfDescriptionStore {
     query.setParameter("limit", count);
     final List<String> resultList = query.getResultList();
     return resultList;
+  }
+
+  @Override
+  public void clear() {
+    try ( Session session = sessionFactory.openSession()) {
+      Transaction t = session.beginTransaction();
+      session.createNativeQuery("delete from sdfiles").executeUpdate();
+      t.commit();
+    }
+    try {
+      // In case of left over files, should not do anything.
+      fileStore.clearStorage();
+    } catch (IOException ex) {
+      log.error("SelfDescriptionStoreImpl: Exception while clearing FileStore.");
+    }
   }
 
 }

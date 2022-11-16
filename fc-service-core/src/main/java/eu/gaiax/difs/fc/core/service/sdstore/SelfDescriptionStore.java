@@ -85,4 +85,9 @@ public interface SelfDescriptionStore {
    */
   List<String> getActiveSdHashes(String afterHash, int count, int chunks, int chunkId);
 
+  /**
+   * Remove all SelfDescriptions from the SelfDescriptionStore.
+   */
+  void clear();
+
 }

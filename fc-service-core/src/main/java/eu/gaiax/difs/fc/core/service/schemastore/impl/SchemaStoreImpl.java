@@ -23,11 +23,11 @@ import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import javax.persistence.EntityExistsException;
 import javax.persistence.LockModeType;
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaDelete;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileExistsException;
 import org.apache.jena.rdf.model.*;
@@ -35,7 +35,6 @@ import org.apache.jena.riot.Lang;
 import org.apache.jena.riot.RDFDataMgr;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
-import org.hibernate.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
@@ -406,6 +405,22 @@ public class SchemaStoreImpl implements SchemaStore {
     File file = new File(str);
     ContentAccessorFile accessor = new ContentAccessorFile(file);
     return accessor;
+  }
+
+  @Override
+  public void clear() {
+    Map<SchemaStore.SchemaType, List<String>> schemaList = getSchemaList();
+    for (List<String> typeList : schemaList.values()) {
+      for (String schema : typeList) {
+        deleteSchema(schema);
+      }
+    }
+    try {
+      // In case of left over files, should not do anything.
+      fileStore.clearStorage();
+    } catch (IOException ex) {
+      log.error("SchemaStoreImpl: Exception while clearing FileStore.");
+    }
   }
 
 }

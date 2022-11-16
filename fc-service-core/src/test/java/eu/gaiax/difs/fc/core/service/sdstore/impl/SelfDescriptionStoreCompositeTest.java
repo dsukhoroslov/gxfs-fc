@@ -7,7 +7,6 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
-import eu.gaiax.difs.fc.core.service.schemastore.SchemaStore;
 import eu.gaiax.difs.fc.core.service.validatorcache.impl.ValidatorCacheImpl;
 import org.apache.commons.lang3.mutable.MutableInt;
 import org.junit.jupiter.api.*;
@@ -35,7 +34,6 @@ import eu.gaiax.difs.fc.core.service.graphdb.impl.Neo4jGraphStore;
 import eu.gaiax.difs.fc.core.service.schemastore.impl.SchemaStoreImpl;
 import eu.gaiax.difs.fc.core.service.sdstore.SelfDescriptionStore;
 import eu.gaiax.difs.fc.core.service.verification.VerificationService;
-import eu.gaiax.difs.fc.core.service.verification.impl.VerificationDirectTest;
 import eu.gaiax.difs.fc.core.service.verification.impl.VerificationServiceImpl;
 import eu.gaiax.difs.fc.testsupport.config.EmbeddedNeo4JConfig;
 import io.zonky.test.db.AutoConfigureEmbeddedDatabase;
@@ -65,8 +63,10 @@ public class SelfDescriptionStoreCompositeTest {
 
   @Autowired
   private VerificationService verificationService;
+
   @Autowired
   private SelfDescriptionStore sdStore;
+
   @Autowired
   private SchemaStoreImpl schemaStore;
 
@@ -80,20 +80,10 @@ public class SelfDescriptionStoreCompositeTest {
   @Qualifier("sdFileStore")
   private FileStore fileStore;
 
-  @Autowired
-  @Qualifier("schemaFileStore")
-  private FileStore schemaFileStore;
-
   @AfterEach
   public void storageSelfCleaning() throws IOException {
-    Map<SchemaStore.SchemaType, List<String>> schemaList = schemaStore.getSchemaList();
-    for (List<String> typeList : schemaList.values()) {
-      for (String schema : typeList) {
-        schemaStore.deleteSchema(schema);
-      }
-    }
-    schemaFileStore.clearStorage();
-    fileStore.clearStorage();
+    schemaStore.clear();
+    sdStore.clear();
   }
 
   @AfterAll
@@ -133,8 +123,8 @@ public class SelfDescriptionStoreCompositeTest {
   }
 
   /**
-   * Test storing a self-description, ensuring it creates exactly one file on
-   * disk, retrieving it by hash, and deleting it again.
+   * Test storing a self-description, ensuring it creates exactly one file on disk, retrieving it by hash, and deleting
+   * it again.
    */
   @Test
   void test01StoreSelfDescription() throws Exception {
@@ -152,29 +142,27 @@ public class SelfDescriptionStoreCompositeTest {
     assertThatSdHasTheSameData(sdMeta, sdStore.getByHash(hash));
 
     List<Map<String, Object>> claims = graphStore.queryData(
-            new GraphQuery("MATCH (n {uri: $uri}) RETURN labels(n)", Map.of("uri", sdMeta.getId()))).getResults();
+        new GraphQuery("MATCH (n {uri: $uri}) RETURN labels(n)", Map.of("uri", sdMeta.getId()))).getResults();
     log.debug("test01StoreSelfDescription; got claims: {}", claims);
     //Assertions.assertEquals(5, claims.size()); only 1 node found..
 
     List<Map<String, Object>> nodes = graphStore.queryData(
-            new GraphQuery("MATCH (n) RETURN labels(n)", Map.of())).getResults();
+        new GraphQuery("MATCH (n) RETURN labels(n)", Map.of())).getResults();
     log.debug("test01StoreSelfDescription; got nodes: {}", nodes);
 
     //final ContentAccessor sdfileByHash = sdStore.getSDFileByHash(hash);
     //assertEquals(sdfileByHash, sdMeta.getSelfDescription(),
     //    "Getting the SD file by hash is equal to the stored SD file");
-
     sdStore.deleteSelfDescription(hash);
     assertAllSdFilesDeleted();
 
     claims = graphStore.queryData(
-            new GraphQuery("MATCH (n {uri: $uri}) RETURN n", Map.of("uri", sdMeta.getId()))).getResults();
+        new GraphQuery("MATCH (n {uri: $uri}) RETURN n", Map.of("uri", sdMeta.getId()))).getResults();
     Assertions.assertEquals(0, claims.size());
 
     Assertions.assertThrows(NotFoundException.class, () -> {
       sdStore.getByHash(hash);
     });
   }
-
 
 }
