@@ -365,7 +365,7 @@ public class VerificationServiceImpl implements VerificationService {
     } else if (parent.compareTo(SERVICE_OFFERING_CONSTANT)==0) {
       gax_type = SERVICE_OFFERING_TYPE;
     } else {
-      return false ;
+      return null ;
     }
     if (type.equals(gax_type)) {
       return true;
