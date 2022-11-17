@@ -73,6 +73,9 @@ public class VerificationServiceImpl implements VerificationService {
 
   private static final Lang SD_LANG = Lang.JSONLD11;
   private static final Lang SHAPES_LANG = Lang.TURTLE;
+  private static final int PARTICIPANT_CONSTANT = 1 ;
+  private static final int SERVICE_OFFERING_CONSTANT = 2 ;
+  private static final String CREDENTIAL_SUBJECT = "https://www.w3.org/2018/credentials#credentialSubject";
   private static final String[] ID_KEYS = {"id", "@id"};
   private static final Set<String> SIGNATURES = Set.of("JsonWebSignature2020"); //, "Ed25519Signature2018");
   private static final String PARTICIPANT_TYPE = "http://w3id.org/gaia-x/participant#Participant";
@@ -349,17 +352,17 @@ public class VerificationServiceImpl implements VerificationService {
     }
     return result ? Pair.of(true, false) : Pair.of(false, true);
   }
-  private Boolean checkTypeSubClass(String type, String parent) {
+  private Boolean checkTypeSubClass(String type, Integer parent) {
     ContentAccessor gaxOntology = schemaStore.getCompositeSchema(SchemaStore.SchemaType.ONTOLOGY);
     OntModel model = ModelFactory.createOntologyModel(OntModelSpec.OWL_MEM_MICRO_RULE_INF);
-    model.read(new StringReader(gaxOntology.getContentAsString()), null, "TTL");
+    model.read(new StringReader(gaxOntology.getContentAsString()), null, SHAPES_LANG.getName());
 
     String queryString =" ";
     String gax_type = " ";
-    if(parent.equals("Participant")) {
+    if(parent.compareTo(PARTICIPANT_CONSTANT)==0) {
       gax_type = PARTICIPANT_TYPE;
 
-    } else if (parent.equals("ServiceOffering")) {
+    } else if (parent.compareTo(SERVICE_OFFERING_CONSTANT)==0) {
       gax_type = SERVICE_OFFERING_TYPE;
     } else {
       return false ;
@@ -393,17 +396,18 @@ public class VerificationServiceImpl implements VerificationService {
               .source(new StringReader(container.toJson()))
               .lang(SD_LANG)
               .parse(data);
-      NodeIterator node = data.listObjectsOfProperty(data.createProperty("https://www.w3.org/2018/credentials#credentialSubject"));
+
+      NodeIterator node = data.listObjectsOfProperty(data.createProperty(CREDENTIAL_SUBJECT));
+      List <String> types = new ArrayList<>();
       while (node.hasNext()){
         NodeIterator typeNode = data.listObjectsOfProperty(node.nextNode().asResource(), RDF.type);
         while(typeNode.hasNext()){
-          List <String> types = new ArrayList<>();
           types.add(typeNode.nextNode().asResource().getURI());
           for ( String typeString : types ) {
-            if (checkTypeSubClass(typeString, "Participant")) {
+            if (checkTypeSubClass(typeString, PARTICIPANT_CONSTANT)) {
               return true;
             }
-            if (checkTypeSubClass(typeString, "ServiceOffering")) {
+            if (checkTypeSubClass(typeString, SERVICE_OFFERING_CONSTANT)) {
               return false;
             }
           }

@@ -15,6 +15,11 @@ import org.springframework.stereotype.Service;
 @Service
 public interface VerificationService {
 
+  public enum SDType {
+    PARTICIPANT,
+    SERVICE_OFFERING
+  }
+
   /**
    * The function validates the Self-Description as JSON and tries to parse the json handed over.
    *
