@@ -118,7 +118,6 @@ public class VerificationServiceImplTest {
   }
 
   @Test
-  @Disabled("invalid SO generated")
   void validSyntax_ValidService() throws Exception {
     log.debug("validSyntax_ValidService");
     schemaStore.addSchema(getAccessor("Schema-Tests/gax-test-ontology.ttl"));
@@ -127,7 +126,7 @@ public class VerificationServiceImplTest {
     assertNotNull(vr);
     assertTrue(vr instanceof VerificationResult);
     assertFalse(vr instanceof VerificationResultParticipant);
-    assertFalse(vr instanceof VerificationResultOffering);
+    assertTrue(vr instanceof VerificationResultOffering);
     //VerificationResultOffering vro = (VerificationResultOffering) vr;
     //assertEquals("https://www.handelsregister.de/", vro.getId());
     //assertEquals("https://www.handelsregister.de/", vro.getIssuer());
@@ -135,7 +134,6 @@ public class VerificationServiceImplTest {
   }
 
   @Test
-  //@Disabled("invalid SO generated")
   void validSyntax_ValidService2() throws Exception {
     log.debug("validSyntax_ValidService2");
     schemaStore.addSchema(getAccessor("Schema-Tests/gax-test-ontology.ttl"));
@@ -150,7 +148,6 @@ public class VerificationServiceImplTest {
   }
 
   @Test
-  @Disabled("invalid LP generated")
   void validSyntax_ValidPerson() throws Exception {
     log.debug("validSyntax_ValidPerson");
     schemaStore.addSchema(getAccessor("Schema-Tests/gax-test-ontology.ttl"));
@@ -158,7 +155,7 @@ public class VerificationServiceImplTest {
     VerificationResult vr = verificationService.verifySelfDescription(getAccessor(path), true, true, false);
     assertNotNull(vr);
     assertTrue(vr instanceof VerificationResult);
-    assertFalse(vr instanceof VerificationResultParticipant);
+    assertTrue(vr instanceof VerificationResultParticipant);
     assertFalse(vr instanceof VerificationResultOffering);
     //VerificationResultParticipant vrp = (VerificationResultParticipant) vr;
     //assertEquals("https://www.handelsregister.de/", vrp.getId());
