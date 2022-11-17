@@ -134,20 +134,6 @@ public class VerificationServiceImplTest {
   }
 
   @Test
-  void validSyntax_ValidService2() throws Exception {
-    log.debug("validSyntax_ValidService2");
-    schemaStore.addSchema(getAccessor("Schema-Tests/gax-test-ontology.ttl"));
-    String path = "VerificationService/syntax/service2.jsonld";
-    VerificationResult vr = verificationService.verifySelfDescription(getAccessor(path), true, true, false);
-    assertNotNull(vr);
-    assertTrue(vr instanceof VerificationResult);
-    //VerificationResultOffering vro = (VerificationResultOffering) vr;
-    //assertEquals("https://www.handelsregister.de/", vro.getId());
-    //assertEquals("https://www.handelsregister.de/", vro.getIssuer());
-    //assertEquals(LocalDate.of(2010, 1, 1), vro.getIssuedDate());
-  }
-
-  @Test
   void validSyntax_ValidPerson() throws Exception {
     log.debug("validSyntax_ValidPerson");
     schemaStore.addSchema(getAccessor("Schema-Tests/gax-test-ontology.ttl"));
