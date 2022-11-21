@@ -352,16 +352,16 @@ public class VerificationServiceImpl implements VerificationService {
     }
     return result ? Pair.of(true, false) : Pair.of(false, true);
   }
-  private Boolean checkTypeSubClass(String type, Integer parent) {
+  private Boolean checkTypeSubClass(String type, int parent) {
     ContentAccessor gaxOntology = schemaStore.getCompositeSchema(SchemaStore.SchemaType.ONTOLOGY);
     OntModel model = ModelFactory.createOntologyModel(OntModelSpec.OWL_MEM_MICRO_RULE_INF);
     model.read(new StringReader(gaxOntology.getContentAsString()), null, SHAPES_LANG.getName());
 
     String queryString =" ";
     String gax_type = " ";
-    if(parent.compareTo(PARTICIPANT_CONSTANT)==0) {
+    if(parent == PARTICIPANT_CONSTANT) {
       gax_type = PARTICIPANT_TYPE;
-    } else if (parent.compareTo(SERVICE_OFFERING_CONSTANT)==0) {
+    } else if (parent == SERVICE_OFFERING_CONSTANT) {
       gax_type = SERVICE_OFFERING_TYPE;
     } else {
       return false;
