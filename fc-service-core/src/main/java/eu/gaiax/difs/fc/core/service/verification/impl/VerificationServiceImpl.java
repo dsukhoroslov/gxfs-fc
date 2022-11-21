@@ -398,21 +398,18 @@ public class VerificationServiceImpl implements VerificationService {
               .parse(data);
 
       NodeIterator node = data.listObjectsOfProperty(data.createProperty(CREDENTIAL_SUBJECT));
-      List <String> types = new ArrayList<>();
       while (node.hasNext()){
         NodeIterator typeNode = data.listObjectsOfProperty(node.nextNode().asResource(), RDF.type);
-        while(typeNode.hasNext()){
-          types.add(typeNode.nextNode().asResource().getURI());
-          for ( String typeString : types ) {
-            if (checkTypeSubClass(typeString, PARTICIPANT_CONSTANT)) {
-              return true;
-            }
-            if (checkTypeSubClass(typeString, SERVICE_OFFERING_CONSTANT)) {
-              return false;
-            }
+        List <RDFNode> rdfNodeList = typeNode.toList();
+        for ( RDFNode rdfNode : rdfNodeList) {
+          String resourceURI = rdfNode.asResource().getURI();
+          if (checkTypeSubClass(resourceURI, PARTICIPANT_CONSTANT)) {
+            return true;
+          }
+          if (checkTypeSubClass(resourceURI, SERVICE_OFFERING_CONSTANT)) {
+            return false;
           }
         }
-
       }
     } catch (Exception e) {
       log.debug("getSDType.error: {}", e.getMessage());
