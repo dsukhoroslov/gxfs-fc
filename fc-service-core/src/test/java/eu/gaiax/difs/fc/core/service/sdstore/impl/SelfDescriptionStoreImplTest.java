@@ -1,5 +1,9 @@
 package eu.gaiax.difs.fc.core.service.sdstore.impl;
 
+import static eu.gaiax.difs.fc.core.util.TestUtil.assertThatSdHasTheSameData;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import eu.gaiax.difs.fc.core.config.DatabaseConfig;
 import eu.gaiax.difs.fc.api.generated.model.SelfDescriptionStatus;
 import eu.gaiax.difs.fc.core.config.FileStoreConfig;
@@ -39,9 +43,6 @@ import org.apache.commons.lang3.mutable.MutableInt;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Test;
@@ -132,20 +133,6 @@ public class SelfDescriptionStoreImplTest {
 
   private static VerificationResult createVerificationResult(final int idSuffix) {
     return createVerificationResult(idSuffix, "<https://delta-dao.com/.well-known/serviceMVGPortal.json>");
-  }
-
-  // Since SdMetaRecord class extends SelfDescriptionMetadata class instead of being formed from it, then check
-  // in the equals method will always be false. Because we are downcasting SdMetaRecord to SelfDescriptionMetadata.
-  private static void assertThatSdHasTheSameData(final SelfDescriptionMetadata excepted,
-      final SelfDescriptionMetadata actual) {
-    assertEquals(actual.getId(), excepted.getId());
-    assertEquals(actual.getSdHash(), excepted.getSdHash());
-    assertEquals(actual.getStatus(), excepted.getStatus());
-    assertEquals(actual.getIssuer(), excepted.getIssuer());
-    assertEquals(actual.getValidatorDids(), excepted.getValidatorDids());
-    assertEquals(actual.getUploadDatetime(), excepted.getUploadDatetime());
-    assertEquals(actual.getStatusDatetime(), excepted.getStatusDatetime());
-    assertEquals(actual.getSelfDescription(), excepted.getSelfDescription());
   }
 
   private void assertStoredSdFiles(final int expected) {

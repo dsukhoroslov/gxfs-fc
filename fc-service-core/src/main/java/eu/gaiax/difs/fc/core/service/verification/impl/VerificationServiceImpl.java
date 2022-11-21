@@ -361,12 +361,12 @@ public class VerificationServiceImpl implements VerificationService {
     String gax_type = " ";
     if(parent.compareTo(PARTICIPANT_CONSTANT)==0) {
       gax_type = PARTICIPANT_TYPE;
-
     } else if (parent.compareTo(SERVICE_OFFERING_CONSTANT)==0) {
       gax_type = SERVICE_OFFERING_TYPE;
     } else {
-      return null ;
+      return false;
     }
+    
     if (type.equals(gax_type)) {
       return true;
     }
@@ -379,10 +379,10 @@ public class VerificationServiceImpl implements VerificationService {
     Query query = QueryFactory.create(queryString);
     QueryExecution qe = QueryExecutionFactory.create(query, model);
     ResultSet results = qe.execSelect();
-    List <QuerySolution> list = ResultSetFormatter.toList(results);
-    for (QuerySolution q :list){
-     String node =  q.get("uri").toString();
-      if(node.equals(type)) {
+    while (results.hasNext()) {
+      QuerySolution q = results.next();
+      String node =  q.get("uri").toString();
+      if (node.equals(type)) {
         return true;
       }
     }
@@ -417,7 +417,7 @@ public class VerificationServiceImpl implements VerificationService {
     } catch (Exception e) {
       log.debug("getSDType.error: {}", e.getMessage());
     }
-  return null ;
+    return null;
   }
 
 
