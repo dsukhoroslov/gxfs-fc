@@ -857,6 +857,60 @@ public class Neo4jGraphStoreTest {
 
     }
 
+    void assertionEmptyUri() {
+        String credentialSubject1 = "http://example.org/test-issuer";
+        List<SdClaim> sdClaimList = Arrays.asList(
+                new SdClaim(
+                        "<http://example.org/test-issuer>",
+                        "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>",
+                        "<http://w3id.org/gaia-x/participant#Provider>"
+                ),
+                new SdClaim(
+                        "<http://example.org/test-issuer>",
+                        "<http://w3id.org/gaia-x/participant#legalAddress>",
+                        "_:23"
+                ),
+                new SdClaim(
+                        "<http://example.org/test-issuer>",
+                        "<http://w3id.org/gaia-x/participant#legalName>",
+                        "\"deltaDAO AG\""
+                ),
+                new SdClaim(
+                        "<http://example.org/test-issuer>",
+                        "<http://w3id.org/gaia-x/participant#name>",
+                        "\"deltaDAO AG\""
+                ),
+                new SdClaim("_:23",
+                        "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>",
+                        "<http://w3id.org/gaia-x/participant#Address>"
+                ),
+                new SdClaim("_:23",
+                        "<http://w3id.org/gaia-x/participant#country>",
+                        "\"DE\""
+                ),
+                new SdClaim("_:23",
+                        "<http://w3id.org/gaia-x/participant#locality>",
+                        "\"Hamburg\""
+                ),
+                new SdClaim("_:23",
+                        "<http://w3id.org/gaia-x/participant#postal-code>",
+                        "\"22303\""
+                ),
+                new SdClaim("_:23",
+                        "<http://w3id.org/gaia-x/participant#street-address>",
+                        "\"GeibelstraГџe 46b\""
+                )
+        );
+        GraphQuery queryCypher = new GraphQuery(" match(n) return n.uri",null);
+        List<Map<String, Object>> responseCypher = graphGaia.queryData(queryCypher).getResults();
+        Assertions.assertEquals(3,responseCypher.size());
+        graphGaia.addClaims(sdClaimList,credentialSubject1);
+        List<Map<String, Object>> responseCypherNewNode = graphGaia.queryData(queryCypher).getResults();
+        Assertions.assertEquals(5,responseCypherNewNode.size());
+        graphGaia.deleteClaims(credentialSubject1); //cleanup
+
+    }
+
 
     @Test
     void testQueryDataTimeout() {

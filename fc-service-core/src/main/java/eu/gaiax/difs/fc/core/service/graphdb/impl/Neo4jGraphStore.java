@@ -11,6 +11,9 @@ import eu.gaiax.difs.fc.core.util.ExtendClaims;
 import eu.gaiax.difs.fc.core.util.ClaimValidator;
 import liquibase.pro.packaged.L;
 import liquibase.pro.packaged.T;
+import liquibase.repackaged.org.apache.commons.collections4.CollectionUtils;
+import liquibase.repackaged.org.apache.commons.collections4.functors.NullPredicate;
+import liquibase.repackaged.org.apache.commons.lang3.ObjectUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.jena.rdf.model.Model;
 import org.neo4j.driver.Driver;
@@ -72,6 +75,24 @@ public class Neo4jGraphStore implements GraphStore {
         }
         log.debug("addClaims.exit; claims processed: {}", cnt);
     }
+
+    /**
+     * Check If all values of list are null
+     *
+     * @param list
+     * @return true or false
+     */
+    private boolean nullRecordCheck(List<Object> list) {
+        boolean allNullAttributes = true;
+        for (Object object : list) {
+            if (object != null) {
+                allNullAttributes = false;
+                break;
+            }
+        }
+        return allNullAttributes;
+    }
+
 
     /**
      * {@inheritDoc}
@@ -140,7 +161,8 @@ public class Neo4jGraphStore implements GraphStore {
                                     outputMap.put(entry.getKey(), entry.getValue());
                                 }
                             }
-                            resultList.add(outputMap);
+                            if (!nullRecordCheck(new ArrayList<>(outputMap.values())))
+                                resultList.add(outputMap);
                         }
                         log.debug("queryData.exit; returning: {}", resultList);
 
