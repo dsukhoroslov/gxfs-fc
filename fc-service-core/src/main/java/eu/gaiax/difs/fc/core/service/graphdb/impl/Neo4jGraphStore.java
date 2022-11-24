@@ -75,15 +75,12 @@ public class Neo4jGraphStore implements GraphStore {
      * @param list
      * @return true or false
      */
-    private boolean nullRecordCheck(List<Object> list) {
-        boolean allNullAttributes = true;
+    private boolean nullRecordCheck(Collection list) {
         for (Object object : list) {
-            if (object != null) {
-                allNullAttributes = false;
-                break;
-            }
+            if (object != null)
+                return false;
         }
-        return allNullAttributes;
+        return true;
     }
 
 
@@ -154,7 +151,7 @@ public class Neo4jGraphStore implements GraphStore {
                                     outputMap.put(entry.getKey(), entry.getValue());
                                 }
                             }
-                            if (!nullRecordCheck(new ArrayList<>(outputMap.values())))
+                            if (!nullRecordCheck(outputMap.values()))
                                 resultList.add(outputMap);
                         }
                         log.debug("queryData.exit; returning: {}", resultList);
