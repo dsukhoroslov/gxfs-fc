@@ -857,6 +857,7 @@ public class Neo4jGraphStoreTest {
 
     }
 
+    @Test
     void assertionEmptyUri() {
         String credentialSubject1 = "http://example.org/test-issuer";
         List<SdClaim> sdClaimList = Arrays.asList(
@@ -901,11 +902,12 @@ public class Neo4jGraphStoreTest {
                         "\"GeibelstraГџe 46b\""
                 )
         );
-        GraphQuery queryCypher = new GraphQuery(" match(n) return n.uri",null);
-        List<Map<String, Object>> responseCypher = graphGaia.queryData(queryCypher).getResults();
-        Assertions.assertEquals(3,responseCypher.size());
+        GraphQuery queryCypherEmptyUri = new GraphQuery(" match(n) return n.uri",null);
+        List<Map<String, Object>> responseCypherEmpty = graphGaia.queryData(queryCypherEmptyUri).getResults();
+        System.out.println("residue is "+responseCypherEmpty.toString());
+        Assertions.assertEquals(3,responseCypherEmpty.size());
         graphGaia.addClaims(sdClaimList,credentialSubject1);
-        List<Map<String, Object>> responseCypherNewNode = graphGaia.queryData(queryCypher).getResults();
+        List<Map<String, Object>> responseCypherNewNode = graphGaia.queryData(queryCypherEmptyUri).getResults();
         Assertions.assertEquals(5,responseCypherNewNode.size());
         graphGaia.deleteClaims(credentialSubject1); //cleanup
 
