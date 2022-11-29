@@ -40,9 +40,10 @@ public class GraphDbConfig {
         if (!session.run("CALL n10s.graphconfig.show();").hasNext()) {
           session.run("CALL n10s.graphconfig.init();"); /// run only when creating a new graph
           session.run("CREATE CONSTRAINT n10s_unique_uri IF NOT EXISTS ON (r:Resource) ASSERT r.uri IS UNIQUE");
+          session.run("DENY MATCH {*} ON GRAPH neo4j NODES _GraphConfig TO `PUBLIC`");
           log.info("n10s.graphconfig.init() not called second time.");
         }
-        log.info("n10 procedure and Constraints are loaded successfully");
+        log.info("n10 procedure and Constraints are loaded successfully for {}",user);
         return driver;
 	}
 	
