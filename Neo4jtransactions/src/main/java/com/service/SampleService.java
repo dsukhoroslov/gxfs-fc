@@ -17,24 +17,23 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class SampleService {
 
-  @Autowired
+  /*@Autowired
   private PersonRepository personRepository;
 
   @Autowired
   private AddressRepositoryPostgres addressRepositoryPostgres;
-  @Autowired
-  private Driver driver;
 
-  /*@Autowired
-  private Neo4jTemplate neo4jTemplate;
-*/
+  @Autowired
+  private Driver driver;*/
+
+
   @Autowired
   private Neo4jClient neo4jClient;
 
   private Neo4jRepository neo4jRepository;
 
 
-  @Transactional
+  /*@Transactional
    public void testBothDBInsert(){
 
      Person test = new Person("Test");
@@ -49,7 +48,7 @@ public class SampleService {
     if (true){
      // throw new RuntimeException("test exception manually thrown ");
     }
-  }
+  }*/
 
   @Transactional
   public void testTemplate(){
@@ -90,21 +89,15 @@ public class SampleService {
         "<http://example.org/Provider1_2> <http://w3id.org/gaia-x/service#claimsGraphUri> \"http://gaiax.de\" .\n" +
         "<http://example.org/Provider1_7> <http://w3id.org/gaia-x/service#claimsGraphUri> \"http://gaiax.de\" .\n" +
         "<http://example.org/Provider1_5> <http://w3id.org/gaia-x/service#claimsGraphUri> \"http://gaiax.de\" .";
+
     String query = "CALL n10s.rdf.import.inline($payload, \"N-Triples\")\n"
         + "YIELD terminationStatus, triplesLoa" +
         "ded, triplesParsed, namespaces, extraInfo\n"
         + "RETURN terminationStatus, triplesLoaded, triplesParsed, namespaces, extraInfo";
 
-       //neo4jClient.query(query).bind(claimsAdded).to("payload").run();
 
- /* neo4jClient.query(query).bind(claimsAdded).to("payload").fetch()
-      .all().stream()
-      .collect(Collectors.toList());*/
     neo4jClient.getQueryRunner().run(query, Map.of("payload", claimsAdded));
-    //neo4jClient.getQueryRunner().run("CREATE (n:Person:Swedish)");
-  //reactiveNeo4jClient.query(query).bind(claimsAdded).to("payload").run();
 
-   // neo4jRepository.
 
   if (true){
      throw new RuntimeException("test exception manually thrown ");

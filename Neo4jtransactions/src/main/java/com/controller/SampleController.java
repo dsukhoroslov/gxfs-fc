@@ -18,12 +18,6 @@ public class SampleController {
   @RequestMapping(method = RequestMethod.POST)
   public void testTransaction(){
 
-    //sampleService.testTransaction();
-
-    //sampleService.testTransactionFailure(); //working right
-
-//    sampleService.driverAddTest();
-
 //    sampleService.testBothDBInsert();
 
        sampleService.testTemplate();
