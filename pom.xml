@@ -35,6 +35,7 @@
         <module>fc-service-core</module>
         <module>fc-service-server</module>
         <module>demo-portal</module>
+        <module>Neo4jtransactions</module>
     </modules>
 
     <properties>
