@@ -1,12 +1,13 @@
-package com.service;
+package eu.gaiax.test.service;
 
-import com.repository.Address;
-import com.repository.AddressRepositoryPostgres;
-import com.repository.Person;
-import com.repository.PersonRepository;
+import eu.gaiax.test.model.Address;
+import eu.gaiax.test.repository.AddressRepositoryPostgres;
+import eu.gaiax.test.model.Person;
+import eu.gaiax.test.repository.PersonRepository;
 import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
 import org.neo4j.driver.Driver;
+import org.neo4j.driver.Result;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.neo4j.core.Neo4jClient;
 import org.springframework.data.neo4j.repository.Neo4jRepository;
@@ -15,26 +16,26 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Slf4j
 @Service
+@Transactional
 public class SampleService {
 
-  @Autowired
+  /*@Autowired
   private PersonRepository personRepository;
 
   @Autowired
   private AddressRepositoryPostgres addressRepositoryPostgres;
-  @Autowired
-  private Driver driver;
 
-  /*@Autowired
-  private Neo4jTemplate neo4jTemplate;
-*/
+  @Autowired
+  private Driver driver;*/
+
+
   @Autowired
   private Neo4jClient neo4jClient;
 
-  private Neo4jRepository neo4jRepository;
+  //private Neo4jRepository neo4jRepository;
 
 
-  @Transactional
+  /*@Transactional
    public void testBothDBInsert(){
 
      Person test = new Person("Test");
@@ -49,10 +50,11 @@ public class SampleService {
     if (true){
      // throw new RuntimeException("test exception manually thrown ");
     }
-  }
+  }*/
 
-  @Transactional
-  public void testTemplate(){
+  public void testTemplate() {
+    log.debug("testTemplate.enter;");
+      
     String claimsAdded = "<http://example.org/Provider1_3> <http://w3id.org/gaia-x/service#claimsGraphUri> \"http://gaiax.de\" .\n" +
         "<http://example.org/Provider1_1> <http://w3id.org/gaia-x/service#claimsGraphUri> \"http://gaiax.de\" .\n" +
         "_:B643222240400c851edd9ad368de73998 <http://w3id.org/gaia-x/service#claimsGraphUri> \"http://gaiax.de\" .\n" +
@@ -90,25 +92,17 @@ public class SampleService {
         "<http://example.org/Provider1_2> <http://w3id.org/gaia-x/service#claimsGraphUri> \"http://gaiax.de\" .\n" +
         "<http://example.org/Provider1_7> <http://w3id.org/gaia-x/service#claimsGraphUri> \"http://gaiax.de\" .\n" +
         "<http://example.org/Provider1_5> <http://w3id.org/gaia-x/service#claimsGraphUri> \"http://gaiax.de\" .";
+
     String query = "CALL n10s.rdf.import.inline($payload, \"N-Triples\")\n"
-        + "YIELD terminationStatus, triplesLoa" +
-        "ded, triplesParsed, namespaces, extraInfo\n"
+        + "YIELD terminationStatus, triplesLoaded, triplesParsed, namespaces, extraInfo\n"
         + "RETURN terminationStatus, triplesLoaded, triplesParsed, namespaces, extraInfo";
 
-       //neo4jClient.query(query).bind(claimsAdded).to("payload").run();
+    Result rs = neo4jClient.getQueryRunner().run(query, Map.of("payload", claimsAdded));
+    log.debug("testTemplate; results: {}", rs.consume());
 
- /* neo4jClient.query(query).bind(claimsAdded).to("payload").fetch()
-      .all().stream()
-      .collect(Collectors.toList());*/
-    neo4jClient.getQueryRunner().run(query, Map.of("payload", claimsAdded));
-    //neo4jClient.getQueryRunner().run("CREATE (n:Person:Swedish)");
-  //reactiveNeo4jClient.query(query).bind(claimsAdded).to("payload").run();
-
-   // neo4jRepository.
-
-  if (true){
-     throw new RuntimeException("test exception manually thrown ");
-  }
+    if (true) {
+        throw new RuntimeException("test exception manually thrown ");
+    }
 
   }
 

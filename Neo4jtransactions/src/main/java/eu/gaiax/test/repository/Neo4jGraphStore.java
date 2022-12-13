@@ -1,4 +1,4 @@
-package com.repository;/*
+package eu.gaiax.test.repository;/*
 package com.repository;
 
 import com.pojo.SdClaim;

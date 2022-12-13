@@ -1,4 +1,4 @@
-package com.config;
+package eu.gaiax.test.config;
 
 import lombok.extern.slf4j.Slf4j;
 import org.neo4j.driver.AuthTokens;
@@ -11,7 +11,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Slf4j
-@Configuration
+//@Configuration
 //@ConditionalOnProperty(value = "federated-catalogue.scope", havingValue = "runtime")
 public class GraphDbConfig {
 

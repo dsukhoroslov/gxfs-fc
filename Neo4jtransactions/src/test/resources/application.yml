@@ -1,0 +1,39 @@
+spring:
+  config:
+    activate:
+      on-profile: tests-sdstore
+   
+  liquibase:
+    change-log: classpath:/liquibase/master-changelog.xml
+    contexts: test
+    
+datastore:
+  file-path: target
+  
+graphstore:
+  uri: bolt://localhost:7687
+  user: neo4j
+  password: 12345
+  query-timeout-in-seconds: 5
+
+logging:
+  level:
+    root: INFO
+    liquibase: INFO
+    eu.gaiax.difs.fc: DEBUG
+
+federated-catalogue:
+  scope: test
+  file-store:
+    sd:
+      location: sdFiles
+    schema:
+      location: schemaFiles
+    context-cache:
+      location: contextCacheFiles
+  verification:
+    participant:
+      type: "http://w3id.org/gaia-x/participant#Participant"
+    service-offering:
+      type: "http://w3id.org/gaia-x/service#ServiceOffering"
+      

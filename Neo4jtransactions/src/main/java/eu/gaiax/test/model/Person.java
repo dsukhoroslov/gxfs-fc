@@ -1,5 +1,5 @@
 
-package com.repository;
+package eu.gaiax.test.model;
 
 import java.util.Collections;
 import java.util.HashSet;

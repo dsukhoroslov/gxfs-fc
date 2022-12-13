@@ -1,7 +1,7 @@
-package com.controller;
+package eu.gaiax.test.controller;
 
 
-import com.service.SampleService;
+import eu.gaiax.test.service.SampleService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -17,12 +17,6 @@ public class SampleController {
 
   @RequestMapping(method = RequestMethod.POST)
   public void testTransaction(){
-
-    //sampleService.testTransaction();
-
-    //sampleService.testTransactionFailure(); //working right
-
-//    sampleService.driverAddTest();
 
 //    sampleService.testBothDBInsert();
 

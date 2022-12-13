@@ -1,4 +1,4 @@
-package com.controller;
+package eu.gaiax.test.controller;
 
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -20,7 +20,6 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 @SpringBootTest
 @AutoConfigureMockMvc
-@ActiveProfiles("test")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @ExtendWith(SpringExtension.class)
 //@AutoConfigureEmbeddedDatabase(provider = DatabaseProvider.ZONKY)

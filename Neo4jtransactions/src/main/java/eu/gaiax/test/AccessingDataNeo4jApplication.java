@@ -1,5 +1,4 @@
-
-package com;
+package eu.gaiax.test;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,8 +14,6 @@ public class AccessingDataNeo4jApplication {
 
 	public static void main(String[] args) throws Exception {
 		SpringApplication.run(AccessingDataNeo4jApplication.class, args);
-
 	}
-
 
 }
