@@ -20,6 +20,8 @@ public class SampleController {
 
 //    sampleService.testBothDBInsert();
 
-       sampleService.testTemplate();
+   //   sampleService.testTemplate();
+
+    sampleService.testMapDataRepositoryAdd();
   }
 }

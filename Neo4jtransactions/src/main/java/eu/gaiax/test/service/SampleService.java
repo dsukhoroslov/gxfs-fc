@@ -1,16 +1,14 @@
 package eu.gaiax.test.service;
 
-import eu.gaiax.test.model.Address;
-import eu.gaiax.test.repository.AddressRepositoryPostgres;
 import eu.gaiax.test.model.Person;
+import eu.gaiax.test.model.ServiceMap;
+import eu.gaiax.test.repository.MapDataRepository;
 import eu.gaiax.test.repository.PersonRepository;
 import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
-import org.neo4j.driver.Driver;
 import org.neo4j.driver.Result;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.neo4j.core.Neo4jClient;
-import org.springframework.data.neo4j.repository.Neo4jRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,38 +17,28 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 public class SampleService {
 
-  /*@Autowired
+  @Autowired
   private PersonRepository personRepository;
 
   @Autowired
-  private AddressRepositoryPostgres addressRepositoryPostgres;
-
-  @Autowired
-  private Driver driver;*/
-
+  private MapDataRepository mapDataRepository;
 
   @Autowired
   private Neo4jClient neo4jClient;
 
-  //private Neo4jRepository neo4jRepository;
 
+  @Transactional
+   public void testDBInsertByRepository(){
 
-  /*@Transactional
-   public void testBothDBInsert(){
-
-     Person test = new Person("Test");
+     Person test = new Person("Test Node");
 
      personRepository.save(test);
 
-    Address address = new Address(1L,"Test Address");
-
-     addressRepositoryPostgres.save(address);
-
 
     if (true){
-     // throw new RuntimeException("test exception manually thrown ");
+      throw new RuntimeException("test exception manually thrown ");
     }
-  }*/
+  }
 
   public void testTemplate() {
     log.debug("testTemplate.enter;");
@@ -106,4 +94,17 @@ public class SampleService {
 
   }
 
+  @Transactional
+  public void testMapDataRepositoryAdd(){
+
+    Map<String, Object> mapData = Map.of("<https://w3id.org/gaia-x/core#Participant1>","<https://w3id.org/gaia-x/gax-trust-framework#headquarterAddress>");
+    ServiceMap serviceMap = new ServiceMap("http://gaiax.de", mapData);
+
+    mapDataRepository.save(serviceMap);
+
+
+    if (true){
+      throw new RuntimeException("test exception manually thrown ");
+    }
+  }
 }
