@@ -522,6 +522,13 @@ public class ParticipantsControllerTest {
     Throwable exceptionSD = assertThrows(Throwable.class,
             () -> selfDescriptionStore.getByHash(part.getSdHash()));
     assertEquals(NotFoundException.class, exceptionSD.getClass());
+
+    List<Map<String, Object>>  nodes = graphStore.queryData(new GraphQuery(
+        "MATCH (n) WHERE $graphUri IN n.claimsGraphUri RETURN n",
+        Map.of("graphUri", "did:example:new-issuer")
+    )).getResults();
+    log.debug("updateParticipantFailWithKeycloakErrorShouldReturnErrorWithoutDBStore 1 ; got {} nodes", nodes.size());
+    Assertions.assertEquals(0, nodes.size());
   }
 
   @Test
