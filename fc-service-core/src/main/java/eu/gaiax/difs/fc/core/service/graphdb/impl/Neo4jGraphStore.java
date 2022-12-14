@@ -9,7 +9,17 @@ import eu.gaiax.difs.fc.core.pojo.SdClaim;
 import eu.gaiax.difs.fc.core.service.graphdb.GraphStore;
 import eu.gaiax.difs.fc.core.util.ClaimValidator;
 import eu.gaiax.difs.fc.core.util.ExtendClaims;
-import liquibase.pro.packaged.S;
+import java.time.Duration;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.jena.rdf.model.Model;
 import org.neo4j.driver.Driver;
@@ -22,13 +32,8 @@ import org.neo4j.driver.internal.InternalRelationship;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.stereotype.Component;
-
-import java.time.Duration;
-import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
-
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 @Slf4j
 @Configuration
 @Component
@@ -67,6 +72,10 @@ public class Neo4jGraphStore implements GraphStore {
                         + "YIELD terminationStatus, triplesLoa" +
                         "ded, triplesParsed, namespaces, extraInfo\n"
                         + "RETURN terminationStatus, triplesLoaded, triplesParsed, namespaces, extraInfo";
+
+                if(TransactionSynchronizationManager.isActualTransactionActive()) {
+                    registerRollBackForNeoSemanticsManuallyIfTransactionFail(credentialSubject, properties);
+                }
                 Result rs = session.run(query, Map.of("payload", claimsAdded));
                 log.debug("addClaims; response: {}", rs.list());
             }
@@ -236,4 +245,45 @@ public class Neo4jGraphStore implements GraphStore {
     }
 
 
+    private void registerRollBackForNeoSemanticsManuallyIfTransactionFail(String credentialSubject, Set<String> properties) {
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+            @Override
+            public void afterCompletion(int status) {
+                if (TransactionSynchronization.STATUS_ROLLED_BACK == status) {
+
+                        updateGraphConfigRollback(properties);
+                        deleteClaims(credentialSubject);
+
+                        TransactionSynchronizationManager.clearSynchronization();
+
+                }
+            }
+        });
+    }
+
+
+    private void updateGraphConfigRollback(Set<String> properties) {
+        try (Session session = driver.session()) {
+            Result config = session.run("CALL n10s.graphconfig.show");
+            while (config.hasNext()) {
+                org.neo4j.driver.Record record = config.next();
+                Map<String,Object> propMap=record.asMap();
+                if (propMap.get("param").equals("multivalPropList")) {
+                    Collection<String> propList = new ArrayList<>((Collection<String>) propMap.get("value"));
+                    for (String prop : properties) {
+                        if(propList.contains(prop))
+                            propList.remove(prop);
+                    }
+                    try {
+                        log.debug("Adding new properties to graphconfig {}",propList.toString());
+                        session.run("call n10s.graphconfig.set({multivalPropList:[" + joinString(propList) + "], force: true})");
+                    } catch (Exception e) {
+                        log.debug("Failed to add new properties due to Exception {}", e);
+                    }
+                    break;
+
+                }
+            }
+        }
+    }
 }

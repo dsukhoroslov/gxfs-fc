@@ -208,6 +208,12 @@ public class ParticipantsControllerTest {
 
     assertDoesNotThrow(() -> fileStore.readFile(part.getSdHash()));
     assertDoesNotThrow(() -> selfDescriptionStore.getByHash(part.getSdHash()));
+    List<Map<String, Object>> nodes = graphStore.queryData(new GraphQuery(
+        "MATCH (n) WHERE $graphUri IN n.claimsGraphUri RETURN n",
+        Map.of("graphUri", "did:example:issuer")
+    )).getResults();
+    log.debug("addDuplicateParticipantShouldReturnConflictResponse-1; got {} nodes", nodes.size());
+    Assertions.assertEquals(1, nodes.size());
   }
 
   @Test
@@ -384,7 +390,16 @@ public class ParticipantsControllerTest {
     String json = getMockFileDataAsString(DEFAULT_PARTICIPANT_FILE);
     ParticipantMetaData partNew = new ParticipantMetaData("did:example:issuer", "did:example:holder", "did:example:holder#key", json);
     selfDescriptionStore.deleteSelfDescription(partNew.getSdHash());
+
     setupKeycloak(HttpStatus.SC_CONFLICT, partNew);
+
+
+    List<Map<String, Object>> nodesBefore = graphStore.queryData(new GraphQuery(
+        "MATCH (n) WHERE $graphUri IN n.claimsGraphUri RETURN n",
+        Map.of("graphUri", "did:example:issuer")
+    )).getResults();
+    log.debug("addDuplicateParticipantShouldReturnConflictResponse-1; got {} nodes", nodesBefore.size());
+    Assertions.assertEquals(0, nodesBefore.size());
 
     mockMvc
             .perform(MockMvcRequestBuilders.post("/participants")
@@ -399,6 +414,13 @@ public class ParticipantsControllerTest {
     NotFoundException exceptionSDStore = assertThrows(NotFoundException.class,
             () -> selfDescriptionStore.getByHash(partNew.getSdHash()));
     assertEquals(NotFoundException.class, exceptionSDStore.getClass());
+
+    List<Map<String, Object>> nodesAfter = graphStore.queryData(new GraphQuery(
+        "MATCH (n) WHERE $graphUri IN n.claimsGraphUri RETURN n",
+        Map.of("graphUri", "did:example:issuer")
+    )).getResults();
+    log.debug("addDuplicateParticipantShouldReturnConflictResponse-1; got {} nodes", nodesAfter.size());
+    Assertions.assertEquals(0, nodesAfter.size());
   }
 
   @Test
@@ -409,6 +431,13 @@ public class ParticipantsControllerTest {
     ParticipantMetaData part = new ParticipantMetaData("did:example:wrong-issuer", "did:example:holder",
             "did:example:holder#key", json);
     setupKeycloak(HttpStatus.SC_INTERNAL_SERVER_ERROR, part);
+
+    List<Map<String, Object>> nodesBefore = graphStore.queryData(new GraphQuery(
+        "MATCH (n)  RETURN n",
+        Map.of()
+    )).getResults();
+    log.debug("addDuplicateParticipantShouldReturnConflictResponse-1; got {} nodes", nodesBefore.size());
+    Assertions.assertEquals(1, nodesBefore.size());
 
     mockMvc
             .perform(MockMvcRequestBuilders.post("/participants")
@@ -423,6 +452,13 @@ public class ParticipantsControllerTest {
     Throwable exceptionSD = assertThrows(Throwable.class,
             () -> selfDescriptionStore.getByHash(part.getSdHash()));
     assertEquals(NotFoundException.class, exceptionSD.getClass());
+
+    List<Map<String, Object>> nodesAfter = graphStore.queryData(new GraphQuery(
+        "MATCH (n)  RETURN n",
+        Map.of()
+    )).getResults();
+    log.debug("addDuplicateParticipantShouldReturnConflictResponse-1; got {} nodes", nodesAfter.size());
+    Assertions.assertEquals(1, nodesAfter.size());
   }
 
   @Test
@@ -522,6 +558,13 @@ public class ParticipantsControllerTest {
     Throwable exceptionSD = assertThrows(Throwable.class,
             () -> selfDescriptionStore.getByHash(part.getSdHash()));
     assertEquals(NotFoundException.class, exceptionSD.getClass());
+
+    List<Map<String, Object>>  nodesAfter = graphStore.queryData(new GraphQuery(
+        "MATCH (n) WHERE $graphUri IN n.claimsGraphUri RETURN n",
+        Map.of("graphUri", "did:example:new-issuer")
+    )).getResults();
+    log.debug("updateParticipantFailWithKeycloakErrorShouldReturnErrorWithoutDBStore 1 ; got {} nodes", nodesAfter.size());
+    Assertions.assertEquals(0, nodesAfter.size());
   }
 
   @Test
