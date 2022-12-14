@@ -74,8 +74,9 @@ public class Neo4jGraphStore implements GraphStore {
                         "ded, triplesParsed, namespaces, extraInfo\n"
                         + "RETURN terminationStatus, triplesLoaded, triplesParsed, namespaces, extraInfo";
 
-                registerRollBackForNeoSemanticsManuallyIfTransactionFail(credentialSubject,properties);
-
+                if(TransactionSynchronizationManager.isActualTransactionActive()) {
+                    registerRollBackForNeoSemanticsManuallyIfTransactionFail(credentialSubject, properties);
+                }
                 Result rs = session.run(query, Map.of("payload", claimsAdded));
                 log.debug("addClaims; response: {}", rs.list());
             }
