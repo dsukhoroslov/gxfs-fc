@@ -6,7 +6,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import eu.gaiax.difs.fc.core.config.DatabaseConfig;
 import eu.gaiax.difs.fc.api.generated.model.SelfDescriptionStatus;
-import eu.gaiax.difs.fc.core.config.FileStoreConfig;
 import eu.gaiax.difs.fc.core.exception.ConflictException;
 import eu.gaiax.difs.fc.core.exception.NotFoundException;
 import eu.gaiax.difs.fc.core.pojo.ContentAccessor;
@@ -19,7 +18,6 @@ import eu.gaiax.difs.fc.core.pojo.SelfDescriptionMetadata;
 import eu.gaiax.difs.fc.core.pojo.Validator;
 import eu.gaiax.difs.fc.core.pojo.VerificationResult;
 import eu.gaiax.difs.fc.core.pojo.VerificationResultOffering;
-import eu.gaiax.difs.fc.core.service.filestore.FileStore;
 import eu.gaiax.difs.fc.core.service.graphdb.impl.Neo4jGraphStore;
 import eu.gaiax.difs.fc.core.service.sdstore.SelfDescriptionStore;
 import eu.gaiax.difs.fc.core.util.HashUtils;
@@ -29,7 +27,6 @@ import io.zonky.test.db.AutoConfigureEmbeddedDatabase.DatabaseProvider;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.time.Instant;
-import liquibase.repackaged.org.apache.commons.collections4.IterableUtils;
 
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
@@ -39,35 +36,27 @@ import java.util.Map;
 
 import lombok.extern.slf4j.Slf4j;
 
-import org.apache.commons.lang3.mutable.MutableInt;
-import org.hibernate.Session;
-import org.hibernate.SessionFactory;
-import org.hibernate.Transaction;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
-//import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.TestMethodOrder;
 import org.neo4j.harness.Neo4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
-//import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
-//import org.springframework.transaction.annotation.Transactional;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @TestMethodOrder(MethodOrderer.MethodName.class)
 @SpringBootTest
 @ActiveProfiles("tests-sdstore")
-@ContextConfiguration(classes = {SelfDescriptionStoreImplTest.TestApplication.class, FileStoreConfig.class,
+@ContextConfiguration(classes = {SelfDescriptionStoreImplTest.TestApplication.class, //FileStoreConfig.class,
   SelfDescriptionStoreImpl.class, SelfDescriptionStoreImplTest.class, DatabaseConfig.class, Neo4jGraphStore.class})
 @Slf4j
 @AutoConfigureEmbeddedDatabase(provider = DatabaseProvider.ZONKY)
@@ -86,17 +75,10 @@ public class SelfDescriptionStoreImplTest {
   private SelfDescriptionStore sdStore;
 
   @Autowired
-  private SessionFactory sessionFactory;
-
-  @Autowired
   private Neo4j embeddedDatabaseServer;
 
   @Autowired
   private Neo4jGraphStore graphStore;
-
-  @Autowired
-  @Qualifier("sdFileStore")
-  private FileStore fileStore;
 
   @AfterEach
   public void storageSelfCleaning() throws IOException {
@@ -140,23 +122,6 @@ public class SelfDescriptionStoreImplTest {
     return createVerificationResult(idSuffix, "<https://delta-dao.com/.well-known/serviceMVGPortal.json>");
   }
 
-  private void assertStoredSdFiles(final int expected) {
-    final MutableInt count = new MutableInt(0);
-    fileStore.getFileIterable().forEach(file -> count.increment());
-    final String message = String.format("Storing %d file(s) should result in exactly %d file(s) in the store.",
-        expected, expected);
-    assertEquals(expected, count.intValue(), message);
-  }
-
-  private void assertAllSdFilesDeleted() {
-    final MutableInt count = new MutableInt(0);
-    fileStore.getFileIterable().forEach(file -> count.increment());
-    assertEquals(0, count.intValue(), "Deleting the last file should result in exactly 0 files in the store.");
-    // TODO: check all claims were deleted also
-    //List<Map<String, Object>> claims = graphStore.queryData(new OpenCypherQuery("MATCH (n) RETURN n", Map.of()));
-    //assertEquals(0, claims.size());
-  }
-
   /**
    * Test storing a self-description, ensuring it creates exactly one file on disk, retrieving it by hash, and deleting
    * it again.
@@ -171,7 +136,6 @@ public class SelfDescriptionStoreImplTest {
         Instant.parse("2022-01-01T12:00:00Z"), Instant.parse("2022-01-02T12:00:00Z"), content);
     final String hash = sdMeta.getSdHash();
     sdStore.storeSelfDescription(sdMeta, createVerificationResult(0));
-    assertStoredSdFiles(1);
 
     assertThatSdHasTheSameData(sdMeta, sdStore.getByHash(hash), true);
 
@@ -184,7 +148,6 @@ public class SelfDescriptionStoreImplTest {
         "Getting the SD file by hash is equal to the stored SD file");
 
     sdStore.deleteSelfDescription(hash);
-    assertAllSdFilesDeleted();
 
     claims = graphStore.queryData(
         new GraphQuery("MATCH (n {uri: $uri}) RETURN n", Map.of("uri", sdMeta.getId()))).getResults();
@@ -209,13 +172,11 @@ public class SelfDescriptionStoreImplTest {
     final String hash1 = sdMeta1.getSdHash();
     sdMeta1.setSelfDescription(new ContentAccessorDirect(content1));
     sdStore.storeSelfDescription(sdMeta1, createVerificationResult(1));
-    assertStoredSdFiles(1);
 
     final SelfDescriptionMetadata sdMeta2 = createSelfDescriptionMeta("TestSd/1", "TestUser/1",
         Instant.parse("2022-01-01T13:00:00Z"), Instant.parse("2022-01-02T13:00:00Z"), content2);
     final String hash2 = sdMeta2.getSdHash();
     sdStore.storeSelfDescription(sdMeta2, createVerificationResult(2));
-    assertStoredSdFiles(2);
 
     final SelfDescriptionMetadata byHash1 = sdStore.getByHash(hash1);
     assertEquals(SelfDescriptionStatus.DEPRECATED, byHash1.getStatus(),
@@ -225,7 +186,6 @@ public class SelfDescriptionStoreImplTest {
 
     sdStore.deleteSelfDescription(hash1);
     sdStore.deleteSelfDescription(hash2);
-    assertAllSdFilesDeleted();
 
     Assertions.assertThrows(NotFoundException.class, () -> {
       sdStore.getByHash(hash1);
@@ -244,7 +204,6 @@ public class SelfDescriptionStoreImplTest {
         Instant.parse("2022-01-01T12:00:00Z"), Instant.parse("2022-01-02T12:00:00Z"), content1);
     final String hash1 = sdMeta1.getSdHash();
     sdStore.storeSelfDescription(sdMeta1, createVerificationResult(1));
-    assertStoredSdFiles(1);
 
     List<Map<String, Object>> nodes = graphStore.queryData(new GraphQuery(
         "MATCH (n) WHERE $graphUri IN n.claimsGraphUri RETURN n",
@@ -266,15 +225,11 @@ public class SelfDescriptionStoreImplTest {
     log.debug("test03StoreDuplicateSelfDescription-2; got {} nodes", nodes.size());
     Assertions.assertEquals(3, nodes.size(), "After failed put, node count should not have changed");
 
-    final int count = IterableUtils.size(fileStore.getFileIterable());
-    assertEquals(1, count, "Second file should not have been stored.");
-
     final SelfDescriptionMetadata byHash1 = sdStore.getByHash(hash1);
     final SelfDescriptionStatus status1 = byHash1.getStatus();
     assertEquals(SelfDescriptionStatus.ACTIVE, status1, "First self-description should stay active.");
 
     sdStore.deleteSelfDescription(hash1);
-    assertAllSdFilesDeleted();
 
     Assertions.assertThrows(NotFoundException.class, () -> {
       sdStore.getByHash(hash1);
@@ -293,7 +248,6 @@ public class SelfDescriptionStoreImplTest {
         Instant.parse("2022-01-01T12:00:00Z"), Instant.parse("2022-01-02T12:00:00Z"), content);
     final String hash = sdMeta.getSdHash();
     sdStore.storeSelfDescription(sdMeta, createVerificationResult(0));
-    assertStoredSdFiles(1);
 
     SelfDescriptionMetadata byHash = sdStore.getByHash(hash);
     assertThatSdHasTheSameData(sdMeta, byHash, true);
@@ -310,7 +264,6 @@ public class SelfDescriptionStoreImplTest {
         "Status should not have been changed from 'revoked' to 'active'.");
 
     sdStore.deleteSelfDescription(hash);
-    assertAllSdFilesDeleted();
 
     Assertions.assertThrows(NotFoundException.class, () -> {
       sdStore.getByHash(hash);
@@ -331,7 +284,6 @@ public class SelfDescriptionStoreImplTest {
     final SelfDescriptionMetadata sdMeta = createSelfDescriptionMeta(id, issuer, statusTime, uploadTime, content);
     final String hash = sdMeta.getSdHash();
     sdStore.storeSelfDescription(sdMeta, createVerificationResult(0));
-    assertStoredSdFiles(1);
 
     final SdFilter filterParams = new SdFilter();
     filterParams.setIssuers(List.of(issuer, "TestUser/21"));
@@ -373,7 +325,6 @@ public class SelfDescriptionStoreImplTest {
     Assertions.assertNull(firstResult.getSelfDescription(), "SelfDescription should not have been returned.");
 
     sdStore.deleteSelfDescription(hash);
-    assertAllSdFilesDeleted();
 
     Assertions.assertThrows(NotFoundException.class, () -> {
       sdStore.getByHash(hash);
@@ -396,7 +347,6 @@ public class SelfDescriptionStoreImplTest {
     final SelfDescriptionMetadata sdMeta = createSelfDescriptionMeta(id, issuer, statusTime, uploadTime, content);
     final String hash = sdMeta.getSdHash();
     sdStore.storeSelfDescription(sdMeta, createVerificationResult(0));
-    assertStoredSdFiles(1);
 
     final SdFilter filterParams = new SdFilter();
     filterParams.setIssuers(List.of(otherIssuer));
@@ -406,7 +356,6 @@ public class SelfDescriptionStoreImplTest {
     assertEquals(0, matchCount, "expected 0 filter matches, but got " + matchCount);
 
     sdStore.deleteSelfDescription(hash);
-    assertAllSdFilesDeleted();
 
     Assertions.assertThrows(NotFoundException.class, () -> {
       sdStore.getByHash(hash);
@@ -431,7 +380,6 @@ public class SelfDescriptionStoreImplTest {
     final SelfDescriptionMetadata sdMeta = createSelfDescriptionMeta(id, issuer, statusTime, uploadTime, content);
     final String hash = sdMeta.getSdHash();
     sdStore.storeSelfDescription(sdMeta, createVerificationResult(0));
-    assertStoredSdFiles(1);
 
     final SdFilter filterParams = new SdFilter();
     filterParams.setStatusTimeRange(statusTimeStart, statusTimeEnd);
@@ -442,7 +390,6 @@ public class SelfDescriptionStoreImplTest {
     assertEquals(sdMeta.getId(), byFilter.getResults().get(0).getId());
 
     sdStore.deleteSelfDescription(hash);
-    assertAllSdFilesDeleted();
 
     Assertions.assertThrows(NotFoundException.class, () -> {
       sdStore.getByHash(hash);
@@ -466,7 +413,6 @@ public class SelfDescriptionStoreImplTest {
     final SelfDescriptionMetadata sdMeta = createSelfDescriptionMeta(id, issuer, statusTime, uploadTime, content);
     final String hash = sdMeta.getSdHash();
     sdStore.storeSelfDescription(sdMeta, createVerificationResult(0));
-    assertStoredSdFiles(1);
 
     final SdFilter filterParams = new SdFilter();
     filterParams.setStatusTimeRange(statusTimeStart, statusTimeEnd);
@@ -476,7 +422,6 @@ public class SelfDescriptionStoreImplTest {
     assertEquals(0, matchCount, "expected 0 filter matches, but got " + matchCount);
 
     sdStore.deleteSelfDescription(hash);
-    assertAllSdFilesDeleted();
     Assertions.assertThrows(NotFoundException.class, () -> {
       sdStore.getByHash(hash);
     });
@@ -516,7 +461,6 @@ public class SelfDescriptionStoreImplTest {
     sdStore.storeSelfDescription(sdMeta1, createVerificationResult(1));
     sdStore.storeSelfDescription(sdMeta2, createVerificationResult(2));
     sdStore.storeSelfDescription(sdMeta3, createVerificationResult(3));
-    assertStoredSdFiles(3);
 
     final SdFilter filterParams = new SdFilter();
     filterParams.setStatusTimeRange(statusTimeStart, statusTimeEnd);
@@ -534,7 +478,6 @@ public class SelfDescriptionStoreImplTest {
     sdStore.deleteSelfDescription(hash1);
     sdStore.deleteSelfDescription(hash2);
     sdStore.deleteSelfDescription(hash3);
-    assertAllSdFilesDeleted();
 
     Assertions.assertThrows(NotFoundException.class, () -> {
       sdStore.getByHash(hash1);
@@ -579,7 +522,6 @@ public class SelfDescriptionStoreImplTest {
     sdStore.storeSelfDescription(sdMeta1, createVerificationResult(1));
     sdStore.storeSelfDescription(sdMeta2, createVerificationResult(2));
     sdStore.storeSelfDescription(sdMeta3, createVerificationResult(3));
-    assertStoredSdFiles(3);
 
     final SdFilter filterParams = new SdFilter();
     final PaginatedResults<SelfDescriptionMetadata> byFilter = sdStore.getByFilter(filterParams, true, false);
@@ -598,7 +540,6 @@ public class SelfDescriptionStoreImplTest {
     sdStore.deleteSelfDescription(hash1);
     sdStore.deleteSelfDescription(hash2);
     sdStore.deleteSelfDescription(hash3);
-    assertAllSdFilesDeleted();
 
     Assertions.assertThrows(NotFoundException.class, () -> {
       sdStore.getByHash(hash1);
@@ -629,7 +570,6 @@ public class SelfDescriptionStoreImplTest {
     sdMeta.setValidatorDids(Arrays.asList(validatorId, "TestSd/0816", "TestSd/0817"));
     final String hash = sdMeta.getSdHash();
     sdStore.storeSelfDescription(sdMeta, createVerificationResult(0));
-    assertStoredSdFiles(1);
 
     final SdFilter filterParams = new SdFilter();
     filterParams.setValidators(List.of(validatorId, "TestSd/0820"));
@@ -639,7 +579,6 @@ public class SelfDescriptionStoreImplTest {
     assertEquals(1, matchCount, "expected 1 filter matches");
 
     sdStore.deleteSelfDescription(hash);
-    assertAllSdFilesDeleted();
 
     Assertions.assertThrows(NotFoundException.class, () -> {
       sdStore.getByHash(hash);
@@ -664,7 +603,6 @@ public class SelfDescriptionStoreImplTest {
     sdMeta.setValidatorDids(Arrays.asList("TestSd/0816", "TestSd/0817"));
     final String hash = sdMeta.getSdHash();
     sdStore.storeSelfDescription(sdMeta, createVerificationResult(0));
-    assertStoredSdFiles(1);
 
     final SdFilter filterParams = new SdFilter();
     filterParams.setValidators(List.of(validatorId));
@@ -674,7 +612,6 @@ public class SelfDescriptionStoreImplTest {
     assertEquals(0, matchCount, "expected 0 filter matches");
 
     sdStore.deleteSelfDescription(hash);
-    assertAllSdFilesDeleted();
 
     Assertions.assertThrows(NotFoundException.class, () -> {
       sdStore.getByHash(hash);
@@ -713,7 +650,6 @@ public class SelfDescriptionStoreImplTest {
     sdStore.storeSelfDescription(sdMeta1, createVerificationResult(1));
     sdStore.storeSelfDescription(sdMeta2, createVerificationResult(2));
     sdStore.storeSelfDescription(sdMeta3, createVerificationResult(3));
-    assertStoredSdFiles(3);
 
     final SdFilter filterParams = new SdFilter();
     filterParams.setLimit(2);
@@ -724,7 +660,6 @@ public class SelfDescriptionStoreImplTest {
     sdStore.deleteSelfDescription(hash1);
     sdStore.deleteSelfDescription(hash2);
     sdStore.deleteSelfDescription(hash3);
-    assertAllSdFilesDeleted();
 
     Assertions.assertThrows(NotFoundException.class, () -> {
       sdStore.getByHash(hash1);
@@ -777,7 +712,6 @@ public class SelfDescriptionStoreImplTest {
     sdStore.storeSelfDescription(sdMeta1, vr1);
     sdStore.storeSelfDescription(sdMeta2, vr2);
     sdStore.storeSelfDescription(sdMeta3, vr3);
-    assertStoredSdFiles(3);
 
     final int expiredSelfDescriptionsCount = sdStore.invalidateSelfDescriptions();
     assertEquals(1, expiredSelfDescriptionsCount, "expected 1 expired self-description");
@@ -788,7 +722,6 @@ public class SelfDescriptionStoreImplTest {
     sdStore.deleteSelfDescription(hash1);
     sdStore.deleteSelfDescription(hash2);
     sdStore.deleteSelfDescription(hash3);
-    assertAllSdFilesDeleted();
 
     Assertions.assertThrows(NotFoundException.class, () -> {
       sdStore.getByHash(hash1);
@@ -832,7 +765,6 @@ public class SelfDescriptionStoreImplTest {
     sdStore.storeSelfDescription(sdMeta1, createVerificationResult(1));
     sdStore.storeSelfDescription(sdMeta2, createVerificationResult(2));
     sdStore.storeSelfDescription(sdMeta3, createVerificationResult(3));
-    assertStoredSdFiles(3);
 
     final SdFilter filterParams = new SdFilter();
     filterParams.setLimit(1);
@@ -845,7 +777,6 @@ public class SelfDescriptionStoreImplTest {
     sdStore.deleteSelfDescription(hash1);
     sdStore.deleteSelfDescription(hash2);
     sdStore.deleteSelfDescription(hash3);
-    assertAllSdFilesDeleted();
 
     Assertions.assertThrows(NotFoundException.class, () -> {
       sdStore.getByHash(hash1);
