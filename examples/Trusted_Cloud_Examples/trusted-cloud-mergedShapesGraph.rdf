@@ -1,0 +1,3293 @@
+@prefix gax-core: <https://w3id.org/gaia-x/core#> .
+@prefix gax-validation: <https://w3id.org/gaia-x/validation#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+@prefix trusted-cloud: <http://w3id.org/gaia-x/trusted-cloud#> .
+@prefix vcard: <http://www.w3.org/2006/vcard/ns#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+gax-validation:AuditabilityProfileShape a sh:NodeShape ;
+    sh:property [ skos:example "'data protection audits'" ;
+            sh:datatype xsd:string ;
+            sh:description "Beschreibung der bereits durchgeführten Audits."@de,
+                "Description of audits which were already performed."@en ;
+            sh:minCount 1 ;
+            sh:name "audits" ;
+            sh:order 2 ;
+            sh:path trusted-cloud:audits ],
+        [ skos:example "'by the user', 'by a mandated auditor'" ;
+            sh:datatype xsd:string ;
+            sh:description "Können Audits zu Prozessen und organisatorischen Verfahren im Zusammenhang mit Datenschutz und Sicherheit durchgeführt werden?"@de,
+                "Can audits on processes and organizational procedures related to data protection and security be conducted?"@en ;
+            sh:in ( "by the user" "by a mandated auditor" ) ;
+            sh:maxCount 1 ;
+            sh:name "auditor" ;
+            sh:order 3 ;
+            sh:path trusted-cloud:auditor ],
+        [ skos:example "'yes', 'no'" ;
+            sh:datatype xsd:boolean ;
+            sh:description "Ist es dem Benutzer möglich, ein Audit anzufordern?"@de,
+                "Is it possible for the user to request an audit?"@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "auditability" ;
+            sh:order 1 ;
+            sh:path trusted-cloud:auditability ] ;
+    sh:targetClass trusted-cloud:AuditabilityProfile .
+
+gax-validation:CertificateShape a sh:NodeShape ;
+    sh:property [ skos:example "'TÜV Süd'" ;
+            sh:description "Zertifikatbehörde für diesen Dienst oder sein Zertifikat"@de,
+                "Certificate authority for this service or its certificate"@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "certificate authority" ;
+            sh:node gax-validation:CertificationBodyShape ;
+            sh:order 3 ;
+            sh:path trusted-cloud:certificateAuthority ],
+        [ skos:example "'2122-12-21'" ;
+            sh:datatype xsd:date ;
+            sh:description "Datum, an dem das Zertifikat abläuft"@de,
+                "Date on which the certificate expires"@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "expiration date" ;
+            sh:order 4 ;
+            sh:path trusted-cloud:expirationDate ],
+        [ skos:example "'true', 'false'" ;
+            sh:datatype xsd:boolean ;
+            sh:description "Wird das Zertifikat regelmäßig geprüft?"@de,
+                "Is the certificate regularly audited?"@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "regular audited" ;
+            sh:order 5 ;
+            sh:path trusted-cloud:regularAudited ],
+        [ skos:example "'BSI IT-Grundschutz', 'ISO 27001', 'Trust in Cloud'" ;
+            sh:datatype xsd:string ;
+            sh:description "Art der Zertifikate"@de,
+                "Type of the certificates"@en ;
+            sh:in ( "BSI IT-Grundschutz" "CSA Star" "EuroCloud Star Audit" "EuroPrise" "FedRAMP" "ISAE 3402/SSAE 16 Typ II" "ISO 27001" "ISO 27018" "Trust in Cloud" "Trusted Cloud - TÜV" "TRUSTed Cloud Privacy" "TÜV Cloud Security" "TCDP" "others" ) ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "type" ;
+            sh:order 2 ;
+            sh:path trusted-cloud:type ],
+        [ skos:example "'ISO XYZ'" ;
+            sh:datatype xsd:string ;
+            sh:description "Name des Zertifikats"@de,
+                "Name of certificate"@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "name" ;
+            sh:order 1 ;
+            sh:path trusted-cloud:name ] ;
+    sh:targetClass trusted-cloud:Certificate .
+
+gax-validation:CompanyProfileProviderShapeTC a sh:NodeShape ;
+    sh:property [ skos:example "'<1 year', '1-5 year', '>5 year'" ;
+            sh:datatype xsd:string ;
+            sh:description "Erfahrung / Kenntnis der Organisation im Cloud -Service -Geschäft."@de,
+                "Experience / knowledge of the organization in the cloud service business."@en ;
+            sh:in ( "<1 year" "1-5 year" ">5 year" ) ;
+            sh:maxCount 1 ;
+            sh:name "experience cloud services" ;
+            sh:order 6 ;
+            sh:path trusted-cloud:experienceCloudServices ],
+        [ skos:example "'50'" ;
+            sh:datatype xsd:integer ;
+            sh:description "Mitarbeiterzahl der Organisation im Cloud -Servicebereich."@de,
+                "Employee count of the organization in the cloud service area."@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:minInclusive 1.0 ;
+            sh:name "employee count for cloud services" ;
+            sh:order 2 ;
+            sh:path trusted-cloud:employeeCountForCloudServices ],
+        [ skos:example "'50.000.000'" ;
+            sh:datatype xsd:integer ;
+            sh:description "Verkaufsvolumen der Organisation."@de,
+                "Sales volume of the organization."@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:minInclusive 1.0 ;
+            sh:name "sales volume" ;
+            sh:order 3 ;
+            sh:path trusted-cloud:salesVolume ],
+        [ skos:example "'Reseller', 'Internet Service Provider', 'Cloud Service Provider', 'Others'" ;
+            sh:datatype xsd:string ;
+            sh:description "Spezifische Kategorie der Organisation."@de,
+                "Specific category of the organization."@en ;
+            sh:in ( "Reseller" "Internet Service Provider" "Cloud Service Provider" "Others" ) ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "category" ;
+            sh:order 4 ;
+            sh:path trusted-cloud:category ],
+        [ skos:example "'5', '10'" ;
+            sh:datatype xsd:integer ;
+            sh:description "Öffentlich angebotene Cloud -Dienste."@de,
+                "Publicly offered cloud services."@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:minInclusive 1.0 ;
+            sh:name "number of public cloud services" ;
+            sh:order 5 ;
+            sh:path trusted-cloud:numberOfPublicCloudServices ],
+        [ skos:example "'50'" ;
+            sh:datatype xsd:integer ;
+            sh:description "Mitarbeiterzahl der Organisation."@de,
+                "Employee count of the organization."@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:minInclusive 1.0 ;
+            sh:name "employee count" ;
+            sh:order 1 ;
+            sh:path trusted-cloud:employeeCount ] ;
+    sh:targetClass trusted-cloud:CompanyProfileProvider .
+
+gax-validation:CompanyProfileSubcontractorShape a sh:NodeShape ;
+    sh:property [ skos:example "'50.000.000'" ;
+            sh:datatype xsd:integer ;
+            sh:description "Verkaufsvolumen der Organisation."@de,
+                "Sales volume of the organization."@en ;
+            sh:maxCount 1 ;
+            sh:minInclusive 1.0 ;
+            sh:name "sales volume" ;
+            sh:order 2 ;
+            sh:path trusted-cloud:salesVolume ],
+        [ skos:example "'Reseller', 'ISV', 'CSP', 'others'" ;
+            sh:datatype xsd:string ;
+            sh:description "Verkaufsvolumen der Organisation."@de,
+                "Sales volume of the organization."@en ;
+            sh:in ( "Reseller" "ISV" "CSP" "others" ) ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "category" ;
+            sh:order 3 ;
+            sh:path trusted-cloud:category ],
+        [ skos:example "'5', '10'" ;
+            sh:datatype xsd:integer ;
+            sh:description "Öffentlich angebotene Cloud -Dienste."@de,
+                "Publicly offered cloud services."@en ;
+            sh:maxCount 1 ;
+            sh:minInclusive 1.0 ;
+            sh:name "number of public cloud services" ;
+            sh:order 4 ;
+            sh:path trusted-cloud:numberOfPublicCloudServices ],
+        [ skos:example "'< 1 years', '1-5 years', '> 5 years'" ;
+            sh:datatype xsd:string ;
+            sh:description "Erfahrung / Kenntnis der Organisation im Cloud -Service -Geschäft."@de,
+                "Experience / knowledge of the organization in the cloud service business."@en ;
+            sh:in ( "< 1 years" "1-5 years" "> 5 years" ) ;
+            sh:maxCount 1 ;
+            sh:name "experience cloud services" ;
+            sh:order 5 ;
+            sh:path trusted-cloud:experienceCloudServices ],
+        [ skos:example "'50', 'No specification'" ;
+            sh:datatype xsd:integer ;
+            sh:description "Mitarbeiterzahl der Organisation."@de,
+                "Employee count of the organization."@en ;
+            sh:maxCount 1 ;
+            sh:minInclusive 1.0 ;
+            sh:name "employee count" ;
+            sh:order 1 ;
+            sh:path trusted-cloud:employeeCount ] ;
+    sh:targetClass trusted-cloud:CompanyProfileSubcontractor .
+
+gax-validation:ContractLawShape a sh:NodeShape ;
+    sh:property [ skos:example "'Berlin', 'Paris', 'Rome'" ;
+            sh:datatype xsd:string ;
+            sh:description "Das EU -Vertragsrecht führt zu einem Ort der Gerichtsbarkeit in der EU.Geben Sie den richtigen Ort wie im Vertrag geschrieben."@de,
+                "EU contract law results in a place of jurisdiction in the EU. Give the right place as written in the contract."@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "place of jurisdiction" ;
+            sh:order 2 ;
+            sh:path trusted-cloud:placeOfJurisdiction ],
+        [ skos:example "'german contract law', 'EU contract law'" ;
+            sh:datatype xsd:string ;
+            sh:description "Wenn das EU -Vertragsgesetz ein korrektes Vertragsgesetz ist, muss in einem FreeText -Bereich geschrieben werden"@de,
+                "If EU contract law, a correct contract law has additinally to be written in a freetext field"@en ;
+            sh:in ( "german contract law" "EU contract law" ) ;
+            sh:maxCount 1 ;
+            sh:name "applicable law" ;
+            sh:order 1 ;
+            sh:path trusted-cloud:applicableLaw ] ;
+    sh:targetClass trusted-cloud:ContractLaw .
+
+gax-validation:ContractShape a sh:NodeShape ;
+    sh:property [ skos:example "'(a structured object of type ExitSupport.'" ;
+            sh:description "Informationen zu Regeln für den Austrittsunterstützung (Exit-Management), insbesondere das angepasste Feedback für Kundendaten."@de,
+                "Information about rules for exit support (Exit-Management), especially the adjusted feedback for customer data."@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "exit support" ;
+            sh:node gax-validation:ExitSupportShape ;
+            sh:order 10 ;
+            sh:path trusted-cloud:exitSupport ],
+        [ skos:example "'(a structured object of type UsageRights.'" ;
+            sh:description "Details zu Nutzungsrechten und Zuständigkeitsbereich."@de,
+                "Details about rights of usage and area of jurisdiction."@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "rigths of usage" ;
+            sh:node gax-validation:UsageRightsShape ;
+            sh:order 2 ;
+            sh:path trusted-cloud:rigthsOfUsage ],
+        [ skos:example "'(a structured object of type SubcontractorTransparency.'" ;
+            sh:description "Nennen Sie alle Concerd -Subunternehmer und -vereinbarungen für die Änderung während der Dauer der Dienstleistung sowie die Verpflichtung zu Datenschutzinformationen."@de,
+                "Name all concerd subcontractors and agreements for change during duration of service provision as well as commitment on data privacy information."@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "transparancy with subcontractors" ;
+            sh:node gax-validation:SubcontractorTransparencyShape ;
+            sh:order 3 ;
+            sh:path trusted-cloud:transparancyWithSubcontractors ],
+        [ skos:example "'(a structured object of type SubcontractorTransparency.'" ;
+            sh:description "Einzelheiten zu Regeln, die das Datenfeedback jederzeit garantieren."@de,
+                "Details about rules which guarantee data feedback at any time."@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "interruption rules" ;
+            sh:node gax-validation:ServiceInterruptionRulesShape ;
+            sh:order 4 ;
+            sh:path trusted-cloud:interruptionRules ],
+        [ skos:example "'(a structured object of type ServiceLevelAgreement.'" ;
+            sh:description "Informationen von Service Level Agreements (SLA) und Regeln für die SLA-Gewalt."@de,
+                "Information of Service Level Agreements (SLA) and rules for SLA-violation."@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "sla" ;
+            sh:node gax-validation:ServiceLevelAgreementShape ;
+            sh:order 5 ;
+            sh:path trusted-cloud:sla ],
+        [ skos:example "'(a structured object of type PricingModel.'" ;
+            sh:description "Informationen zu Gebrauchtpreismodell, Vertragsdauer und Kündigung der Stornierung."@de,
+                "Information about used price model, contract duration and notice of cancellation."@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "pricing model" ;
+            sh:node gax-validation:PricingModelShape ;
+            sh:order 6 ;
+            sh:path trusted-cloud:pricingModel ],
+        [ skos:example "'(a structured object of type ChangeManagement.'" ;
+            sh:description "Informationen zu vertraglichen Regeln für den Umgang mit Änderungen."@de,
+                "Information of contractual rules for handling changes."@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "change management" ;
+            sh:node gax-validation:ChangeManagementShape ;
+            sh:order 7 ;
+            sh:path trusted-cloud:changeManagement ],
+        [ skos:example "'true', 'false'" ;
+            sh:datatype xsd:boolean ;
+            sh:description "Sind alle Verpflichtungen zur Zusammenarbeit oder Bestimmungen im Vertrag definiert?"@de,
+                "Are all obligations to cooperate or provisions defined in the contract?"@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "obligation to cooperate in contract" ;
+            sh:order 8 ;
+            sh:path trusted-cloud:obligationToCooperateInContract ],
+        [ skos:example "'true', 'false'" ;
+            sh:datatype xsd:boolean ;
+            sh:description "Ist der Kunde während der Nutzung dieses Dienstes von allen Ansprüchen von Dritten befreit?"@de,
+                "Is the customer exempt from all claims of third parties while using this service?"@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "customer exemption from claims of third parties" ;
+            sh:order 9 ;
+            sh:path trusted-cloud:customerExemptionFromClaimsOfThirdParties ],
+        [ skos:example "'(a structured object of type ContractTransparency.'" ;
+            sh:description "Informationen zur allgemeinen Vertragstransparenz."@de,
+                "Information about general contract transparency."@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "contract transparency" ;
+            sh:node gax-validation:ContractTransparencyShape ;
+            sh:order 1 ;
+            sh:path trusted-cloud:contractTransparency ] ;
+    sh:targetClass trusted-cloud:Contract .
+
+gax-validation:DataCentreShape a sh:NodeShape ;
+    sh:property [ skos:example "''" ;
+            sh:description "Geografischer Standort des DAT -Zentrums."@de,
+                "Geographical location of dat centre."@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "geo location" ;
+            sh:node gax-validation:LocationShapeTC ;
+            sh:order 2 ;
+            sh:path trusted-cloud:geoLocation ],
+        [ skos:example "''" ;
+            sh:description "Habe die Selbstbeschreibung der Ressourcen in Bezug auf die Ressource in Bezug auf die Ressourcen und das unabhängig davon existieren."@de,
+                "DID of resources self-description related to the resource and that can exist independently of it."@en ;
+            sh:name "aggregation of" ;
+            sh:nodeKind sh:IRI ;
+            sh:order 1 ;
+            sh:path gax-core:aggregationOf ],
+        [ skos:example "'https://gaia-x.eu'" ;
+            sh:description "Habe die Selbstbeschreibung der Teilnehmer im Zusammenhang mit dem Teilnehmer, der diese Ressource betreibt, in Bezug auf den Teilnehmer bezogen."@de,
+                "DID of participant self-description related to the participant, who operates this resource."@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "operated by" ;
+            sh:nodeKind sh:IRI ;
+            sh:order 2 ;
+            sh:path gax-core:operatedBy ],
+        [ skos:example "''" ;
+            sh:description "Hat von Datacenter Subunternehmer."@de,
+                "DID of datacenter subcontractor."@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "operated by" ;
+            sh:nodeKind sh:IRI ;
+            sh:order 1 ;
+            sh:path trusted-cloud:operatedBy ] ;
+    sh:targetClass trusted-cloud:DataCentre .
+
+gax-validation:DataProtectionShape a sh:NodeShape ;
+    sh:property [ skos:example "'(a structured object of type GdprCompliance)'" ;
+            sh:description "Informationen zur Einhaltung der europäischen allgemeinen Datenschutzverordnung (DSGVO)"@de,
+                "Information of compliance of European General Data Protection Regulation (GDPR)"@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "gdpr compliance" ;
+            sh:node gax-validation:GdprComplianceShape ;
+            sh:order 2 ;
+            sh:path trusted-cloud:gdprCompliance ],
+        [ skos:example "'a structured object of type DataRetention)'" ;
+            sh:description "Informationen zur Begrenzung von Kundendaten in bestimmte Regionen"@de,
+                "Information about limitation of customer data to specific regions"@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "data retention" ;
+            sh:node gax-validation:DataRetentionShape ;
+            sh:order 3 ;
+            sh:path trusted-cloud:dataRetention ],
+        [ skos:example "'/a structured object of type DataSubjectRights)'" ;
+            sh:description "Einzelheiten zur Implementierung der betroffenen Rechte gemäß ART.12-23 DSGVO?"@de,
+                "Details on the implementation of the data subject rights in accordance with Art. 12-23 GDPR?"@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "data subject rights" ;
+            sh:node gax-validation:DataSubjectRightsShape ;
+            sh:order 4 ;
+            sh:path trusted-cloud:dataSubjectRights ],
+        [ skos:example "'yes', 'no'" ;
+            sh:datatype xsd:boolean ;
+            sh:description "Ist die Verpflichtung aller Personen, die zur Verarbeitung personenbezogener Daten befugt sind, die Datengeheimnis gemäß Art zu verarbeiten.28 (3) Satz 2 lit.B, 29, 32 Abs.4 DSGVO vertraglich definiert ??"@de,
+                "Is the obligation of all persons authorized to process personal data to be subject to data secrecy according to Art. 28 (3) sentence 2 lit. b, 29, 32 para. 4 GDPR contractually defined??"@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "employees commitment" ;
+            sh:order 5 ;
+            sh:path trusted-cloud:employeesCommitment ],
+        [ skos:example "'(a structured object of type GpdrMeasures)'" ;
+            sh:description "Informationen zu technischen und organisatorischen Maßnahmen für die DSGVO."@de,
+                "Information about technical and organizational measures for GDPR."@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "gdpr measures" ;
+            sh:node gax-validation:GdprMeasuresShape ;
+            sh:order 1 ;
+            sh:path trusted-cloud:gdprMeasures ] ;
+    sh:targetClass trusted-cloud:DataProtection .
+
+gax-validation:EmployeesCommitmentDataStrategyShape a sh:NodeShape ;
+    sh:property [ skos:example "'Freetext'" ;
+            sh:datatype xsd:string ;
+            sh:description "Detaillierte Informationen für Optionen für Geo-Regionen."@de,
+                "Detailed information for options of GEO-regions."@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "geo region options" ;
+            sh:order 3 ;
+            sh:path trusted-cloud:geoRegionOptions ],
+        [ skos:example "'No restriction', 'Restriction to a region', 'Restriction to the EU', 'Restriction to germany'" ;
+            sh:datatype xsd:string ;
+            sh:description "Kann die Verwaltung von Kundendaten auf einen bestimmten Ort beschränkt werden?"@de,
+                "Can the administration of customer data be restricted to a specific location?"@en ;
+            sh:in ( "No restriction" "Restriction to a region" "Restriction to the EU" "Restriction to Germany" ) ;
+            sh:maxCount 1 ;
+            sh:name "custom data adminstration restrictable" ;
+            sh:order 2 ;
+            sh:path trusted-cloud:customDataAdminstrationRestrictable ],
+        [ skos:example "'No restriction', 'Restriction to a region', 'Restriction to the EU', 'Restriction to Germany'" ;
+            sh:datatype xsd:string ;
+            sh:description "Kann das Hosting von Kundendaten auf einen bestimmten Ort beschränkt werden?"@de,
+                "Can the hosting of customer data be restricted to a specific location?"@en ;
+            sh:in ( "No restriction" "Restriction to a region" "Restriction to the EU" "Restriction to Germany" ) ;
+            sh:maxCount 1 ;
+            sh:name "custom data hosting restrictable" ;
+            sh:order 1 ;
+            sh:path trusted-cloud:customDataHostingRestrictable ] ;
+    sh:targetClass trusted-cloud:EmployeesCommitmentDataStrategy .
+
+gax-validation:InteroperabilityShape a sh:NodeShape ;
+    sh:property [ skos:example "'(a structured object of type DataExport)'" ;
+            sh:description "Darstellung von Verfahren des Datenzugriffs von Kundendaten und Datenfeedback."@de,
+                "Representation of procedures of data access of customer data and data feedback."@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "data export" ;
+            sh:node gax-validation:DataExportShape ;
+            sh:order 2 ;
+            sh:path trusted-cloud:dataExport ],
+        [ skos:example "'(a structured type of type Integration)'" ;
+            sh:description "Beschreibung der Verfahren zur technischen Integration des Dienstes in der verfügbaren IT-Landschaft des Benutzers?"@de,
+                "Description of procedures of technical integration of service in the available IT-landscape of the user?"@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "technical integration" ;
+            sh:node gax-validation:TechnicalIntegrationShape ;
+            sh:order 3 ;
+            sh:path trusted-cloud:technicalIntegration ],
+        [ skos:example "'(a structured object of type RequirementsServiceUsage)'" ;
+            sh:description "Beschreibung für die technischen und organisatorischen Voraussetzungen zur Nutzung des Dienstes, den der Benutzer zum Fülle muss."@de,
+                "Description for the technical and organizational prerequisites to use the service the user has to fulill."@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "requirements service usage" ;
+            sh:node gax-validation:RequirementsServiceUsageShape ;
+            sh:order 4 ;
+            sh:path trusted-cloud:requirementsServiceUsage ],
+        [ skos:example "'(a structured object of type TechnicalStandards)'" ;
+            sh:description "Informationen zu technischen Standards, auf denen der Service -Stack basiert."@de,
+                "Information about technical standards the service stack is based on."@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "technical standards" ;
+            sh:node gax-validation:TechnicalStandardsShape ;
+            sh:order 1 ;
+            sh:path trusted-cloud:technicalStandards ] ;
+    sh:targetClass trusted-cloud:Interoperability .
+
+gax-validation:LegalInformationProviderShapeTC a sh:NodeShape ;
+    sh:property [ skos:example "'DE999999999'" ;
+            sh:datatype xsd:string ;
+            sh:description "Mehrwertsteuer der Organisation / Umsatzsteuer.Entweder müssen Vatnumber oder RegistrationNumber festgelegt werden."@de,
+                "Organization’s VAT / sales tax-id number. Either vatNumber or registrationNumber has to be set."@en ;
+            sh:maxCount 1 ;
+            sh:name "vat number" ;
+            sh:order 2 ;
+            sh:path trusted-cloud:vatNumber ],
+        [ skos:example "'2021-10-18T12:00:00+01:00'" ;
+            sh:datatype xsd:dateTimeStamp ;
+            sh:description "Datum der rechtlichen Registrierung."@de,
+                "Date of the legal registration."@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "registration date" ;
+            sh:order 3 ;
+            sh:path trusted-cloud:registrationDate ],
+        [ skos:example "'true', 'false'" ;
+            sh:datatype xsd:boolean ;
+            sh:description "Ist das Unternehmen eine 'kleine oder mittelgroße' Firma?"@de,
+                "Is the company a 'small or medium sized' company?."@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name " s m e" ;
+            sh:order 4 ;
+            sh:path trusted-cloud:SME ],
+        [ skos:example "'(a structured object ot tyoe vcard:Agent)'" ;
+            sh:description "Geschäftsführer oder Erziehungsberechtigter der Organisation."@de,
+                "Managing director or legal guardian of the organization."@en ;
+            sh:minCount 1 ;
+            sh:name "managing director" ;
+            sh:node gax-validation:AgentShapeTC ;
+            sh:order 5 ;
+            sh:path trusted-cloud:managingDirector ],
+        [ skos:example "'(Jana Mustermann, jana.mustermann@acme.com, +49 030 123456789)'" ;
+            sh:description "Hauptkontakt der Organisation"@de,
+                "Main contact of the organization"@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "main contact" ;
+            sh:node gax-validation:AgentShapeTC ;
+            sh:order 6 ;
+            sh:path trusted-cloud:mainContact ],
+        [ skos:example "'(Jane Mustermann, jane.mustermann@acme.com, +49 030 123456789)'" ;
+            sh:description "Ein Kontakt innerhalb einer Organisation, um sich für Datenschutzzwecke zu wenden."@de,
+                "A contact within an organization to contact for data protection purposes."@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "data protection officer" ;
+            sh:node gax-validation:AgentShapeTC ;
+            sh:order 7 ;
+            sh:path trusted-cloud:dataProtectionOfficer ],
+        [ skos:example "'(Tom Mustermann, tom.mustermann@acme.com, +49 030 123456789)'" ;
+            sh:description "Ein Kontakt innerhalb einer Organisation, um technische Zwecke zu kontaktieren."@de,
+                "A contact within an organization to contact for technical purposes."@en ;
+            sh:maxCount 1 ;
+            sh:name " i t_ department contact" ;
+            sh:node gax-validation:AgentShapeTC ;
+            sh:order 8 ;
+            sh:path trusted-cloud:IT_DepartmentContact ],
+        [ skos:example "'(Sigfried Mustermann, sigfried.mustermann@acme.com, +49 030 123456789)'" ;
+            sh:description "Ein Kontakt innerhalb einer Organisation, um sich für Datenschutzzwecke zu wenden."@de,
+                "A contact within an organization to contact for data protection purposes."@en ;
+            sh:maxCount 1 ;
+            sh:name "legal contact" ;
+            sh:node gax-validation:AgentShapeTC ;
+            sh:order 9 ;
+            sh:path trusted-cloud:legalContact ],
+        [ skos:example "'A company making everything'" ;
+            sh:datatype xsd:string ;
+            sh:description "Beschreibung der Organisation."@de,
+                "Description of the organization."@en ;
+            sh:maxCount 1 ;
+            sh:name "description" ;
+            sh:order 10 ;
+            sh:path trusted-cloud:description ],
+        [ skos:example "'ACME'" ;
+            sh:datatype xsd:string ;
+            sh:description "Rechtsbindender Name."@de,
+                "Legally binding name."@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "legal name" ;
+            sh:order 1 ;
+            sh:path trusted-cloud:legalName ],
+        [ skos:example "'AG, GmbH'" ;
+            sh:datatype xsd:string ;
+            sh:description "Rechtliche Form der Organisation."@de,
+                "Legal form of organization."@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "legal form" ;
+            sh:order 2 ;
+            sh:path trusted-cloud:legalForm ],
+        [ skos:example "'DEK1234R.HRB123456'" ;
+            sh:datatype xsd:string ;
+            sh:description "Registrierungsnummer des Landes, die ein bestimmtes Unternehmen identifizieren."@de,
+                "Country’s registration number which identify one specific company."@en ;
+            sh:maxCount 1 ;
+            sh:name "registration number" ;
+            sh:order 3 ;
+            sh:path trusted-cloud:registrationNumber ],
+        [ skos:example "'(a structured object ot tyoe vcard:Address)'" ;
+            sh:description "Adresse des Hauptsitzes oder der Haupt Tochtergesellschaft."@de,
+                "Address of head office or main subsidiary."@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "headquarter address" ;
+            sh:node gax-validation:AddressShapeTC ;
+            sh:order 4 ;
+            sh:path trusted-cloud:headquarterAddress ],
+        [ skos:example "'www.acme.com'" ;
+            sh:datatype xsd:anyURI ;
+            sh:description "Auflösbare URL zur Webseite dieser Organisation."@de,
+                "Resolvable URL to web page of this organization."@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "web address" ;
+            sh:order 5 ;
+            sh:path trusted-cloud:webAddress ],
+        [ skos:example "'www.acme.com/logo'" ;
+            sh:datatype xsd:anyURI ;
+            sh:description "Auflösbare URL an das Logo dieser Organisation."@de,
+                "Resolvable URL to logo of this organization."@en ;
+            sh:maxCount 1 ;
+            sh:name "logo" ;
+            sh:order 6 ;
+            sh:path trusted-cloud:logo ],
+        [ skos:example "'Cloud Service'" ;
+            sh:datatype xsd:string ;
+            sh:description "Art der angebotenen Anwendung"@de,
+                "Type of Application offered"@en ;
+            sh:in ( "Cloud Service" "Cloud Consultants & Cloud Service" ) ;
+            sh:maxCount 1 ;
+            sh:name "type of application" ;
+            sh:order 1 ;
+            sh:path trusted-cloud:typeOfApplication ] ;
+    sh:targetClass trusted-cloud:LegalInformationProvider .
+
+gax-validation:LegalInformationShape a sh:NodeShape ;
+    sh:property [ skos:example "'AG, GmbH'" ;
+            sh:datatype xsd:string ;
+            sh:description "Rechtliche Form der Organisation."@de,
+                "Legal form of organization."@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "legal form" ;
+            sh:order 2 ;
+            sh:path trusted-cloud:legalForm ],
+        [ skos:example "'DEK1234R.HRB123456'" ;
+            sh:datatype xsd:string ;
+            sh:description "Registrierungsnummer des Landes, die ein bestimmtes Unternehmen identifizieren."@de,
+                "Country’s registration number which identify one specific company."@en ;
+            sh:maxCount 1 ;
+            sh:name "registration number" ;
+            sh:order 3 ;
+            sh:path trusted-cloud:registrationNumber ],
+        [ skos:example "'(a structured object ot tyoe vcard:Address)'" ;
+            sh:description "Adresse des Hauptsitzes oder der Haupt Tochtergesellschaft."@de,
+                "Address of head office or main subsidiary."@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "headquarter address" ;
+            sh:node gax-validation:AddressShapeTC ;
+            sh:order 4 ;
+            sh:path trusted-cloud:headquarterAddress ],
+        [ skos:example "'www.acme.com'" ;
+            sh:datatype xsd:anyURI ;
+            sh:description "Auflösbare URL zur Webseite dieser Organisation."@de,
+                "Resolvable URL to web page of this organization."@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "web address" ;
+            sh:order 5 ;
+            sh:path trusted-cloud:webAddress ],
+        [ skos:example "'www.acme.com/logo'" ;
+            sh:datatype xsd:anyURI ;
+            sh:description "Auflösbare URL an das Logo dieser Organisation."@de,
+                "Resolvable URL to logo of this organization."@en ;
+            sh:maxCount 1 ;
+            sh:name "logo" ;
+            sh:order 6 ;
+            sh:path trusted-cloud:logo ],
+        [ skos:example "'ACME'" ;
+            sh:datatype xsd:string ;
+            sh:description "Rechtsbindender Name."@de,
+                "Legally binding name."@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "legal name" ;
+            sh:order 1 ;
+            sh:path trusted-cloud:legalName ] ;
+    sh:targetClass trusted-cloud:LegalInformation .
+
+gax-validation:LegalInformationSubContractorShape a sh:NodeShape ;
+    sh:property [ skos:example "'ACME'" ;
+            sh:datatype xsd:string ;
+            sh:description "Rechtsbindender Name."@de,
+                "Legally binding name."@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "legal name" ;
+            sh:order 1 ;
+            sh:path trusted-cloud:legalName ],
+        [ skos:example "'AG, GmbH'" ;
+            sh:datatype xsd:string ;
+            sh:description "Rechtliche Form der Organisation."@de,
+                "Legal form of organization."@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "legal form" ;
+            sh:order 2 ;
+            sh:path trusted-cloud:legalForm ],
+        [ skos:example "'DEK1234R.HRB123456'" ;
+            sh:datatype xsd:string ;
+            sh:description "Registrierungsnummer des Landes, die ein bestimmtes Unternehmen identifizieren."@de,
+                "Country’s registration number which identify one specific company."@en ;
+            sh:maxCount 1 ;
+            sh:name "registration number" ;
+            sh:order 3 ;
+            sh:path trusted-cloud:registrationNumber ],
+        [ skos:example "'(a structured object ot tyoe vcard:Address)'" ;
+            sh:description "Adresse des Hauptsitzes oder der Haupt Tochtergesellschaft."@de,
+                "Address of head office or main subsidiary."@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "headquarter address" ;
+            sh:node gax-validation:AddressShapeTC ;
+            sh:order 4 ;
+            sh:path trusted-cloud:headquarterAddress ],
+        [ skos:example "'www.acme.com'" ;
+            sh:datatype xsd:anyURI ;
+            sh:description "Auflösbare URL zur Webseite dieser Organisation."@de,
+                "Resolvable URL to web page of this organization."@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "web address" ;
+            sh:order 5 ;
+            sh:path trusted-cloud:webAddress ],
+        [ skos:example "'www.acme.com/logo'" ;
+            sh:datatype xsd:anyURI ;
+            sh:description "Auflösbare URL an das Logo dieser Organisation."@de,
+                "Resolvable URL to logo of this organization."@en ;
+            sh:maxCount 1 ;
+            sh:name "logo" ;
+            sh:order 6 ;
+            sh:path trusted-cloud:logo ],
+        [ skos:example "'yes', 'no'" ;
+            sh:datatype xsd:boolean ;
+            sh:description "Ist das Rechenzentrumsunternehmen intern oder sein legal souveränes Unternehmen?Ja = legal souveräne Unternehmen, nein = Firma Internal"@de,
+                "Is the data center company internal or his legally sovereign company? Yes = Legally sovereign company, no = company internal"@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "independent sub company" ;
+            sh:order 1 ;
+            sh:path trusted-cloud:independentSubCompany ] ;
+    sh:targetClass trusted-cloud:LegalInformationSubContractor .
+
+gax-validation:MaturityLevelShape a sh:NodeShape ;
+    sh:property [ skos:example "'10'" ;
+            sh:datatype xsd:integer ;
+            sh:description "Anzahl der Gesamtnutzer, die den Dienst nutzen."@de,
+                "Number of overall users who use the service."@en ;
+            sh:maxCount 1 ;
+            sh:minInclusive 1.0 ;
+            sh:name "number of users" ;
+            sh:order 2 ;
+            sh:path trusted-cloud:numberOfUsers ],
+        [ skos:example "'5'" ;
+            sh:datatype xsd:integer ;
+            sh:description "Anzahl der Kunden, die den Service nutzen."@de,
+                "Number of customers who use the service."@en ;
+            sh:maxCount 1 ;
+            sh:minInclusive 1.0 ;
+            sh:name "number of customers" ;
+            sh:order 1 ;
+            sh:path trusted-cloud:numberOfCustomers ] ;
+    sh:targetClass trusted-cloud:MaturityLevel .
+
+gax-validation:OperativeProcessesShape a sh:NodeShape ;
+    sh:property [ skos:example "'(a structured object of type ServiceAvailability)'" ;
+            sh:description "Informationen über die sichergestellte Verfügbarkeit von Serviceverfügbarkeit in Serviceebene."@de,
+                "Information of ensured service availability in service level agreements."@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "service availability" ;
+            sh:node gax-validation:ServiceAvailabilityShape ;
+            sh:order 2 ;
+            sh:path trusted-cloud:serviceAvailability ],
+        [ skos:example "'(a structured object of type Backups)'" ;
+            sh:description "Details zu Sicherungsoptionen und Implementierung von Datenschutzkonzepten."@de,
+                "Details on backup options and implementation of data protection concepts."@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "backups" ;
+            sh:node gax-validation:BackupsShape ;
+            sh:order 3 ;
+            sh:path trusted-cloud:backups ],
+        [ skos:example "'Customer cannot provision', 'Customer can provision'" ;
+            sh:datatype xsd:string ;
+            sh:description "Kann der Kunden den Service selbst bereitstellen?"@de,
+                "Can the customer provision the service himself?"@en ;
+            sh:in ( "Customer cannot provision" "Customer can provision" ) ;
+            sh:maxCount 1 ;
+            sh:name "provision possibility" ;
+            sh:order 4 ;
+            sh:path trusted-cloud:provisionPossibility ],
+        [ skos:example "'(a structured object of type Support)'" ;
+            sh:description "Informationen zu Unterstützungsdiensten und Dokumentation."@de,
+                "Information about support services and documentation."@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "support" ;
+            sh:node gax-validation:SupportShape ;
+            sh:order 5 ;
+            sh:path trusted-cloud:support ],
+        [ skos:example "'(a structured object of type ServiceManagement)'" ;
+            sh:description "Informationen zum effizienten Servicemanagement zur Gewährleistung der Servicequalität?"@de,
+                "Information about efficient service management for ensuring the quality of service?"@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "service mamagement" ;
+            sh:node gax-validation:ServiceManagementShape ;
+            sh:order 1 ;
+            sh:path trusted-cloud:serviceMamagement ] ;
+    sh:targetClass trusted-cloud:OperativeProcesses .
+
+gax-validation:ProviderShapeTC a sh:NodeShape ;
+    sh:property [ skos:example "'(DID to Verifiable credential of company profile of the organization)'" ;
+            sh:description "Details zu Erfahrung / Kenntnis des Unternehmens im Cloud -Service -Geschäft."@de,
+                "Details on experience / knowledge of the company in the cloud service business."@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "company profile" ;
+            sh:nodeKind sh:IRI ;
+            sh:order 2 ;
+            sh:path trusted-cloud:companyProfile ],
+        [ skos:example "'(DID to Verifiable credential of auditability profile of the organization'" ;
+            sh:description "Details zu Prüfbarkeitsmöglichkeiten der Organisation."@de,
+                "Details on auditability possibilities of the organization."@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "auditability profile" ;
+            sh:nodeKind sh:IRI ;
+            sh:order 3 ;
+            sh:path trusted-cloud:auditabilityProfile ],
+        [ skos:example "'DID to Verifiable credential of legal information of the provider.'" ;
+            sh:description "Rechtsinformationen des Anbieters."@de,
+                "Legal information of provider."@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "legal information" ;
+            sh:nodeKind sh:IRI ;
+            sh:order 1 ;
+            sh:path trusted-cloud:legalInformation ] ;
+    sh:targetClass trusted-cloud:Provider .
+
+gax-validation:ReferenceProfileShape a sh:NodeShape ;
+    sh:property [ skos:example "''" ;
+            sh:datatype xsd:string ;
+            sh:description "Beschreibung der Nutzung des Dienstes durch diesen Kunden."@de,
+                "Description of usage of service by this customer."@en ;
+            sh:maxCount 1 ;
+            sh:name "usage" ;
+            sh:order 2 ;
+            sh:path trusted-cloud:usage ],
+        [ skos:example "'(Jane Mustermann, jane.mustermann@acme.com, +49 030 123456789)'" ;
+            sh:description "Kontaktperson dieser Referenz."@de,
+                "Contact person of this reference."@en ;
+            sh:maxCount 1 ;
+            sh:name "contact" ;
+            sh:node gax-validation:AgentShapeTC ;
+            sh:order 3 ;
+            sh:path trusted-cloud:contact ],
+        [ skos:example "'www.my-customer.com'" ;
+            sh:datatype xsd:anyURI ;
+            sh:description "URL des Kunden."@de,
+                "URL of the customer."@en ;
+            sh:maxCount 1 ;
+            sh:name "url" ;
+            sh:order 4 ;
+            sh:path trusted-cloud:url ],
+        [ skos:example "'AMCE GmbH'" ;
+            sh:datatype xsd:string ;
+            sh:description "Name des Referenzkundens Wer nutzt den Dienst?"@de,
+                "Name of reference customer who is using the service?"@en ;
+            sh:maxCount 1 ;
+            sh:name "customer name" ;
+            sh:order 1 ;
+            sh:path trusted-cloud:customerName ] ;
+    sh:targetClass trusted-cloud:ReferenceProfile .
+
+gax-validation:SecurityManagementShape a sh:NodeShape ;
+    sh:property [ skos:example "'Freetext'" ;
+            sh:datatype xsd:string ;
+            sh:description "Weitere Details zum Prozess im IT -Sicherheitsmanagement"@de,
+                "More details about the process in the IT safety management"@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "details about process" ;
+            sh:order 2 ;
+            sh:path trusted-cloud:detailsAboutProcess ],
+        [ skos:example "'According to accepted procedure', 'Certified', 'Certified and checked regularly'" ;
+            sh:datatype xsd:string ;
+            sh:description "Gibt es ein effizientes Management für die Informationssicherheit, z.Zertifizierung nach ISO 27001?"@de,
+                "Is there an efficient management for information safety given, e.g. certification according to ISO 27001?"@en ;
+            sh:in ( "According to accepted procedure" "Certified" "Certified and checked regularly" ) ;
+            sh:maxCount 1 ;
+            sh:name "has efficient management" ;
+            sh:order 1 ;
+            sh:path trusted-cloud:hasEfficientManagement ] ;
+    sh:targetClass trusted-cloud:SecurityManagement .
+
+gax-validation:SecurityShape a sh:NodeShape ;
+    sh:property [ skos:example "'Freetext'" ;
+            sh:datatype xsd:string ;
+            sh:description "Beschreibung des Prozesses, um Datenlecks an den Kunden zu melden."@de,
+                "Description of the process to report data leaks to the customer."@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "report data leaks" ;
+            sh:order 2 ;
+            sh:path trusted-cloud:reportDataLeaks ],
+        [ skos:example "'(a structured object of type Certificate'" ;
+            sh:description "Details zu Zertifikaten, die für die Sicherheit relevant sind."@de,
+                "Details about certificates, which are relevant for security."@en ;
+            sh:name "certificates" ;
+            sh:node gax-validation:CertificateScopeShape ;
+            sh:order 3 ;
+            sh:path trusted-cloud:certificates ],
+        [ skos:example "'(a structured object of type Encryption)'" ;
+            sh:description "Informationen zu verwendeten Verschlüsselungstechniken zur Übertragung und Speicherung von Verschlüsselungsdaten."@de,
+                "Information about used encryption techniques for encryption data transmission and storage."@en ;
+            sh:minCount 1 ;
+            sh:name "encryption" ;
+            sh:node gax-validation:EncryptionShapeTC ;
+            sh:order 4 ;
+            sh:path trusted-cloud:encryption ],
+        [ skos:example "'company-wide right- and role-concept', 'Others'" ;
+            sh:datatype xsd:string ;
+            sh:description "Welche Rechte- und Rollenkonzept werden verwendet?"@de,
+                "Which rights- and role-concept are used?"@en ;
+            sh:in ( "company-wide right- and role-concept" "Others" ) ;
+            sh:maxCount 1 ;
+            sh:name "rights and role concept" ;
+            sh:order 5 ;
+            sh:path trusted-cloud:rightsAndRoleConcept ],
+        [ skos:example "'According to accepted procedure', 'Certified', 'Certified and checked regularly'" ;
+            sh:datatype xsd:string ;
+            sh:description "Nachweis der effizienten Verwaltung der Informationssicherheit, beispielsweise nach Zertifikaten gemäß ISO 27001 oder BSI?"@de,
+                "Proof of efficient management of information security for example by certificates as per ISO 27001 or BSI?"@en ;
+            sh:in ( "According to accepted procedure" "Certified" "Certified and checked regularly" ) ;
+            sh:maxCount 1 ;
+            sh:name "security management" ;
+            sh:order 1 ;
+            sh:path trusted-cloud:securityManagement ] ;
+    sh:targetClass trusted-cloud:Security .
+
+gax-validation:ServiceArchitectureShape a sh:NodeShape ;
+    sh:property [ skos:example "'(a structured object of type ServiceScaling)'" ;
+            sh:description "Informationen über Skalierungsmöglichkeiten der technischen Infrastruktur des Dienstes."@de,
+                "Information about scaling possibilities of technical infrastructure of the service."@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "scaling" ;
+            sh:node gax-validation:ServiceScalingShape ;
+            sh:order 2 ;
+            sh:path trusted-cloud:scaling ],
+        [ skos:example "'(a structured object of type ClientIsolation)'" ;
+            sh:description "Beschreibung der Maßnahmen zur Begrenzung von Kundenbereichen für spezielle technische Infrastrukturen und Datenbereiche."@de,
+                "Description of measures for limiting client areas for dedicated technical infrastructures and data areas."@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "client isolation" ;
+            sh:node gax-validation:ClientIsolationShape ;
+            sh:order 1 ;
+            sh:path trusted-cloud:clientIsolation ] ;
+    sh:targetClass trusted-cloud:ServiceArchitecture .
+
+gax-validation:ServiceOfferingShapeTC a sh:NodeShape ;
+    sh:property [ skos:example "'https://gaia-x.eu'" ;
+            sh:description "Habe die Ressourcen-Selbstbeschreibung im Zusammenhang mit dem Dienst getan und das kann unabhängig davon existieren."@de,
+                "DID of resource self-escription related to the service and that can exist independently of it."@en ;
+            sh:name "aggregation of" ;
+            sh:nodeKind sh:IRI ;
+            sh:order 2 ;
+            sh:path gax-core:aggregationOf ],
+        [ skos:example "'https://gaia-x.eu'" ;
+            sh:description "Habe von vertrauenswürdigem Cloud-Anbieter Selbstbeschreibung angeboten, das dieses Serviceangebot anbietet."@de,
+                "DID of trusted cloud provider self-description offering this service offering."@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "offered by" ;
+            sh:nodeKind sh:IRI ;
+            sh:order 1 ;
+            sh:path gax-core:offeredBy ],
+        [ skos:example "'(a structure object of type GeneralInformationService'" ;
+            sh:description "Grundlegende Klassifizierung des Dienstes gemäß Bereitstellungstyp und Servicemodell."@de,
+                "Basic classification of the service as per provision type and service model."@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "general information" ;
+            sh:node gax-validation:GeneralInformationServiceShape ;
+            sh:order 2 ;
+            sh:path trusted-cloud:generalInformation ],
+        [ skos:example "'https://gaia-x.eu'" ;
+            sh:description "Hat von dem Dienst, der Selbstbeschreibung im Zusammenhang mit dem Dienst anbietet, und das kann unabhängig davon existieren."@de,
+                "DID of the service offering self-description related to the service and that can exist independently of it."@en ;
+            sh:name "depends on" ;
+            sh:nodeKind sh:IRI ;
+            sh:order 3 ;
+            sh:path gax-core:dependsOn ],
+        [ skos:example "'(a structure object of type GeneralInformationService'" ;
+            sh:description "Funktionale Beschreibung des Dienstes und der funktionalen Kategorisierung des Dienstes."@de,
+                "Functional description of the service and functional categorization of the service."@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "functional description" ;
+            sh:node gax-validation:FunctionalDescriptionServiceShape ;
+            sh:order 3 ;
+            sh:path trusted-cloud:functionalDescription ],
+        [ skos:example "'(Jana Mustermann, jana.mustermann@acme.com, +49 030 123456789)'" ;
+            sh:description "Hauptkontakt dieses Dienstes."@de,
+                "Main contact of this service."@en ;
+            sh:maxCount 1 ;
+            sh:name "main contact" ;
+            sh:node gax-validation:AgentShapeTC ;
+            sh:order 4 ;
+            sh:path trusted-cloud:mainContact ],
+        [ skos:example "'(Jana Mustermann, jana.mustermann@acme.com, +49 030 123456789)'" ;
+            sh:description "Weitere Kontakte dieses Dienstes."@de,
+                "Further contacts of this service."@en ;
+            sh:name " additional contact" ;
+            sh:node gax-validation:AgentShapeTC ;
+            sh:order 5 ;
+            sh:path trusted-cloud:AdditionalContact ],
+        [ skos:example "'no information', 'personal data  according to GDPR'" ;
+            sh:datatype xsd:string ;
+            sh:description "Welche Art von Daten soll Prozesse sein?"@de,
+                "Which type of data are to be processes?"@en ;
+            sh:in ( "no information" "personal data according to GDPR" ) ;
+            sh:maxCount 1 ;
+            sh:name "type of processed data" ;
+            sh:order 6 ;
+            sh:path trusted-cloud:typeOfProcessedData ],
+        [ skos:example "'(a structure object of type SubContractor)'" ;
+            sh:description "Subunternehmen, die für den Betrieb des Dienstes erforderlich sind."@de,
+                "Sub Companies required to operate the service."@en ;
+            sh:name "sub contractors" ;
+            sh:nodeKind sh:IRI ;
+            sh:order 7 ;
+            sh:path trusted-cloud:subContractors ],
+        [ skos:example "'(a structure object of type DataCentre)'" ;
+            sh:description "Rechenzentrum, die für den Betrieb des Dienstes erforderlich ist"@de,
+                "Data centre required to operated the service"@en ;
+            sh:minCount 1 ;
+            sh:name "data centres" ;
+            sh:nodeKind sh:IRI ;
+            sh:order 8 ;
+            sh:path trusted-cloud:dataCentres ],
+        [ skos:example "'(a structured object of type Certificate'" ;
+            sh:description "Details zu Zertifikaten, die für diesen Service relevant sind."@de,
+                "Details about certificates, which are relevant for this service."@en ;
+            sh:name "certificates" ;
+            sh:node gax-validation:CertificateScopeShape ;
+            sh:order 9 ;
+            sh:path trusted-cloud:certificates ],
+        [ skos:example "'(a structure object of type Contract)'" ;
+            sh:description "Beschreibung des technischen und organisatorischen Mechanismus, um den Datenschutz zu gewährleisten."@de,
+                "Description of technical and organizational mechanism to ensure data protection."@en ;
+            sh:minCount 1 ;
+            sh:name "contracts" ;
+            sh:nodeKind sh:IRI ;
+            sh:order 10 ;
+            sh:path trusted-cloud:contracts ],
+        [ skos:example "'(a structure object of type Security)'" ;
+            sh:description "Darstellung technischer und organisatorischer Mechanismen zur Gewährleistung des Datenschutzes und der IT -Sicherheit."@de,
+                "Representation of technical and organizational mechanisms to ensure data protection and IT security."@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "security" ;
+            sh:nodeKind sh:IRI ;
+            sh:order 11 ;
+            sh:path trusted-cloud:security ],
+        [ skos:example "'(a structure object of type DataProtection)'" ;
+            sh:description "Technische und organisatorische Mechanismen zur Gewährleistung des Datenschutzes und der IT -Sicherheit."@de,
+                "Technical and organizational mechanisms to ensure data protection and IT security."@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "data protection" ;
+            sh:nodeKind sh:IRI ;
+            sh:order 12 ;
+            sh:path trusted-cloud:dataProtection ],
+        [ skos:example "'(a structure object of type OperativeProcesses)'" ;
+            sh:description "Darstellung technischer und funktionaler Voraussetzungen für UEs, Migration und Austausch von Dienst."@de,
+                "Representation of technical and functional prerequisites for ues, migration and exchange off service."@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "operative processes" ;
+            sh:nodeKind sh:IRI ;
+            sh:order 13 ;
+            sh:path trusted-cloud:operativeProcesses ],
+        [ skos:example "'(a structure object of type Interoperability)'" ;
+            sh:description "Technische und funktionale Anforderungen an den Service oder die Migration des Dienstes."@de,
+                "Technical and functional requirements to change or migrate service."@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "interoperability" ;
+            sh:nodeKind sh:IRI ;
+            sh:order 14 ;
+            sh:path trusted-cloud:interoperability ],
+        [ skos:example "'(a structure object of type ServiceArchitecture)'" ;
+            sh:description "Technische Architektur dieses Dienstes."@de,
+                "Technical architecture of this service."@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "service architecture" ;
+            sh:nodeKind sh:IRI ;
+            sh:order 15 ;
+            sh:path trusted-cloud:serviceArchitecture ],
+        [ skos:example "'https://gaia-x.eu'" ;
+            sh:description "Habe die Selbstbeschreibung der Teilnehmer, die dieses Serviceangebot anbietet."@de,
+                "DID of participant self-description, who is offering this service offering."@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "offered by" ;
+            sh:nodeKind sh:IRI ;
+            sh:order 1 ;
+            sh:path gax-core:offeredBy ] ;
+    sh:targetClass trusted-cloud:ServiceOffering .
+
+gax-validation:SubContractorShape a sh:NodeShape ;
+    sh:property [ skos:example "'(a structure object of type OrganizationProfileSubcontractor'" ;
+            sh:description "Details zu Erfahrung / Kenntnis der Organisation im Cloud -Service -Geschäft."@de,
+                "Details on experience / knowledge of the organization in the cloud service business."@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "organization profile" ;
+            sh:nodeKind sh:IRI ;
+            sh:order 2 ;
+            sh:path trusted-cloud:organizationProfile ],
+        [ skos:example "'Company internal', 'Company legally sovereign'" ;
+            sh:datatype xsd:string ;
+            sh:description "Ist der Subunternehmer intern oder seine legal souveräne Firma?"@de,
+                "Is the sub contractor internal or his legally sovereign company?"@en ;
+            sh:in ( "Company internal" "Company legally sovereign" ) ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "independent sub company" ;
+            sh:order 3 ;
+            sh:path trusted-cloud:independentSubCompany ],
+        [ skos:example "''" ;
+            sh:description "Rechtsinformationen des Subunternehmers."@de,
+                "Legal information of sub contractor."@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "legal information" ;
+            sh:nodeKind sh:IRI ;
+            sh:order 1 ;
+            sh:path trusted-cloud:legalInformation ] ;
+    sh:targetClass trusted-cloud:SubContractor .
+
+gax-validation:BackupsShape a sh:NodeShape ;
+    sh:property [ skos:example "'Freetext'" ;
+            sh:datatype xsd:string ;
+            sh:description "Ist es garantiert, dass der Datenschutz auch auf die Sicherung erweitert wird?"@de,
+                "Is it guaranteed, that data protection is also extended to the backup?"@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "confideniality" ;
+            sh:order 2 ;
+            sh:path trusted-cloud:confideniality ],
+        [ skos:example "'Freetext'" ;
+            sh:datatype xsd:string ;
+            sh:description "Beschreibung der Sicherungsoptionen"@de,
+                "Description of backup options"@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "bckup options" ;
+            sh:order 1 ;
+            sh:path trusted-cloud:bckupOptions ],
+        [ skos:example "'Freetext'" ;
+            sh:datatype xsd:string ;
+            sh:description "Beschreibung der Sicherungsoptionen"@de,
+                "Description of backup options"@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "bckup options" ;
+            sh:order 1 ;
+            sh:path trusted-cloud:bckupOptions ],
+        [ skos:example "'Freetext'" ;
+            sh:datatype xsd:string ;
+            sh:description "Ist es garantiert, dass der Datenschutz auch auf die Sicherung erweitert wird?"@de,
+                "Is it guaranteed, that data protection is also extended to the backup?"@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "confideniality" ;
+            sh:order 2 ;
+            sh:path trusted-cloud:confideniality ] ;
+    sh:targetClass trusted-cloud:Backups .
+
+gax-validation:CertificationBodyShape a sh:NodeShape ;
+    sh:property [ skos:example "'TÜV Süd'" ;
+            sh:datatype xsd:string ;
+            sh:description "Name der Firma."@de,
+                "Name of the company."@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "name" ;
+            sh:order 1 ;
+            sh:path trusted-cloud:name ],
+        [ skos:example "'(ACME street 1, 12345 city, Germany)'" ;
+            sh:datatype xsd:address ;
+            sh:description "Adresse der Zertifizierungsstelle."@de,
+                "Address of the certification body."@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "address" ;
+            sh:order 2 ;
+            sh:path vcard:address ],
+        [ skos:example "'(ACME street 1, 12345 city, Germany)'" ;
+            sh:datatype xsd:address ;
+            sh:description "Adresse der Zertifizierungsstelle."@de,
+                "Address of the certification body."@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "address" ;
+            sh:order 2 ;
+            sh:path vcard:address ],
+        [ skos:example "'TÜV Süd'" ;
+            sh:datatype xsd:string ;
+            sh:description "Name der Firma."@de,
+                "Name of the company."@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "name" ;
+            sh:order 1 ;
+            sh:path trusted-cloud:name ] ;
+    sh:targetClass trusted-cloud:CertificationBody .
+
+gax-validation:ChangeManagementShape a sh:NodeShape ;
+    sh:property [ skos:example "'All changes will be communicated', 'All changes will be communicated and the customer gets a special termination right'" ;
+            sh:datatype xsd:string ;
+            sh:description "Werden Änderungen im Vertrag zuvor dem Kunden mitgeteilt?"@de,
+                "Are changes in the contract communicated to the customer beforehand?"@en ;
+            sh:in ( "All changes will be communicated" "All changes will be communicated and the customer gets a special termination right" ) ;
+            sh:maxCount 1 ;
+            sh:name "chnages communicated beforehand" ;
+            sh:order 1 ;
+            sh:path trusted-cloud:chnagesCommunicatedBeforehand ],
+        [ skos:example "'Not in the contract', 'In the contract'" ;
+            sh:datatype xsd:string ;
+            sh:description "Sind Regeln für das Änderungsmanagement im Vertrag?"@de,
+                "Are rules for change management in the contract?"@en ;
+            sh:in ( "Not in the contract" "In the contract" ) ;
+            sh:maxCount 1 ;
+            sh:name "rules for change management in contract" ;
+            sh:order 2 ;
+            sh:path trusted-cloud:rulesForChangeManagementInContract ],
+        [ skos:example "'Freetext'" ;
+            sh:datatype xsd:string ;
+            sh:description "Beschreibung der Änderungsverwaltungsregeln"@de,
+                "Description of change management rules"@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "change management rules" ;
+            sh:order 3 ;
+            sh:path trusted-cloud:changeManagementRules ],
+        [ skos:example "'Not in the contract', 'In the contract'" ;
+            sh:datatype xsd:string ;
+            sh:description "Sind Regeln für das Änderungsmanagement im Vertrag?"@de,
+                "Are rules for change management in the contract?"@en ;
+            sh:in ( "Not in the contract" "In the contract" ) ;
+            sh:maxCount 1 ;
+            sh:name "rules for change management in contract" ;
+            sh:order 2 ;
+            sh:path trusted-cloud:rulesForChangeManagementInContract ],
+        [ skos:example "'Freetext'" ;
+            sh:datatype xsd:string ;
+            sh:description "Beschreibung der Änderungsverwaltungsregeln"@de,
+                "Description of change management rules"@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "change management rules" ;
+            sh:order 3 ;
+            sh:path trusted-cloud:changeManagementRules ],
+        [ skos:example "'All changes will be communicated', 'All changes will be communicated and the customer gets a special termination right'" ;
+            sh:datatype xsd:string ;
+            sh:description "Werden Änderungen im Vertrag zuvor dem Kunden mitgeteilt?"@de,
+                "Are changes in the contract communicated to the customer beforehand?"@en ;
+            sh:in ( "All changes will be communicated" "All changes will be communicated and the customer gets a special termination right" ) ;
+            sh:maxCount 1 ;
+            sh:name "chnages communicated beforehand" ;
+            sh:order 1 ;
+            sh:path trusted-cloud:chnagesCommunicatedBeforehand ] ;
+    sh:targetClass trusted-cloud:ChangeManagement .
+
+gax-validation:ClientIsolationShape a sh:NodeShape ;
+    sh:property [ skos:example "'Not guaranteed', 'Guaranteed', 'Guaranteed and can be proven'" ;
+            sh:datatype xsd:string ;
+            sh:description "Ist eine kontinuierliche Kundentrennung garantiert?"@de,
+                "Is a continuous client separation guaranteed?"@en ;
+            sh:in ( "Not guaranteed" "Guaranteed" "Guaranteed and can be proven" ) ;
+            sh:maxCount 1 ;
+            sh:name "client separation" ;
+            sh:order 1 ;
+            sh:path trusted-cloud:clientSeparation ],
+        [ skos:example "'Freetext'" ;
+            sh:datatype xsd:string ;
+            sh:description "Wie funktioniert die Kundentrennung?"@de,
+                "How does the client separation work?"@en ;
+            sh:maxCount 1 ;
+            sh:name "description" ;
+            sh:order 2 ;
+            sh:path trusted-cloud:description ],
+        [ skos:example "'Freetext'" ;
+            sh:datatype xsd:string ;
+            sh:description "Wie funktioniert die Kundentrennung?"@de,
+                "How does the client separation work?"@en ;
+            sh:maxCount 1 ;
+            sh:name "description" ;
+            sh:order 2 ;
+            sh:path trusted-cloud:description ],
+        [ skos:example "'Not guaranteed', 'Guaranteed', 'Guaranteed and can be proven'" ;
+            sh:datatype xsd:string ;
+            sh:description "Ist eine kontinuierliche Kundentrennung garantiert?"@de,
+                "Is a continuous client separation guaranteed?"@en ;
+            sh:in ( "Not guaranteed" "Guaranteed" "Guaranteed and can be proven" ) ;
+            sh:maxCount 1 ;
+            sh:name "client separation" ;
+            sh:order 1 ;
+            sh:path trusted-cloud:clientSeparation ] ;
+    sh:targetClass trusted-cloud:ClientIsolation .
+
+gax-validation:ContractTransparencyShape a sh:NodeShape ;
+    sh:property [ skos:example "'On request', 'Published'" ;
+            sh:datatype xsd:string ;
+            sh:description "Sind die Verträge dem Kunden vor dem Abschluss zur Verfügung?"@de,
+                "Are the contracts available to the customer before the closing?"@en ;
+            sh:in ( "On request" "Published" ) ;
+            sh:maxCount 1 ;
+            sh:name "contracts available" ;
+            sh:order 1 ;
+            sh:path trusted-cloud:contractsAvailable ],
+        [ skos:example "'www.acme.com/termsandconditions.pdf'" ;
+            sh:datatype xsd:anyURI ;
+            sh:description "Ein auflösbarer Link zum Servicevertrag, falls die Vertragsabteilung veröffentlicht wird."@de,
+                "A resolvable link to service contract, if contractAvailable is set to published."@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "web reference" ;
+            sh:order 2 ;
+            sh:path trusted-cloud:webReference ],
+        [ skos:example "'General Public License'" ;
+            sh:datatype xsd:string ;
+            sh:description "Transparente Beschreibung der verwendeten Lizenzen"@de,
+                "Transparent description of the used licenses"@en ;
+            sh:name "used licence" ;
+            sh:order 3 ;
+            sh:path trusted-cloud:usedLicence ],
+        [ skos:example "'www.acme.com/termsandconditions.pdf'" ;
+            sh:datatype xsd:anyURI ;
+            sh:description "Ein auflösbarer Link zum Servicevertrag, falls die Vertragsabteilung veröffentlicht wird."@de,
+                "A resolvable link to service contract, if contractAvailable is set to published."@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "web reference" ;
+            sh:order 2 ;
+            sh:path trusted-cloud:webReference ],
+        [ skos:example "'General Public License'" ;
+            sh:datatype xsd:string ;
+            sh:description "Transparente Beschreibung der verwendeten Lizenzen"@de,
+                "Transparent description of the used licenses"@en ;
+            sh:name "used licence" ;
+            sh:order 3 ;
+            sh:path trusted-cloud:usedLicence ],
+        [ skos:example "'On request', 'Published'" ;
+            sh:datatype xsd:string ;
+            sh:description "Sind die Verträge dem Kunden vor dem Abschluss zur Verfügung?"@de,
+                "Are the contracts available to the customer before the closing?"@en ;
+            sh:in ( "On request" "Published" ) ;
+            sh:maxCount 1 ;
+            sh:name "contracts available" ;
+            sh:order 1 ;
+            sh:path trusted-cloud:contractsAvailable ] ;
+    sh:targetClass trusted-cloud:ContractTransparency .
+
+gax-validation:DataExportShape a sh:NodeShape ;
+    sh:property [ skos:example "'Freetext'" ;
+            sh:datatype xsd:string ;
+            sh:description "Beschreibung der Verfahren für die Datenreadition und unterstützte Dateiformate?"@de,
+                "Description of procedures for data repatriation and supported file formats?"@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "description" ;
+            sh:order 2 ;
+            sh:path trusted-cloud:description ],
+        [ skos:example "'Export can be done after agreement', 'Export over documented API', 'Standardized APIs are offered'" ;
+            sh:datatype xsd:string ;
+            sh:description "Kann der Benutzer unbegrenzt und jederzeit die Kundendaten zugreifen?"@de,
+                "Can the user access unlimited and at any time the customer data?"@en ;
+            sh:in ( "Export can be done after agreement" "Export over documented API" "Standardized APIs are offered" ) ;
+            sh:maxCount 1 ;
+            sh:name "unlimited access to customer data" ;
+            sh:order 1 ;
+            sh:path trusted-cloud:unlimitedAccessToCustomerData ],
+        [ skos:example "'Export can be done after agreement', 'Export over documented API', 'Standardized APIs are offered'" ;
+            sh:datatype xsd:string ;
+            sh:description "Kann der Benutzer unbegrenzt und jederzeit die Kundendaten zugreifen?"@de,
+                "Can the user access unlimited and at any time the customer data?"@en ;
+            sh:in ( "Export can be done after agreement" "Export over documented API" "Standardized APIs are offered" ) ;
+            sh:maxCount 1 ;
+            sh:name "unlimited access to customer data" ;
+            sh:order 1 ;
+            sh:path trusted-cloud:unlimitedAccessToCustomerData ],
+        [ skos:example "'Freetext'" ;
+            sh:datatype xsd:string ;
+            sh:description "Beschreibung der Verfahren für die Datenreadition und unterstützte Dateiformate?"@de,
+                "Description of procedures for data repatriation and supported file formats?"@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "description" ;
+            sh:order 2 ;
+            sh:path trusted-cloud:description ] ;
+    sh:targetClass trusted-cloud:DataExport .
+
+gax-validation:DataRetentionShape a sh:NodeShape ;
+    sh:property [ skos:example "'Freetext'" ;
+            sh:datatype xsd:string ;
+            sh:description "Detaillierte Informationen für Optionen für Geo-Regionen."@de,
+                "Detailed information for options of GEO-regions."@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "geo region options" ;
+            sh:order 3 ;
+            sh:path trusted-cloud:geoRegionOptions ],
+        [ skos:example "'No restriction', 'Restriction to a region', 'Restriction to the EU', 'Restriction to Germany'" ;
+            sh:datatype xsd:string ;
+            sh:description "Kann die Verwaltung von Kundendaten auf einen bestimmten Ort beschränkt werden?"@de,
+                "Can the administration of customer data be restricted to a specific location?"@en ;
+            sh:in ( "No restriction" "Restriction to a region" "Restriction to the EU" "Restriction to Germany" ) ;
+            sh:maxCount 1 ;
+            sh:name "custom data adminstration restrictable" ;
+            sh:order 2 ;
+            sh:path trusted-cloud:customDataAdminstrationRestrictable ],
+        [ skos:example "'No restriction', 'Restriction to a region', 'Restriction to the EU', 'Restriction to Germany'" ;
+            sh:datatype xsd:string ;
+            sh:description "Kann das Hosting von Kundendaten auf einen bestimmten Ort beschränkt werden?"@de,
+                "Can the hosting of customer data be restricted to a specific location?"@en ;
+            sh:in ( "No restriction" "Restriction to a region" "Restriction to the EU" "Restriction to Germany" ) ;
+            sh:maxCount 1 ;
+            sh:name "custom data hosting restrictable" ;
+            sh:order 1 ;
+            sh:path trusted-cloud:customDataHostingRestrictable ],
+        [ skos:example "'No restriction', 'Restriction to a region', 'Restriction to the EU', 'Restriction to Germany'" ;
+            sh:datatype xsd:string ;
+            sh:description "Kann das Hosting von Kundendaten auf einen bestimmten Ort beschränkt werden?"@de,
+                "Can the hosting of customer data be restricted to a specific location?"@en ;
+            sh:in ( "No restriction" "Restriction to a region" "Restriction to the EU" "Restriction to Germany" ) ;
+            sh:maxCount 1 ;
+            sh:name "custom data hosting restrictable" ;
+            sh:order 1 ;
+            sh:path trusted-cloud:customDataHostingRestrictable ],
+        [ skos:example "'No restriction', 'Restriction to a region', 'Restriction to the EU', 'Restriction to Germany'" ;
+            sh:datatype xsd:string ;
+            sh:description "Kann die Verwaltung von Kundendaten auf einen bestimmten Ort beschränkt werden?"@de,
+                "Can the administration of customer data be restricted to a specific location?"@en ;
+            sh:in ( "No restriction" "Restriction to a region" "Restriction to the EU" "Restriction to Germany" ) ;
+            sh:maxCount 1 ;
+            sh:name "custom data adminstration restrictable" ;
+            sh:order 2 ;
+            sh:path trusted-cloud:customDataAdminstrationRestrictable ],
+        [ skos:example "'Freetext'" ;
+            sh:datatype xsd:string ;
+            sh:description "Detaillierte Informationen für Optionen für Geo-Regionen."@de,
+                "Detailed information for options of GEO-regions."@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "geo region options" ;
+            sh:order 3 ;
+            sh:path trusted-cloud:geoRegionOptions ] ;
+    sh:targetClass trusted-cloud:DataRetention .
+
+gax-validation:DataSubjectRightsShape a sh:NodeShape ;
+    sh:property [ skos:example "'Freetext'" ;
+            sh:datatype xsd:string ;
+            sh:description "Wie kann es garantiert werden, dass auch Links gelöscht werden, wenn die Daten entfernt werden?"@de,
+                "How can it be guaranteed, that also links get deleted, if the data is removed?"@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "guarantee to delete links to customer data" ;
+            sh:order 2 ;
+            sh:path trusted-cloud:guaranteeToDeleteLinksToCustomerData ],
+        [ skos:example "'Freetext'" ;
+            sh:datatype xsd:string ;
+            sh:description "Wie können die Anforderungen der DSGVO gemäß den betroffenen Rechten erfüllt werden, z.Die Löschung personenbezogener Daten?"@de,
+                "How can the requirements of the GDPR according to data subject rights be fulfilled, e.g. the deletion of personal data?"@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "guarantee for implementation of data subject rights" ;
+            sh:order 1 ;
+            sh:path trusted-cloud:guaranteeForImplementationOfDataSubjectRights ],
+        [ skos:example "'Freetext'" ;
+            sh:datatype xsd:string ;
+            sh:description "Wie kann es garantiert werden, dass auch Links gelöscht werden, wenn die Daten entfernt werden?"@de,
+                "How can it be guaranteed, that also links get deleted, if the data is removed?"@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "guarantee to delete links to customer data" ;
+            sh:order 2 ;
+            sh:path trusted-cloud:guaranteeToDeleteLinksToCustomerData ],
+        [ skos:example "'Freetext'" ;
+            sh:datatype xsd:string ;
+            sh:description "Wie können die Anforderungen der DSGVO gemäß den betroffenen Rechten erfüllt werden, z.Die Löschung personenbezogener Daten?"@de,
+                "How can the requirements of the GDPR according to data subject rights be fulfilled, e.g. the deletion of personal data?"@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "guarantee for implementation of data subject rights" ;
+            sh:order 1 ;
+            sh:path trusted-cloud:guaranteeForImplementationOfDataSubjectRights ] ;
+    sh:targetClass trusted-cloud:DataSubjectRights .
+
+gax-validation:EncryptionShapeTC a sh:NodeShape ;
+    sh:property [ skos:example "'Keys are set by the provider', 'Keys are set by the customer', 'Keys can be set by external services'" ;
+            sh:datatype xsd:string ;
+            sh:description "Schlüsselverwaltungsoptionen"@de,
+                "Key management options"@en ;
+            sh:in ( "Keys are set by the provider" "Keys are set by the customer" "Keys can be set by external services" ) ;
+            sh:maxCount 1 ;
+            sh:name "key management options" ;
+            sh:order 2 ;
+            sh:path trusted-cloud:keyManagementOptions ],
+        [ skos:example "'Freetext'" ;
+            sh:datatype xsd:string ;
+            sh:description "Verschlüsselungstypen, mit denen Daten für die Übertragung und Speicherung verschlüsselt werden können?"@de,
+                "Encryption types that can be used to encrypt data for transmission and storage?"@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "encryption types for data transmission and storage" ;
+            sh:order 1 ;
+            sh:path trusted-cloud:encryptionTypesForDataTransmissionAndStorage ],
+        [ skos:example "'Freetext'" ;
+            sh:datatype xsd:string ;
+            sh:description "Verschlüsselungstypen, mit denen Daten für die Übertragung und Speicherung verschlüsselt werden können?"@de,
+                "Encryption types that can be used to encrypt data for transmission and storage?"@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "encryption types for data transmission and storage" ;
+            sh:order 1 ;
+            sh:path trusted-cloud:encryptionTypesForDataTransmissionAndStorage ],
+        [ skos:example "'Keys are set by the provider', 'Keys are set by the customer', 'Keys can be set by external services'" ;
+            sh:datatype xsd:string ;
+            sh:description "Schlüsselverwaltungsoptionen"@de,
+                "Key management options"@en ;
+            sh:in ( "Keys are set by the provider" "Keys are set by the customer" "Keys can be set by external services" ) ;
+            sh:maxCount 1 ;
+            sh:name "key management options" ;
+            sh:order 2 ;
+            sh:path trusted-cloud:keyManagementOptions ] ;
+    sh:targetClass trusted-cloud:Encryption .
+
+gax-validation:ExitSupportShape a sh:NodeShape ;
+    sh:property [ skos:example "'Freetext'" ;
+            sh:datatype xsd:string ;
+            sh:description "Beschreibung der Regeln für die Unterstützung der Kündigung"@de,
+                "Description of the rules for termination support"@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "description of rules" ;
+            sh:order 2 ;
+            sh:path trusted-cloud:descriptionOfRules ],
+        [ skos:example "'true', 'false'" ;
+            sh:datatype xsd:boolean ;
+            sh:description "Sind Regeln und Maßnahmen für die Vertragsunterstützung für die Ausstieg vertraglich definiert?"@de,
+                "Are rules and measures for exit support contractually defined?"@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "rules contacted" ;
+            sh:order 1 ;
+            sh:path trusted-cloud:rulesContacted ],
+        [ skos:example "'true', 'false'" ;
+            sh:datatype xsd:boolean ;
+            sh:description "Sind Regeln und Maßnahmen für die Vertragsunterstützung für die Ausstieg vertraglich definiert?"@de,
+                "Are rules and measures for exit support contractually defined?"@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "rules contacted" ;
+            sh:order 1 ;
+            sh:path trusted-cloud:rulesContacted ],
+        [ skos:example "'Freetext'" ;
+            sh:datatype xsd:string ;
+            sh:description "Beschreibung der Regeln für die Unterstützung der Kündigung"@de,
+                "Description of the rules for termination support"@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "description of rules" ;
+            sh:order 2 ;
+            sh:path trusted-cloud:descriptionOfRules ] ;
+    sh:targetClass trusted-cloud:ExitSupport .
+
+gax-validation:FunctionalDescriptionServiceShape a sh:NodeShape ;
+    sh:property [ skos:example "'A brief description...'" ;
+            sh:datatype xsd:string ;
+            sh:description "Funktionale kurze Beschreibung des Dienstes in Bezug auf die Nachfrage der Firma."@de,
+                "Functional brief description of the service in reference to company demand."@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "brief description" ;
+            sh:order 2 ;
+            sh:path trusted-cloud:briefDescription ],
+        [ skos:example "'An ML service for training, deploying and improving image classifiers.'" ;
+            sh:datatype xsd:string ;
+            sh:description "Eine kurze Beschreibung in der natürlichen Sprache, die Sie auf der Abfragestelle angezeigt werden müssen."@de,
+                "A short description in natural language to display on the query site."@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "description" ;
+            sh:order 1 ;
+            sh:path trusted-cloud:description ],
+        [ skos:example "'An ML service for training, deploying and improving image classifiers.'" ;
+            sh:datatype xsd:string ;
+            sh:description "Eine kurze Beschreibung in der natürlichen Sprache, die Sie auf der Abfragestelle angezeigt werden müssen."@de,
+                "A short description in natural language to display on the query site."@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "description" ;
+            sh:order 1 ;
+            sh:path trusted-cloud:description ],
+        [ skos:example "'A brief description...'" ;
+            sh:datatype xsd:string ;
+            sh:description "Funktionale kurze Beschreibung des Dienstes in Bezug auf die Nachfrage der Firma."@de,
+                "Functional brief description of the service in reference to company demand."@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "brief description" ;
+            sh:order 2 ;
+            sh:path trusted-cloud:briefDescription ] ;
+    sh:targetClass trusted-cloud:FunctionalDescriptionService .
+
+gax-validation:GdprComplianceShape a sh:NodeShape ;
+    sh:property [ skos:example "'true', 'false'" ;
+            sh:datatype xsd:boolean ;
+            sh:description "Ist die Unterstützung des Controller für die Datenschutzbewertung (DPIA) vertraglich vereinbart, falls dies für den Kunden erforderlich ist?(z. B. Datumsverarbeitung in großem Maßstab ',' Datenübertragung außerhalb der EU 'usw.)."@de,
+                "Is the support of the controller of data protection impact assessment (DPIA) contractually agreed, in case this is necessary for the client? (e.g. Date processing on a large scale', 'data transfer outside the EU', etc)."@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "dpdia contracted" ;
+            sh:order 3 ;
+            sh:path trusted-cloud:dpdiaContracted ],
+        [ skos:example "'true', 'false'" ;
+            sh:datatype xsd:boolean ;
+            sh:description "Gibt es eine pseudonymisierte oder verschlüsselte Verschlüsselung personenbezogener Daten?"@de,
+                "Is there contracted pseudonymization or encryption of personal data?"@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "personal data encrytion contracted" ;
+            sh:order 4 ;
+            sh:path trusted-cloud:personalDataEncrytionContracted ],
+        [ skos:example "'true', 'false'" ;
+            sh:datatype xsd:boolean ;
+            sh:description "Ist die Anwendung von betroffenen Rechten vertraglich garantiert?"@de,
+                "Is the application of data subject rights contractually guaranteed?"@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "application of data subject rights contracted" ;
+            sh:order 5 ;
+            sh:path trusted-cloud:applicationOfDataSubjectRightsContracted ],
+        [ skos:example "'true', 'false'" ;
+            sh:datatype xsd:boolean ;
+            sh:description "Ist das Löschen von Daten einschließlich Links zu den relevanten Daten und Datenkopien in der Cloud vertraglich gesichert?"@de,
+                "Is the deletion of data including links to the relevant data and data copies in the cloud contractually assured?"@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "data deletion contracted" ;
+            sh:order 6 ;
+            sh:path trusted-cloud:dataDeletionContracted ],
+        [ skos:example "'true', 'false'" ;
+            sh:datatype xsd:boolean ;
+            sh:description "Benötigt das Amt des Datenschutzvertrags Informationen vom Kunden über die Art der personenbezogenen Daten sowie die Kategorien der Bedenken hinsichtlich der PERONSS?"@de,
+                "Does the office of data privacy contract require information from the client regarding the type of personal data as well as categories of the peronss concerns?"@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "client feedback required" ;
+            sh:order 7 ;
+            sh:path trusted-cloud:clientFeedbackRequired ],
+        [ skos:example "'Self-audit', 'Internal rules of conduct', 'Certificate', 'Approved rules of conduct acc. to Atr. 40 GDPR', 'Certificates acc. to Art. 42 GDPR', 'Others'" ;
+            sh:datatype xsd:string ;
+            sh:description "Welcher der folgenden Nachweise kann dem Auftragnehmer mit geeigneten Mitteln gemäß dem Büro für Datenschutzvertrag zur Überprüfung vorgelegt werden?"@de,
+                "Which of the following proofs can be provided to the contractor for review by appropriate means in accordace with the office for data privacy contract?"@en ;
+            sh:in ( "Self-audit" "Internal rules of conduct" "Certificate" "Approved rules of conduct acc. to Atr. 40 GDPR" "Certificates acc. to Art. 42 GDPR" "Others (free text)" ) ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "proofs" ;
+            sh:order 8 ;
+            sh:path trusted-cloud:proofs ],
+        [ skos:example "'true', 'false'" ;
+            sh:datatype xsd:boolean ;
+            sh:description "Ist eine Aufzeichnung von Verarbeitungsaktivitäten, die vom Kunden auf der Grundlage von ART in Auftrag gegeben werden.30 DSGVO?"@de,
+                "Is a record of processing activities commissioned by the client based on Art. 30 GDPR?"@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name " gdpr art40" ;
+            sh:order 9 ;
+            sh:path trusted-cloud:GdprArt40 ],
+        [ skos:example "'No contract', 'Written contract', 'Written/electronic contract is offer on demand acc. to Art. 28 GDPR', 'Written/ electronic contract is offerd in accordance with Art. 28 GDPR.'" ;
+            sh:datatype xsd:string ;
+            sh:description "Wie stimmt ein Amt für Datenschutzvertrag oder Rechtsgesetz mit dem Kunden mit Sitz in den EU -DSGVO -Anforderungen vereinbart?"@de,
+                "How is an office of data privacy contract or legal act agreed with the client based in the EU GDPR requirements?"@en ;
+            sh:in ( "No contract" "Written contract" "Written/electronic contract is offer on demand acc. to Art. 28 GDPR" "Written/ electronic contract is offerd in accordance with Art. 28 GDPR." ) ;
+            sh:maxCount 1 ;
+            sh:name "opd contracted" ;
+            sh:order 2 ;
+            sh:path trusted-cloud:opdContracted ],
+        [ skos:example "'Requirements are fulfilled', 'Measurements for fullfillment are documented in the contract', 'Measurements for fullfillment are documented publicly', 'Measurements for fullfillment are evident by a certificate'" ;
+            sh:datatype xsd:string ;
+            sh:description "Wie werden die formalen Anforderungen der DSGVO erfüllt?"@de,
+                "How are the formal requirements specified by GDPR fulfilled?"@en ;
+            sh:in ( "Requirements are fulfilled" "Measurements for fullfillment are documented in the contract" "Measurements for fullfillment are documented publicly" "Measurements for fullfillment are evident by a certificate" ) ;
+            sh:maxCount 1 ;
+            sh:name "gdpr fullfiled" ;
+            sh:order 1 ;
+            sh:path trusted-cloud:gdprFullfiled ],
+        [ skos:example "'Requirements are fulfilled', 'Measurements for fullfillment are documented in the contract', 'Measurements for fullfillment are documented publicly', 'Measurements for fullfillment are evident by a certificate'" ;
+            sh:datatype xsd:string ;
+            sh:description "Wie werden die formalen Anforderungen der DSGVO erfüllt?"@de,
+                "How are the formal requirements specified by GDPR fulfilled?"@en ;
+            sh:in ( "Requirements are fulfilled" "Measurements for fullfillment are documented in the contract" "Measurements for fullfillment are documented publicly" "Measurements for fullfillment are evident by a certificate" ) ;
+            sh:maxCount 1 ;
+            sh:name "gdpr fullfiled" ;
+            sh:order 1 ;
+            sh:path trusted-cloud:gdprFullfiled ],
+        [ skos:example "'No contract', 'Written contract', 'Written/electronic contract is offer on demand acc. to Art. 28 GDPR', 'Written/ electronic contract is offerd in accordance with Art. 28 GDPR.'" ;
+            sh:datatype xsd:string ;
+            sh:description "Wie stimmt ein Amt für Datenschutzvertrag oder Rechtsgesetz mit dem Kunden mit Sitz in den EU -DSGVO -Anforderungen vereinbart?"@de,
+                "How is an office of data privacy contract or legal act agreed with the client based in the EU GDPR requirements?"@en ;
+            sh:in ( "No contract" "Written contract" "Written/electronic contract is offer on demand acc. to Art. 28 GDPR" "Written/ electronic contract is offerd in accordance with Art. 28 GDPR." ) ;
+            sh:maxCount 1 ;
+            sh:name "opd contracted" ;
+            sh:order 2 ;
+            sh:path trusted-cloud:opdContracted ],
+        [ skos:example "'true', 'false'" ;
+            sh:datatype xsd:boolean ;
+            sh:description "Ist die Unterstützung des Controller für die Datenschutzbewertung (DPIA) vertraglich vereinbart, falls dies für den Kunden erforderlich ist?(z. B. Datumsverarbeitung in großem Maßstab ',' Datenübertragung außerhalb der EU 'usw.)."@de,
+                "Is the support of the controller of data protection impact assessment (DPIA) contractually agreed, in case this is necessary for the client? (e.g. Date processing on a large scale', 'data transfer outside the EU', etc)."@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "dpdia contracted" ;
+            sh:order 3 ;
+            sh:path trusted-cloud:dpdiaContracted ],
+        [ skos:example "'true', 'false'" ;
+            sh:datatype xsd:boolean ;
+            sh:description "Gibt es eine pseudonymisierte oder verschlüsselte Verschlüsselung personenbezogener Daten?"@de,
+                "Is there contracted pseudonymization or encryption of personal data?"@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "personal data encrytion contracted" ;
+            sh:order 4 ;
+            sh:path trusted-cloud:personalDataEncrytionContracted ],
+        [ skos:example "'true', 'false'" ;
+            sh:datatype xsd:boolean ;
+            sh:description "Ist die Anwendung von betroffenen Rechten vertraglich garantiert?"@de,
+                "Is the application of data subject rights contractually guaranteed?"@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "application of data subject rights contracted" ;
+            sh:order 5 ;
+            sh:path trusted-cloud:applicationOfDataSubjectRightsContracted ],
+        [ skos:example "'true', 'false'" ;
+            sh:datatype xsd:boolean ;
+            sh:description "Ist das Löschen von Daten einschließlich Links zu den relevanten Daten und Datenkopien in der Cloud vertraglich gesichert?"@de,
+                "Is the deletion of data including links to the relevant data and data copies in the cloud contractually assured?"@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "data deletion contracted" ;
+            sh:order 6 ;
+            sh:path trusted-cloud:dataDeletionContracted ],
+        [ skos:example "'true', 'false'" ;
+            sh:datatype xsd:boolean ;
+            sh:description "Benötigt das Amt des Datenschutzvertrags Informationen vom Kunden über die Art der personenbezogenen Daten sowie die Kategorien der Bedenken hinsichtlich der PERONSS?"@de,
+                "Does the office of data privacy contract require information from the client regarding the type of personal data as well as categories of the peronss concerns?"@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "client feedback required" ;
+            sh:order 7 ;
+            sh:path trusted-cloud:clientFeedbackRequired ],
+        [ skos:example "'Self-audit', 'Internal rules of conduct', 'Certificate', 'Approved rules of conduct acc. to Atr. 40 GDPR', 'Certificates acc. to Art. 42 GDPR', 'Others'" ;
+            sh:datatype xsd:string ;
+            sh:description "Welcher der folgenden Nachweise kann dem Auftragnehmer mit geeigneten Mitteln gemäß dem Büro für Datenschutzvertrag zur Überprüfung vorgelegt werden?"@de,
+                "Which of the following proofs can be provided to the contractor for review by appropriate means in accordace with the office for data privacy contract?"@en ;
+            sh:in ( "Self-audit" "Internal rules of conduct" "Certificate" "Approved rules of conduct acc. to Atr. 40 GDPR" "Certificates acc. to Art. 42 GDPR" "Others (free text)" ) ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "proofs" ;
+            sh:order 8 ;
+            sh:path trusted-cloud:proofs ],
+        [ skos:example "'true', 'false'" ;
+            sh:datatype xsd:boolean ;
+            sh:description "Ist eine Aufzeichnung von Verarbeitungsaktivitäten, die vom Kunden auf der Grundlage von ART in Auftrag gegeben werden.30 DSGVO?"@de,
+                "Is a record of processing activities commissioned by the client based on Art. 30 GDPR?"@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name " gdpr art40" ;
+            sh:order 9 ;
+            sh:path trusted-cloud:GdprArt40 ] ;
+    sh:targetClass trusted-cloud:GdprCompliance .
+
+gax-validation:GdprMeasuresShape a sh:NodeShape ;
+    sh:property [ skos:example "'Freetext'" ;
+            sh:datatype xsd:string ;
+            sh:description "Einzelheiten zu den implementierten technischen und organisatorischen Messungen."@de,
+                "Details about the implemented technical and organizational measurements."@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "details" ;
+            sh:order 2 ;
+            sh:path trusted-cloud:details ],
+        [ skos:example "'Formally described', 'Contracted', 'Certified', 'Certified and reviewed regularly'" ;
+            sh:datatype xsd:string ;
+            sh:description "Wie angemessen erfolgt die Umsetzung technischer und organisatorischer Maßnahmen von der Europäischen allgemeinen Datenschutzregulation (DSGVO)?"@de,
+                "How adequately does the implementation of technical and organizational measures take place by European General Data Protection Regulation (GDPR)?"@en ;
+            sh:in ( "Formally described" "Contracted" "Certified" "Certified and reviewed regularly" ) ;
+            sh:maxCount 1 ;
+            sh:name "gdpr measures" ;
+            sh:order 1 ;
+            sh:path trusted-cloud:gdprMeasures ],
+        [ skos:example "'Freetext'" ;
+            sh:datatype xsd:string ;
+            sh:description "Einzelheiten zu den implementierten technischen und organisatorischen Messungen."@de,
+                "Details about the implemented technical and organizational measurements."@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "details" ;
+            sh:order 2 ;
+            sh:path trusted-cloud:details ],
+        [ skos:example "'Formally described', 'Contracted', 'Certified', 'Certified and reviewed regularly'" ;
+            sh:datatype xsd:string ;
+            sh:description "Wie angemessen erfolgt die Umsetzung technischer und organisatorischer Maßnahmen von der Europäischen allgemeinen Datenschutzregulation (DSGVO)?"@de,
+                "How adequately does the implementation of technical and organizational measures take place by European General Data Protection Regulation (GDPR)?"@en ;
+            sh:in ( "Formally described" "Contracted" "Certified" "Certified and reviewed regularly" ) ;
+            sh:maxCount 1 ;
+            sh:name "gdpr measures" ;
+            sh:order 1 ;
+            sh:path trusted-cloud:gdprMeasures ] ;
+    sh:targetClass trusted-cloud:GdprMeasures .
+
+gax-validation:GeneralInformationServiceShape a sh:NodeShape ;
+    sh:property [ skos:example "'http://myservice.com'" ;
+            sh:datatype xsd:anyURI ;
+            sh:description "Webadresse für die Servicepräsentation."@de,
+                "Web address for the service presentation."@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "website" ;
+            sh:order 5 ;
+            sh:path trusted-cloud:website ],
+        [ skos:example "'www.acme.com/logo.png'" ;
+            sh:datatype xsd:anyURI ;
+            sh:description "Resolvible Link zu Service -Logo, der bei der Auflistung angezeigt wird.Bitte geben Sie das Bild mit LEAT 200 x 400 Pixel an."@de,
+                "Resolvible link to logo of service that will be displayed at listing. Please provide image with at leat 200 x 400 pixel."@en ;
+            sh:maxCount 1 ;
+            sh:name "service logo" ;
+            sh:order 2 ;
+            sh:path trusted-cloud:serviceLogo ],
+        [ skos:example "'private', 'public', 'hybrid'" ;
+            sh:datatype xsd:string ;
+            sh:description "Art der Bereitstellung des Dienstes."@de,
+                "Type of provisioning of service."@en ;
+            sh:in ( "private" "public" "hybrid" ) ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "provision type" ;
+            sh:order 3 ;
+            sh:path trusted-cloud:provisionType ],
+        [ skos:example "'IaaS', 'PaaS', 'SaaS'" ;
+            sh:datatype xsd:string ;
+            sh:description "Servicemodell für den Service"@de,
+                "Service Model for the service"@en ;
+            sh:in ( "IaaS" "PaaS" "SaaS" ) ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "service model" ;
+            sh:order 4 ;
+            sh:path trusted-cloud:serviceModel ],
+        [ skos:example "'ACME Service'" ;
+            sh:datatype xsd:string ;
+            sh:description "Name des Dienstes"@de,
+                "Name of the service"@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "name" ;
+            sh:order 1 ;
+            sh:path trusted-cloud:name ],
+        [ skos:example "'ACME Service'" ;
+            sh:datatype xsd:string ;
+            sh:description "Name des Dienstes"@de,
+                "Name of the service"@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "name" ;
+            sh:order 1 ;
+            sh:path trusted-cloud:name ],
+        [ skos:example "'www.acme.com/logo.png'" ;
+            sh:datatype xsd:anyURI ;
+            sh:description "Resolvible Link zu Service -Logo, der bei der Auflistung angezeigt wird.Bitte geben Sie das Bild mit LEAT 200 x 400 Pixel an."@de,
+                "Resolvible link to logo of service that will be displayed at listing. Please provide image with at leat 200 x 400 pixel."@en ;
+            sh:maxCount 1 ;
+            sh:name "service logo" ;
+            sh:order 2 ;
+            sh:path trusted-cloud:serviceLogo ],
+        [ skos:example "'private', 'public', 'hybrid'" ;
+            sh:datatype xsd:string ;
+            sh:description "Art der Bereitstellung des Dienstes."@de,
+                "Type of provisioning of service."@en ;
+            sh:in ( "private" "public" "hybrid" ) ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "provision type" ;
+            sh:order 3 ;
+            sh:path trusted-cloud:provisionType ],
+        [ skos:example "'IaaS', 'PaaS', 'SaaS'" ;
+            sh:datatype xsd:string ;
+            sh:description "Servicemodell für den Service"@de,
+                "Service Model for the service"@en ;
+            sh:in ( "IaaS" "PaaS" "SaaS" ) ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "service model" ;
+            sh:order 4 ;
+            sh:path trusted-cloud:serviceModel ],
+        [ skos:example "'http://myservice.com'" ;
+            sh:datatype xsd:anyURI ;
+            sh:description "Webadresse für die Servicepräsentation."@de,
+                "Web address for the service presentation."@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "website" ;
+            sh:order 5 ;
+            sh:path trusted-cloud:website ] ;
+    sh:targetClass trusted-cloud:GeneralInformationService .
+
+gax-validation:LocationShapeTC a sh:NodeShape ;
+    sh:property [ skos:example "'Saxony'" ;
+            sh:datatype xsd:string ;
+            sh:description "Das Status -Rechenzentrum befindet sich in."@de,
+                "State data centre is located in."@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "state" ;
+            sh:order 2 ;
+            sh:path trusted-cloud:state ],
+        [ skos:example "'DE', 'DEU'" ;
+            sh:datatype xsd:string ;
+            sh:description "Das Länderdatenzentrum befindet sich in."@de,
+                "Country data centre is located in."@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "country-name" ;
+            sh:order 1 ;
+            sh:path trusted-cloud:country-name ],
+        [ skos:example "'DE', 'DEU'" ;
+            sh:datatype xsd:string ;
+            sh:description "Das Länderdatenzentrum befindet sich in."@de,
+                "Country data centre is located in."@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "country-name" ;
+            sh:order 1 ;
+            sh:path trusted-cloud:country-name ],
+        [ skos:example "'Saxony'" ;
+            sh:datatype xsd:string ;
+            sh:description "Das Status -Rechenzentrum befindet sich in."@de,
+                "State data centre is located in."@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "state" ;
+            sh:order 2 ;
+            sh:path trusted-cloud:state ] ;
+    sh:targetClass trusted-cloud:Location .
+
+gax-validation:PricingModelShape a sh:NodeShape ;
+    sh:property [ skos:example "'on demand', 'publicly available'" ;
+            sh:datatype xsd:string ;
+            sh:description "Ist das Preismodell allen Kunden öffentlich zugänglich?"@de,
+                "Is the pricing model publicly available to all customers?"@en ;
+            sh:in ( "on demand" "publicly available" ) ;
+            sh:maxCount 1 ;
+            sh:name "is public" ;
+            sh:order 2 ;
+            sh:path trusted-cloud:isPublic ],
+        [ skos:example "'www.acme.com/princing.pdf'" ;
+            sh:datatype xsd:anyURI ;
+            sh:description "Link zum Preismodell."@de,
+                "Link to the pricing model."@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "pricing model link" ;
+            sh:order 3 ;
+            sh:path trusted-cloud:pricingModelLink ],
+        [ skos:example "'Freetext'" ;
+            sh:datatype xsd:string ;
+            sh:description "Spezifikationen für die Vertragsdauer."@de,
+                "Specifications for the contract duration."@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "contract duration" ;
+            sh:order 4 ;
+            sh:path trusted-cloud:contractDuration ],
+        [ skos:example "'Freetext'" ;
+            sh:datatype xsd:string ;
+            sh:description "Informationen zu Terminierungsmodalitäten und Perioden"@de,
+                "Information about termination modalities and periods"@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "termination modalities" ;
+            sh:order 5 ;
+            sh:path trusted-cloud:terminationModalities ],
+        [ skos:example "'true', 'false'" ;
+            sh:datatype xsd:boolean ;
+            sh:description "Gibt es eine kostenlose Testphase?"@de,
+                "Is there a free trial phase?"@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "free trial phase" ;
+            sh:order 6 ;
+            sh:path trusted-cloud:freeTrialPhase ],
+        [ skos:example "'true', 'false'" ;
+            sh:datatype xsd:boolean ;
+            sh:description "Hat die kostenlose Versuchsphase den gleichen Datenschutz wie ein kommerzieller Dienst?"@de,
+                "Has the free trial phase the same data protection as a commercial service?"@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "same data protections" ;
+            sh:order 7 ;
+            sh:path trusted-cloud:sameDataProtections ],
+        [ skos:example "'Freetext'" ;
+            sh:datatype xsd:string ;
+            sh:description "Details zum Gebrauchtpreismodell."@de,
+                "Details about used pricing model."@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "pricing model" ;
+            sh:order 1 ;
+            sh:path trusted-cloud:pricingModel ],
+        [ skos:example "'Freetext'" ;
+            sh:datatype xsd:string ;
+            sh:description "Details zum Gebrauchtpreismodell."@de,
+                "Details about used pricing model."@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "pricing model" ;
+            sh:order 1 ;
+            sh:path trusted-cloud:pricingModel ],
+        [ skos:example "'on demand', 'publicly available'" ;
+            sh:datatype xsd:string ;
+            sh:description "Ist das Preismodell allen Kunden öffentlich zugänglich?"@de,
+                "Is the pricing model publicly available to all customers?"@en ;
+            sh:in ( "on demand" "publicly available" ) ;
+            sh:maxCount 1 ;
+            sh:name "is public" ;
+            sh:order 2 ;
+            sh:path trusted-cloud:isPublic ],
+        [ skos:example "'www.acme.com/princing.pdf'" ;
+            sh:datatype xsd:anyURI ;
+            sh:description "Link zum Preismodell."@de,
+                "Link to the pricing model."@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "pricing model link" ;
+            sh:order 3 ;
+            sh:path trusted-cloud:pricingModelLink ],
+        [ skos:example "'Freetext'" ;
+            sh:datatype xsd:string ;
+            sh:description "Spezifikationen für die Vertragsdauer."@de,
+                "Specifications for the contract duration."@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "contract duration" ;
+            sh:order 4 ;
+            sh:path trusted-cloud:contractDuration ],
+        [ skos:example "'Freetext'" ;
+            sh:datatype xsd:string ;
+            sh:description "Informationen zu Terminierungsmodalitäten und Perioden"@de,
+                "Information about termination modalities and periods"@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "termination modalities" ;
+            sh:order 5 ;
+            sh:path trusted-cloud:terminationModalities ],
+        [ skos:example "'true', 'false'" ;
+            sh:datatype xsd:boolean ;
+            sh:description "Gibt es eine kostenlose Testphase?"@de,
+                "Is there a free trial phase?"@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "free trial phase" ;
+            sh:order 6 ;
+            sh:path trusted-cloud:freeTrialPhase ],
+        [ skos:example "'true', 'false'" ;
+            sh:datatype xsd:boolean ;
+            sh:description "Hat die kostenlose Versuchsphase den gleichen Datenschutz wie ein kommerzieller Dienst?"@de,
+                "Has the free trial phase the same data protection as a commercial service?"@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "same data protections" ;
+            sh:order 7 ;
+            sh:path trusted-cloud:sameDataProtections ] ;
+    sh:targetClass trusted-cloud:PricingModel .
+
+gax-validation:RequirementsServiceUsageShape a sh:NodeShape ;
+    sh:property [ skos:example "'Freetext'" ;
+            sh:datatype xsd:string ;
+            sh:description "Beschreibung für die organisatorischen Anforderungen für die Nutzung des Dienstes"@de,
+                "Description for the organizational requirements to use the service"@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "organizational requirements" ;
+            sh:order 2 ;
+            sh:path trusted-cloud:organizationalRequirements ],
+        [ skos:example "'Freetext'" ;
+            sh:datatype xsd:string ;
+            sh:description "Beschreibung für die technischen Anforderungen für die Nutzung des Dienstes"@de,
+                "Description for the technical requirements to use the service"@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "technical requirements" ;
+            sh:order 1 ;
+            sh:path trusted-cloud:technicalRequirements ],
+        [ skos:example "'Freetext'" ;
+            sh:datatype xsd:string ;
+            sh:description "Beschreibung für die technischen Anforderungen für die Nutzung des Dienstes"@de,
+                "Description for the technical requirements to use the service"@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "technical requirements" ;
+            sh:order 1 ;
+            sh:path trusted-cloud:technicalRequirements ],
+        [ skos:example "'Freetext'" ;
+            sh:datatype xsd:string ;
+            sh:description "Beschreibung für die organisatorischen Anforderungen für die Nutzung des Dienstes"@de,
+                "Description for the organizational requirements to use the service"@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "organizational requirements" ;
+            sh:order 2 ;
+            sh:path trusted-cloud:organizationalRequirements ] ;
+    sh:targetClass trusted-cloud:RequirementsServiceUsage .
+
+gax-validation:ServiceAvailabilityShape a sh:NodeShape ;
+    sh:property [ skos:example "'Freetext'" ;
+            sh:datatype xsd:string ;
+            sh:description "Maximale Ausfallzeit des Dienstes in Stunden"@de,
+                "Maximum downtime of the service in hours"@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "maximum down time" ;
+            sh:order 2 ;
+            sh:path trusted-cloud:maximumDownTime ],
+        [ skos:example "'Freetext'" ;
+            sh:datatype xsd:string ;
+            sh:description "Wie wird die schnelle Wiederherstellung der Verfügbarkeit von Kundendaten und zu dem Zugriff darauf im Falle eines physischen oder technischen Vorfalls garantiert?"@de,
+                "How is the quick recovery of availability of client data and access to it guarantieed in the event of a physical or technical incident?"@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "time to recover" ;
+            sh:order 3 ;
+            sh:path trusted-cloud:timeToRecover ],
+        [ skos:example "'99%', '99.9%', '99.99%', '99.999%', '99.999%'" ;
+            sh:datatype xsd:string ;
+            sh:description "Versicherte Serviceverfügbarkeit in Prozent pro Jahr"@de,
+                "Assured Service Availability in Percent / Year"@en ;
+            sh:in ( "99%" "99.9%" "99.99%" "99.999%" "99.999%" ) ;
+            sh:maxCount 1 ;
+            sh:name "availability" ;
+            sh:order 1 ;
+            sh:path trusted-cloud:availability ],
+        [ skos:example "'99%', '99.9%', '99.99%', '99.999%', '99.999%'" ;
+            sh:datatype xsd:string ;
+            sh:description "Versicherte Serviceverfügbarkeit in Prozent pro Jahr"@de,
+                "Assured Service Availability in Percent / Year"@en ;
+            sh:in ( "99%" "99.9%" "99.99%" "99.999%" "99.999%" ) ;
+            sh:maxCount 1 ;
+            sh:name "availability" ;
+            sh:order 1 ;
+            sh:path trusted-cloud:availability ],
+        [ skos:example "'Freetext'" ;
+            sh:datatype xsd:string ;
+            sh:description "Maximale Ausfallzeit des Dienstes in Stunden"@de,
+                "Maximum downtime of the service in hours"@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "maximum down time" ;
+            sh:order 2 ;
+            sh:path trusted-cloud:maximumDownTime ],
+        [ skos:example "'Freetext'" ;
+            sh:datatype xsd:string ;
+            sh:description "Wie wird die schnelle Wiederherstellung der Verfügbarkeit von Kundendaten und zu dem Zugriff darauf im Falle eines physischen oder technischen Vorfalls garantiert?"@de,
+                "How is the quick recovery of availability of client data and access to it guarantieed in the event of a physical or technical incident?"@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "time to recover" ;
+            sh:order 3 ;
+            sh:path trusted-cloud:timeToRecover ] ;
+    sh:targetClass trusted-cloud:ServiceAvailability .
+
+gax-validation:ServiceInterruptionRulesShape a sh:NodeShape ;
+    sh:property [ skos:example "'Freetext'" ;
+            sh:datatype xsd:string ;
+            sh:description "Details zu vertraglich sichergestellten Regeln für Feedback von Kundendaten."@de,
+                "Details about contractually ensured rules for feedback of customer data."@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "rules details" ;
+            sh:order 2 ;
+            sh:path trusted-cloud:rulesDetails ],
+        [ skos:example "'yes', 'no'" ;
+            sh:datatype xsd:boolean ;
+            sh:description "Sind eindeutige Regeln vorgesehen, die ein angemessenes Datenfeedback bei Insolvenz oder besonderen Vertragsende oder Unterbrechung der Dienstleistung garantieren."@de,
+                "Are clear rules provided which guarantee adequate data feedback in case of insolvency or special ending of contract or interruption of service provisioning."@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "rules contracted" ;
+            sh:order 1 ;
+            sh:path trusted-cloud:rulesContracted ],
+        [ skos:example "'yes', 'no'" ;
+            sh:datatype xsd:boolean ;
+            sh:description "Sind eindeutige Regeln vorgesehen, die ein angemessenes Datenfeedback bei Insolvenz oder besonderen Vertragsende oder Unterbrechung der Dienstleistung garantieren."@de,
+                "Are clear rules provided which guarantee adequate data feedback in case of insolvency or special ending of contract or interruption of service provisioning."@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "rules contracted" ;
+            sh:order 1 ;
+            sh:path trusted-cloud:rulesContracted ],
+        [ skos:example "'Freetext'" ;
+            sh:datatype xsd:string ;
+            sh:description "Details zu vertraglich sichergestellten Regeln für Feedback von Kundendaten."@de,
+                "Details about contractually ensured rules for feedback of customer data."@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "rules details" ;
+            sh:order 2 ;
+            sh:path trusted-cloud:rulesDetails ] ;
+    sh:targetClass trusted-cloud:ServiceInterruptionRules .
+
+gax-validation:ServiceLevelAgreementShape a sh:NodeShape ;
+    sh:property [ skos:example "'true', 'false'" ;
+            sh:datatype xsd:boolean ;
+            sh:description "Ist es möglich, die Einhaltung der SLA durch den Kunden zu überprüfen?"@de,
+                "Is it possible to review the compliance with the SLA by the customer?"@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "sla compliance reviewable" ;
+            sh:order 2 ;
+            sh:path trusted-cloud:slaComplianceReviewable ],
+        [ skos:example "'Freetext'" ;
+            sh:datatype xsd:string ;
+            sh:description "Beschreibung der SLAs"@de,
+                "Description of the SLAs"@en ;
+            sh:name "description" ;
+            sh:order 3 ;
+            sh:path trusted-cloud:description ],
+        [ skos:example "'true', 'false'" ;
+            sh:datatype xsd:boolean ;
+            sh:description "Gibt es rechtliche Konsequenzen für einen SLA -Vertrag im Vertrag?"@de,
+                "Are there legal consequences for an SLA violation in the contract?"@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "sla violation concequences contracted" ;
+            sh:order 4 ;
+            sh:path trusted-cloud:slaViolationConcequencesContracted ],
+        [ skos:example "'true', 'false'" ;
+            sh:datatype xsd:boolean ;
+            sh:description "Gibt es eine vertragliche kontinuierliche Garantie für Privatsphäre, Integrität und Widerstandsfähigkeit der Systeme?"@de,
+                "Is there a contracted continuous guarantee of privacy, integrity and resilience of the systems?"@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "continuous guarantee of privacy" ;
+            sh:order 5 ;
+            sh:path trusted-cloud:continuousGuaranteeOfPrivacy ],
+        [ skos:example "'true', 'false'" ;
+            sh:datatype xsd:boolean ;
+            sh:description "Gibt es nach einem physischen oder technischen Problem kontraktierte Verfügbarkeit für Daten?"@de,
+                "Are there contracted availabilities for data after a physical or technical problem?"@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "contracted availability for data after technical problems" ;
+            sh:order 6 ;
+            sh:path trusted-cloud:contractedAvailabilityForDataAfterTechnicalProblems ],
+        [ skos:example "'Yes', 'No'" ;
+            sh:datatype xsd:boolean ;
+            sh:description "Gibt es SLAs -Komponenten des Vertrags?"@de,
+                "Are there SLAs component of contract?"@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "has s l a in contract" ;
+            sh:order 1 ;
+            sh:path gax-core:hasSLAInContract ],
+        [ skos:example "'Yes', 'No'" ;
+            sh:datatype xsd:boolean ;
+            sh:description "Gibt es SLAs -Komponenten des Vertrags?"@de,
+                "Are there SLAs component of contract?"@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "has s l a in contract" ;
+            sh:order 1 ;
+            sh:path gax-core:hasSLAInContract ],
+        [ skos:example "'true', 'false'" ;
+            sh:datatype xsd:boolean ;
+            sh:description "Ist es möglich, die Einhaltung der SLA durch den Kunden zu überprüfen?"@de,
+                "Is it possible to review the compliance with the SLA by the customer?"@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "sla compliance reviewable" ;
+            sh:order 2 ;
+            sh:path trusted-cloud:slaComplianceReviewable ],
+        [ skos:example "'Freetext'" ;
+            sh:datatype xsd:string ;
+            sh:description "Beschreibung der SLAs"@de,
+                "Description of the SLAs"@en ;
+            sh:name "description" ;
+            sh:order 3 ;
+            sh:path trusted-cloud:description ],
+        [ skos:example "'true', 'false'" ;
+            sh:datatype xsd:boolean ;
+            sh:description "Gibt es rechtliche Konsequenzen für einen SLA -Vertrag im Vertrag?"@de,
+                "Are there legal consequences for an SLA violation in the contract?"@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "sla violation concequences contracted" ;
+            sh:order 4 ;
+            sh:path trusted-cloud:slaViolationConcequencesContracted ],
+        [ skos:example "'true', 'false'" ;
+            sh:datatype xsd:boolean ;
+            sh:description "Gibt es eine vertragliche kontinuierliche Garantie für Privatsphäre, Integrität und Widerstandsfähigkeit der Systeme?"@de,
+                "Is there a contracted continuous guarantee of privacy, integrity and resilience of the systems?"@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "continuous guarantee of privacy" ;
+            sh:order 5 ;
+            sh:path trusted-cloud:continuousGuaranteeOfPrivacy ],
+        [ skos:example "'true', 'false'" ;
+            sh:datatype xsd:boolean ;
+            sh:description "Gibt es nach einem physischen oder technischen Problem kontraktierte Verfügbarkeit für Daten?"@de,
+                "Are there contracted availabilities for data after a physical or technical problem?"@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "contracted availability for data after technical problems" ;
+            sh:order 6 ;
+            sh:path trusted-cloud:contractedAvailabilityForDataAfterTechnicalProblems ] ;
+    sh:targetClass trusted-cloud:ServiceLevelAgreement .
+
+gax-validation:ServiceManagementShape a sh:NodeShape ;
+    sh:property [ skos:example "'Freetext'" ;
+            sh:datatype xsd:string ;
+            sh:description "Details zum Service Management"@de,
+                "Details about the service management"@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "details" ;
+            sh:order 2 ;
+            sh:path trusted-cloud:details ],
+        [ skos:example "'(a structured object of type Certificate'" ;
+            sh:description "Details zu Zertifikaten, die für diesen Service relevant sind."@de,
+                "Details about certificates, which are relevant for this service."@en ;
+            sh:name "certificates" ;
+            sh:node gax-validation:CertificateScopeShape ;
+            sh:order 3 ;
+            sh:path trusted-cloud:certificates ],
+        [ skos:example "'Formally described', 'According to accepted procedure', 'Certified', 'Certified and checked regularly'" ;
+            sh:datatype xsd:string ;
+            sh:description "Ist eine effiziente Service -Management, die z.nach Itil?"@de,
+                "Is an efficient service management ensured e.g. as per ITIL?"@en ;
+            sh:in ( "Formally described" "According to accepted procedure" "Certified" "Certified and checked regularly" ) ;
+            sh:maxCount 1 ;
+            sh:name "service management" ;
+            sh:order 1 ;
+            sh:path trusted-cloud:serviceManagement ],
+        [ skos:example "'Formally described', 'According to accepted procedure', 'Certified', 'Certified and checked regularly'" ;
+            sh:datatype xsd:string ;
+            sh:description "Ist eine effiziente Service -Management, die z.nach Itil?"@de,
+                "Is an efficient service management ensured e.g. as per ITIL?"@en ;
+            sh:in ( "Formally described" "According to accepted procedure" "Certified" "Certified and checked regularly" ) ;
+            sh:maxCount 1 ;
+            sh:name "service management" ;
+            sh:order 1 ;
+            sh:path trusted-cloud:serviceManagement ],
+        [ skos:example "'Freetext'" ;
+            sh:datatype xsd:string ;
+            sh:description "Details zum Service Management"@de,
+                "Details about the service management"@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "details" ;
+            sh:order 2 ;
+            sh:path trusted-cloud:details ],
+        [ skos:example "'(a structured object of type Certificate'" ;
+            sh:description "Details zu Zertifikaten, die für diesen Service relevant sind."@de,
+                "Details about certificates, which are relevant for this service."@en ;
+            sh:name "certificates" ;
+            sh:node gax-validation:CertificateScopeShape ;
+            sh:order 3 ;
+            sh:path trusted-cloud:certificates ] ;
+    sh:targetClass trusted-cloud:ServiceManagement .
+
+gax-validation:ServiceScalingShape a sh:NodeShape ;
+    sh:property [ skos:example "'Freetext'" ;
+            sh:datatype xsd:string ;
+            sh:description "Beschreibung definierter Skalierungstypen"@de,
+                "Description of defined scaling types"@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "description" ;
+            sh:order 2 ;
+            sh:path trusted-cloud:description ],
+        [ skos:example "'Not defined', 'Scaling types are defined', 'Scaling types are defined and assured by contract'" ;
+            sh:datatype xsd:string ;
+            sh:description "Sind die Skalen und Faktoren der technischen Infrastruktur definiert?"@de,
+                "Are the scales and factors of the technical infrastructure defined?"@en ;
+            sh:in ( "Not defined" "Scaling types are defined" "Scaling types are defined and assured by contract" ) ;
+            sh:maxCount 1 ;
+            sh:name "scaling types" ;
+            sh:order 1 ;
+            sh:path trusted-cloud:scalingTypes ],
+        [ skos:example "'Freetext'" ;
+            sh:datatype xsd:string ;
+            sh:description "Beschreibung definierter Skalierungstypen"@de,
+                "Description of defined scaling types"@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "description" ;
+            sh:order 2 ;
+            sh:path trusted-cloud:description ],
+        [ skos:example "'Not defined', 'Scaling types are defined', 'Scaling types are defined and assured by contract'" ;
+            sh:datatype xsd:string ;
+            sh:description "Sind die Skalen und Faktoren der technischen Infrastruktur definiert?"@de,
+                "Are the scales and factors of the technical infrastructure defined?"@en ;
+            sh:in ( "Not defined" "Scaling types are defined" "Scaling types are defined and assured by contract" ) ;
+            sh:maxCount 1 ;
+            sh:name "scaling types" ;
+            sh:order 1 ;
+            sh:path trusted-cloud:scalingTypes ] ;
+    sh:targetClass trusted-cloud:ServiceScaling .
+
+gax-validation:SubcontractorTransparencyShape a sh:NodeShape ;
+    sh:property [ skos:example "'Sub contractors oblige', 'Sub contractors are bound by contract'" ;
+            sh:datatype xsd:string ;
+            sh:description "Sind alle Vertragsbedingungen, die an die Unterauftragnehmer übertragbar sind, von diesen vertraglich eingehalten?"@de,
+                "Are all contract conditions transferable to the sub contractors are adhered by these contractually?"@en ;
+            sh:in ( "Sub contractors oblige" "Sub contractors are bound by contract" ) ;
+            sh:maxCount 1 ;
+            sh:name "all contract conditions met by sub contractor" ;
+            sh:order 2 ;
+            sh:path trusted-cloud:allContractConditionsMetBySubContractor ],
+        [ skos:example "'On request', 'Yes'" ;
+            sh:datatype xsd:string ;
+            sh:description "Sind alle betroffenen Subunternehmer in der Dienstbereitstellung angegeben?"@de,
+                "Are all concerned subcontractors specified in the service provisioning?"@en ;
+            sh:in ( "On request" "Yes" ) ;
+            sh:maxCount 1 ;
+            sh:name "all sub contractors mentioned" ;
+            sh:order 1 ;
+            sh:path trusted-cloud:allSubContractorsMentioned ],
+        [ skos:example "'On request', 'Yes'" ;
+            sh:datatype xsd:string ;
+            sh:description "Sind alle betroffenen Subunternehmer in der Dienstbereitstellung angegeben?"@de,
+                "Are all concerned subcontractors specified in the service provisioning?"@en ;
+            sh:in ( "On request" "Yes" ) ;
+            sh:maxCount 1 ;
+            sh:name "all sub contractors mentioned" ;
+            sh:order 1 ;
+            sh:path trusted-cloud:allSubContractorsMentioned ],
+        [ skos:example "'Sub contractors oblige', 'Sub contractors are bound by contract'" ;
+            sh:datatype xsd:string ;
+            sh:description "Sind alle Vertragsbedingungen, die an die Unterauftragnehmer übertragbar sind, von diesen vertraglich eingehalten?"@de,
+                "Are all contract conditions transferable to the sub contractors are adhered by these contractually?"@en ;
+            sh:in ( "Sub contractors oblige" "Sub contractors are bound by contract" ) ;
+            sh:maxCount 1 ;
+            sh:name "all contract conditions met by sub contractor" ;
+            sh:order 2 ;
+            sh:path trusted-cloud:allContractConditionsMetBySubContractor ] ;
+    sh:targetClass trusted-cloud:SubcontractorTransparency .
+
+gax-validation:SupportShape a sh:NodeShape ;
+    sh:property [ skos:example "'<1 work day', '1 work day', '<4 work days'" ;
+            sh:datatype xsd:string ;
+            sh:description "Was ist die durchschnittliche Zeit, bis kleinere Probleme behoben sind?"@de,
+                "Whats the average time until minor problems are resolved?"@en ;
+            sh:in ( "<1 work day" "1 work day" "<4 work days" ) ;
+            sh:maxCount 1 ;
+            sh:name "main resolve time of minor problems" ;
+            sh:order 4 ;
+            sh:path trusted-cloud:mainResolveTimeOfMinorProblems ],
+        [ skos:example "'<1 work day', '1 work day', '<4 work days'" ;
+            sh:datatype xsd:string ;
+            sh:description "Was ist die durchschnittliche Zeit, bis größere Probleme behoben sind?"@de,
+                "What is the average time until major problems are resolved?"@en ;
+            sh:in ( "<1 work day" "1 work day" "<4 work days" ) ;
+            sh:maxCount 1 ;
+            sh:name "main resolve time major problems" ;
+            sh:order 5 ;
+            sh:path trusted-cloud:mainResolveTimeMajorProblems ],
+        [ skos:example "'5x8', '24/7'" ;
+            sh:datatype xsd:string ;
+            sh:description "Was ist die Verfügbarkeit der Unterstützung?"@de,
+                "What is the availability of the support?"@en ;
+            sh:in ( "5x8" "24/7" ) ;
+            sh:maxCount 1 ;
+            sh:name "availability of support" ;
+            sh:order 6 ;
+            sh:path trusted-cloud:availabilityOfSupport ],
+        [ skos:example "'4 hours', '1 work day', '<3 work days'" ;
+            sh:datatype xsd:string ;
+            sh:description "Was ist die garantierte Reaktionszeit bei normalen Anfragen?"@de,
+                "What is the guaranteed response time on normal requests?"@en ;
+            sh:in ( "4 hours" "1 work day" "<3 work days" ) ;
+            sh:maxCount 1 ;
+            sh:name "response time on normal requests" ;
+            sh:order 2 ;
+            sh:path trusted-cloud:responseTimeOnNormalRequests ],
+        [ skos:example "'Complete and updated', 'Regularly updated', 'Updated version online'" ;
+            sh:datatype xsd:string ;
+            sh:description "Gibt es eine vollständige Benutzerdokumentation?"@de,
+                "Is there a complete user documentation?"@en ;
+            sh:in ( "Complete and updated" "Regularly updated" "Updated version online" ) ;
+            sh:maxCount 1 ;
+            sh:name "user documentation completeness" ;
+            sh:order 7 ;
+            sh:path trusted-cloud:userDocumentationCompleteness ],
+        [ skos:example "'Complete and updated', 'On request'" ;
+            sh:datatype xsd:string ;
+            sh:description "Gibt es eine vollständige Systemdokumentation?"@de,
+                "Is there a complete system documentation?"@en ;
+            sh:in ( "Complete and updated" "On request" ) ;
+            sh:maxCount 1 ;
+            sh:name "system documentation completeness" ;
+            sh:order 8 ;
+            sh:path trusted-cloud:systemDocumentationCompleteness ],
+        [ skos:example "'Yes', 'No'" ;
+            sh:datatype xsd:boolean ;
+            sh:description "Werden Schulungen angeboten?"@de,
+                "Are trainings offered?"@en ;
+            sh:maxCount 1 ;
+            sh:name "training offered" ;
+            sh:order 9 ;
+            sh:path trusted-cloud:trainingOffered ],
+        [ skos:example "'Freetext'" ;
+            sh:datatype xsd:string ;
+            sh:description "Spezifikation von Schulungspartnern"@de,
+                "Specification from training partners"@en ;
+            sh:name "training partners" ;
+            sh:order 10 ;
+            sh:path trusted-cloud:trainingPartners ],
+        [ skos:example "'Freetext'" ;
+            sh:datatype xsd:string ;
+            sh:description "Beschreibung des Umfangs der Unterstützungsdienste"@de,
+                "Description of the scope of support services"@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "description" ;
+            sh:order 1 ;
+            sh:path trusted-cloud:description ],
+        [ skos:example "'4 hours', '1 work day', '<3 work days'" ;
+            sh:datatype xsd:string ;
+            sh:description "Was ist die garantierte Reaktionszeit für kritische Anfragen?"@de,
+                "What is the guaranteed response time on critical requests?"@en ;
+            sh:in ( "4 hours" "1 work day" "<3 work days" ) ;
+            sh:maxCount 1 ;
+            sh:name "response time on critical requests" ;
+            sh:order 3 ;
+            sh:path trusted-cloud:responseTimeOnCriticalRequests ],
+        [ skos:example "'4 hours', '1 work day', '<3 work days'" ;
+            sh:datatype xsd:string ;
+            sh:description "Was ist die garantierte Reaktionszeit für kritische Anfragen?"@de,
+                "What is the guaranteed response time on critical requests?"@en ;
+            sh:in ( "4 hours" "1 work day" "<3 work days" ) ;
+            sh:maxCount 1 ;
+            sh:name "response time on critical requests" ;
+            sh:order 3 ;
+            sh:path trusted-cloud:responseTimeOnCriticalRequests ],
+        [ skos:example "'<1 work day', '1 work day', '<4 work days'" ;
+            sh:datatype xsd:string ;
+            sh:description "Was ist die durchschnittliche Zeit, bis kleinere Probleme behoben sind?"@de,
+                "Whats the average time until minor problems are resolved?"@en ;
+            sh:in ( "<1 work day" "1 work day" "<4 work days" ) ;
+            sh:maxCount 1 ;
+            sh:name "main resolve time of minor problems" ;
+            sh:order 4 ;
+            sh:path trusted-cloud:mainResolveTimeOfMinorProblems ],
+        [ skos:example "'<1 work day', '1 work day', '<4 work days'" ;
+            sh:datatype xsd:string ;
+            sh:description "Was ist die durchschnittliche Zeit, bis größere Probleme behoben sind?"@de,
+                "What is the average time until major problems are resolved?"@en ;
+            sh:in ( "<1 work day" "1 work day" "<4 work days" ) ;
+            sh:maxCount 1 ;
+            sh:name "main resolve time major problems" ;
+            sh:order 5 ;
+            sh:path trusted-cloud:mainResolveTimeMajorProblems ],
+        [ skos:example "'5x8', '24/7'" ;
+            sh:datatype xsd:string ;
+            sh:description "Was ist die Verfügbarkeit der Unterstützung?"@de,
+                "What is the availability of the support?"@en ;
+            sh:in ( "5x8" "24/7" ) ;
+            sh:maxCount 1 ;
+            sh:name "availability of support" ;
+            sh:order 6 ;
+            sh:path trusted-cloud:availabilityOfSupport ],
+        [ skos:example "'Complete and updated', 'Regularly updated', 'Updated version online'" ;
+            sh:datatype xsd:string ;
+            sh:description "Gibt es eine vollständige Benutzerdokumentation?"@de,
+                "Is there a complete user documentation?"@en ;
+            sh:in ( "Complete and updated" "Regularly updated" "Updated version online" ) ;
+            sh:maxCount 1 ;
+            sh:name "user documentation completeness" ;
+            sh:order 7 ;
+            sh:path trusted-cloud:userDocumentationCompleteness ],
+        [ skos:example "'Complete and updated', 'On request'" ;
+            sh:datatype xsd:string ;
+            sh:description "Gibt es eine vollständige Systemdokumentation?"@de,
+                "Is there a complete system documentation?"@en ;
+            sh:in ( "Complete and updated" "On request" ) ;
+            sh:maxCount 1 ;
+            sh:name "system documentation completeness" ;
+            sh:order 8 ;
+            sh:path trusted-cloud:systemDocumentationCompleteness ],
+        [ skos:example "'Yes', 'No'" ;
+            sh:datatype xsd:boolean ;
+            sh:description "Werden Schulungen angeboten?"@de,
+                "Are trainings offered?"@en ;
+            sh:maxCount 1 ;
+            sh:name "training offered" ;
+            sh:order 9 ;
+            sh:path trusted-cloud:trainingOffered ],
+        [ skos:example "'Freetext'" ;
+            sh:datatype xsd:string ;
+            sh:description "Spezifikation von Schulungspartnern"@de,
+                "Specification from training partners"@en ;
+            sh:name "training partners" ;
+            sh:order 10 ;
+            sh:path trusted-cloud:trainingPartners ],
+        [ skos:example "'Freetext'" ;
+            sh:datatype xsd:string ;
+            sh:description "Beschreibung des Umfangs der Unterstützungsdienste"@de,
+                "Description of the scope of support services"@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "description" ;
+            sh:order 1 ;
+            sh:path trusted-cloud:description ],
+        [ skos:example "'4 hours', '1 work day', '<3 work days'" ;
+            sh:datatype xsd:string ;
+            sh:description "Was ist die garantierte Reaktionszeit bei normalen Anfragen?"@de,
+                "What is the guaranteed response time on normal requests?"@en ;
+            sh:in ( "4 hours" "1 work day" "<3 work days" ) ;
+            sh:maxCount 1 ;
+            sh:name "response time on normal requests" ;
+            sh:order 2 ;
+            sh:path trusted-cloud:responseTimeOnNormalRequests ] ;
+    sh:targetClass trusted-cloud:Support .
+
+gax-validation:TechnicalIntegrationShape a sh:NodeShape ;
+    sh:property [ skos:example "'Freetext'" ;
+            sh:datatype xsd:string ;
+            sh:description "Beschreibung der angebotenen APIs zur Integration der Dienste"@de,
+                "Description of the offered APIs to integrate the services"@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "description" ;
+            sh:order 2 ;
+            sh:path trusted-cloud:description ],
+        [ skos:example "'No APIS are offered', 'Documented APIs', 'Standardized APIs'" ;
+            sh:datatype xsd:string ;
+            sh:description "Gibt es eine standardisierte API, um den Service in die IT-Landscape der Kunden zu integrieren?"@de,
+                "Is there a standardized API to integrate the service into the customers IT-landscape?"@en ;
+            sh:in ( "No APIS are offered" "Documented APIs" "Standardized APIs" ) ;
+            sh:maxCount 1 ;
+            sh:name "standardized a p" ;
+            sh:order 1 ;
+            sh:path trusted-cloud:standardizedAP ],
+        [ skos:example "'Freetext'" ;
+            sh:datatype xsd:string ;
+            sh:description "Beschreibung der angebotenen APIs zur Integration der Dienste"@de,
+                "Description of the offered APIs to integrate the services"@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "description" ;
+            sh:order 2 ;
+            sh:path trusted-cloud:description ],
+        [ skos:example "'No APIS are offered', 'Documented APIs', 'Standardized APIs'" ;
+            sh:datatype xsd:string ;
+            sh:description "Gibt es eine standardisierte API, um den Service in die IT-Landscape der Kunden zu integrieren?"@de,
+                "Is there a standardized API to integrate the service into the customers IT-landscape?"@en ;
+            sh:in ( "No APIS are offered" "Documented APIs" "Standardized APIs" ) ;
+            sh:maxCount 1 ;
+            sh:name "standardized a p" ;
+            sh:order 1 ;
+            sh:path trusted-cloud:standardizedAP ] ;
+    sh:targetClass trusted-cloud:TechnicalIntegration .
+
+gax-validation:TechnicalStandardsShape a sh:NodeShape ;
+    sh:property [ skos:example "'Freetext'" ;
+            sh:datatype xsd:string ;
+            sh:description "Beschreibung des Standards, auf dem Service -Stapel basiert auf."@de,
+                "Description of the standard, the service stack is built on."@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "service stack standards" ;
+            sh:order 3 ;
+            sh:path trusted-cloud:serviceStackStandards ],
+        [ skos:example "'Proprietary', 'Open format', 'Standardized format'" ;
+            sh:datatype xsd:string ;
+            sh:description "Verwendet der Service standardisierte Formate für virtuelle Maschinen und Container?"@de,
+                "Does the service use standardized formats for virtual machines and containers?"@en ;
+            sh:in ( "Proprietary" "Open format" "Standardized format" ) ;
+            sh:maxCount 1 ;
+            sh:name "virtualization standards" ;
+            sh:order 2 ;
+            sh:path trusted-cloud:virtualizationStandards ],
+        [ skos:example "'There are no APIs', 'Web-GUI', 'Documented APIs', 'Documented and standardized APIs'" ;
+            sh:datatype xsd:string ;
+            sh:description "Ist die Serviceverwaltung mit Standard -API möglich?"@de,
+                "Is the administration of service possible with standard API?"@en ;
+            sh:in ( "There are no APIs" "Web-GUI" "Documented APIs" "Documented and standardized APIs" ) ;
+            sh:maxCount 1 ;
+            sh:name "adminstration api standards" ;
+            sh:order 1 ;
+            sh:path trusted-cloud:adminstrationApiStandards ],
+        [ skos:example "'There are no APIs', 'Web-GUI', 'Documented APIs', 'Documented and standardized APIs'" ;
+            sh:datatype xsd:string ;
+            sh:description "Ist die Serviceverwaltung mit Standard -API möglich?"@de,
+                "Is the administration of service possible with standard API?"@en ;
+            sh:in ( "There are no APIs" "Web-GUI" "Documented APIs" "Documented and standardized APIs" ) ;
+            sh:maxCount 1 ;
+            sh:name "adminstration api standards" ;
+            sh:order 1 ;
+            sh:path trusted-cloud:adminstrationApiStandards ],
+        [ skos:example "'Proprietary', 'Open format', 'Standardized format'" ;
+            sh:datatype xsd:string ;
+            sh:description "Verwendet der Service standardisierte Formate für virtuelle Maschinen und Container?"@de,
+                "Does the service use standardized formats for virtual machines and containers?"@en ;
+            sh:in ( "Proprietary" "Open format" "Standardized format" ) ;
+            sh:maxCount 1 ;
+            sh:name "virtualization standards" ;
+            sh:order 2 ;
+            sh:path trusted-cloud:virtualizationStandards ],
+        [ skos:example "'Freetext'" ;
+            sh:datatype xsd:string ;
+            sh:description "Beschreibung des Standards, auf dem Service -Stapel basiert auf."@de,
+                "Description of the standard, the service stack is built on."@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "service stack standards" ;
+            sh:order 3 ;
+            sh:path trusted-cloud:serviceStackStandards ] ;
+    sh:targetClass trusted-cloud:TechnicalStandards .
+
+gax-validation:UsageRightsShape a sh:NodeShape ;
+    sh:property [ skos:example "''" ;
+            sh:datatype xsd:string ;
+            sh:description "Wenn dies geltend ist, muss dieses Gebiet das konkrete Gesetz angeben."@de,
+                "If applicable law is EU law, this field has to specify the concrete law."@en ;
+            sh:maxCount 1 ;
+            sh:name "applicable e u law" ;
+            sh:order 2 ;
+            sh:path trusted-cloud:applicableEULaw ],
+        [ skos:example "'Berlin'" ;
+            sh:datatype xsd:string ;
+            sh:description "Stadt der Zuständigkeit des Dienstes"@de,
+                "City of jurisdiction of the service"@en ;
+            sh:maxCount 1 ;
+            sh:name "jurisdiction" ;
+            sh:order 3 ;
+            sh:path trusted-cloud:jurisdiction ],
+        [ skos:example "'German contract law', 'EU contract law'" ;
+            sh:datatype xsd:string ;
+            sh:description "Gibt es anwendbares Gesetz?"@de,
+                "Is there applicable law?"@en ;
+            sh:in ( "German contact Law" "EU Contract Law" ) ;
+            sh:maxCount 1 ;
+            sh:name "applicable law" ;
+            sh:order 1 ;
+            sh:path trusted-cloud:applicableLaw ],
+        [ skos:example "'German contract law', 'EU contract law'" ;
+            sh:datatype xsd:string ;
+            sh:description "Gibt es anwendbares Gesetz?"@de,
+                "Is there applicable law?"@en ;
+            sh:in ( "German contact Law" "EU Contract Law" ) ;
+            sh:maxCount 1 ;
+            sh:name "applicable law" ;
+            sh:order 1 ;
+            sh:path trusted-cloud:applicableLaw ],
+        [ skos:example "''" ;
+            sh:datatype xsd:string ;
+            sh:description "Wenn dies geltend ist, muss dieses Gebiet das konkrete Gesetz angeben."@de,
+                "If applicable law is EU law, this field has to specify the concrete law."@en ;
+            sh:maxCount 1 ;
+            sh:name "applicable e u law" ;
+            sh:order 2 ;
+            sh:path trusted-cloud:applicableEULaw ],
+        [ skos:example "'Berlin'" ;
+            sh:datatype xsd:string ;
+            sh:description "Stadt der Zuständigkeit des Dienstes"@de,
+                "City of jurisdiction of the service"@en ;
+            sh:maxCount 1 ;
+            sh:name "jurisdiction" ;
+            sh:order 3 ;
+            sh:path trusted-cloud:jurisdiction ] ;
+    sh:targetClass trusted-cloud:UsageRights .
+
+gax-validation:AddressShapeTC a sh:NodeShape ;
+    sh:property [ skos:example "'5'" ;
+            sh:datatype xsd:integer ;
+            sh:description "Das V: Number -Eigentum gibt die Straßennummer einer Postanschrift an."@de,
+                "The v:number property specifies the street number of a postal address."@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:minInclusive 1.0 ;
+            sh:name "number" ;
+            sh:order 2 ;
+            sh:path vcard:number ],
+        [ skos:example "'12345'" ;
+            sh:datatype xsd:string ;
+            sh:description "Saite einer Straßenadresse"@de,
+                "String of a street-address"@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "postal-code" ;
+            sh:order 3 ;
+            sh:path vcard:postal-code ],
+        [ skos:example "'DE', 'DEU'" ;
+            sh:datatype xsd:string ;
+            sh:description "Physischer Standort des Kopfquartals in ISO 3166-1 Alpha2, Alpha-3 oder numerisches Format."@de,
+                "Physical location of head quarter in ISO 3166-1 alpha2, alpha-3 or numeric format."@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "country-name" ;
+            sh:order 4 ;
+            sh:path vcard:country-name ],
+        [ skos:example "'example-street'" ;
+            sh:datatype xsd:string ;
+            sh:description "Die VORSETZUNG VON V: STREET-ADDRESS GESEHEN Sie die Straßenadresse einer Postanschrift."@de,
+                "The v:street-address property specifies the street address of a postal address."@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "street-address" ;
+            sh:order 1 ;
+            sh:path vcard:street-address ],
+        [ skos:example "'12345'" ;
+            sh:datatype xsd:string ;
+            sh:description "Saite einer Straßenadresse"@de,
+                "String of a street-address"@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "postal-code" ;
+            sh:order 3 ;
+            sh:path vcard:postal-code ],
+        [ skos:example "'DE', 'DEU'" ;
+            sh:datatype xsd:string ;
+            sh:description "Physischer Standort des Kopfquartals in ISO 3166-1 Alpha2, Alpha-3 oder numerisches Format."@de,
+                "Physical location of head quarter in ISO 3166-1 alpha2, alpha-3 or numeric format."@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "country-name" ;
+            sh:order 4 ;
+            sh:path vcard:country-name ],
+        [ skos:example "'example-street'" ;
+            sh:datatype xsd:string ;
+            sh:description "Die VORSETZUNG VON V: STREET-ADDRESS GESEHEN Sie die Straßenadresse einer Postanschrift."@de,
+                "The v:street-address property specifies the street address of a postal address."@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "street-address" ;
+            sh:order 1 ;
+            sh:path vcard:street-address ],
+        [ skos:example "'5'" ;
+            sh:datatype xsd:integer ;
+            sh:description "Das V: Number -Eigentum gibt die Straßennummer einer Postanschrift an."@de,
+                "The v:number property specifies the street number of a postal address."@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:minInclusive 1.0 ;
+            sh:name "number" ;
+            sh:order 2 ;
+            sh:path vcard:number ],
+        [ skos:example "'example-street'" ;
+            sh:datatype xsd:string ;
+            sh:description "Die VORSETZUNG VON V: STREET-ADDRESS GESEHEN Sie die Straßenadresse einer Postanschrift."@de,
+                "The v:street-address property specifies the street address of a postal address."@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "street-address" ;
+            sh:order 1 ;
+            sh:path vcard:street-address ],
+        [ skos:example "'5'" ;
+            sh:datatype xsd:integer ;
+            sh:description "Das V: Number -Eigentum gibt die Straßennummer einer Postanschrift an."@de,
+                "The v:number property specifies the street number of a postal address."@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:minInclusive 1.0 ;
+            sh:name "number" ;
+            sh:order 2 ;
+            sh:path vcard:number ],
+        [ skos:example "'12345'" ;
+            sh:datatype xsd:string ;
+            sh:description "Saite einer Straßenadresse"@de,
+                "String of a street-address"@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "postal-code" ;
+            sh:order 3 ;
+            sh:path vcard:postal-code ],
+        [ skos:example "'DE', 'DEU'" ;
+            sh:datatype xsd:string ;
+            sh:description "Physischer Standort des Kopfquartals in ISO 3166-1 Alpha2, Alpha-3 oder numerisches Format."@de,
+                "Physical location of head quarter in ISO 3166-1 alpha2, alpha-3 or numeric format."@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "country-name" ;
+            sh:order 4 ;
+            sh:path vcard:country-name ],
+        [ skos:example "'5'" ;
+            sh:datatype xsd:integer ;
+            sh:description "Das V: Number -Eigentum gibt die Straßennummer einer Postanschrift an."@de,
+                "The v:number property specifies the street number of a postal address."@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:minInclusive 1.0 ;
+            sh:name "number" ;
+            sh:order 2 ;
+            sh:path vcard:number ],
+        [ skos:example "'12345'" ;
+            sh:datatype xsd:string ;
+            sh:description "Saite einer Straßenadresse"@de,
+                "String of a street-address"@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "postal-code" ;
+            sh:order 3 ;
+            sh:path vcard:postal-code ],
+        [ skos:example "'DE', 'DEU'" ;
+            sh:datatype xsd:string ;
+            sh:description "Physischer Standort des Kopfquartals in ISO 3166-1 Alpha2, Alpha-3 oder numerisches Format."@de,
+                "Physical location of head quarter in ISO 3166-1 alpha2, alpha-3 or numeric format."@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "country-name" ;
+            sh:order 4 ;
+            sh:path vcard:country-name ],
+        [ skos:example "'example-street'" ;
+            sh:datatype xsd:string ;
+            sh:description "Die VORSETZUNG VON V: STREET-ADDRESS GESEHEN Sie die Straßenadresse einer Postanschrift."@de,
+                "The v:street-address property specifies the street address of a postal address."@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "street-address" ;
+            sh:order 1 ;
+            sh:path vcard:street-address ] ;
+    sh:targetObjectsOf  trusted-cloud:headquarterAddress .
+
+gax-validation:CertificateScopeShape a sh:NodeShape ;
+    sh:property [ skos:example "'(DID of certificate VC)'" ;
+            sh:description "Verweis auf das Zertifikat, das für diesen Umfang relevant ist."@de,
+                "Reference to certificate, which is relevant for this scope."@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "certificate" ;
+            sh:nodeKind sh:IRI ;
+            sh:order 1 ;
+            sh:path trusted-cloud:certificate ],
+        [ skos:example "'Freetext'" ;
+            sh:datatype xsd:string ;
+            sh:description "Details zur Relevanz des Zertifikats für diesen Bereich."@de,
+                "Details about relevance of the certificate for this scope."@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "scope" ;
+            sh:order 2 ;
+            sh:path trusted-cloud:scope ],
+        [ skos:example "'(DID of certificate VC)'" ;
+            sh:description "Verweis auf das Zertifikat, das für diesen Umfang relevant ist."@de,
+                "Reference to certificate, which is relevant for this scope."@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "certificate" ;
+            sh:nodeKind sh:IRI ;
+            sh:order 1 ;
+            sh:path trusted-cloud:certificate ],
+        [ skos:example "'Freetext'" ;
+            sh:datatype xsd:string ;
+            sh:description "Details zur Relevanz des Zertifikats für diesen Bereich."@de,
+                "Details about relevance of the certificate for this scope."@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "scope" ;
+            sh:order 2 ;
+            sh:path trusted-cloud:scope ],
+        [ skos:example "'(DID of certificate VC)'" ;
+            sh:description "Verweis auf das Zertifikat, das für diesen Umfang relevant ist."@de,
+                "Reference to certificate, which is relevant for this scope."@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "certificate" ;
+            sh:nodeKind sh:IRI ;
+            sh:order 1 ;
+            sh:path trusted-cloud:certificate ],
+        [ skos:example "'Freetext'" ;
+            sh:datatype xsd:string ;
+            sh:description "Details zur Relevanz des Zertifikats für diesen Bereich."@de,
+                "Details about relevance of the certificate for this scope."@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "scope" ;
+            sh:order 2 ;
+            sh:path trusted-cloud:scope ],
+        [ skos:example "'Freetext'" ;
+            sh:datatype xsd:string ;
+            sh:description "Details zur Relevanz des Zertifikats für diesen Bereich."@de,
+                "Details about relevance of the certificate for this scope."@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "scope" ;
+            sh:order 2 ;
+            sh:path trusted-cloud:scope ],
+        [ skos:example "'(DID of certificate VC)'" ;
+            sh:description "Verweis auf das Zertifikat, das für diesen Umfang relevant ist."@de,
+                "Reference to certificate, which is relevant for this scope."@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "certificate" ;
+            sh:nodeKind sh:IRI ;
+            sh:order 1 ;
+            sh:path trusted-cloud:certificate ],
+        [ skos:example "'(DID of certificate VC)'" ;
+            sh:description "Verweis auf das Zertifikat, das für diesen Umfang relevant ist."@de,
+                "Reference to certificate, which is relevant for this scope."@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "certificate" ;
+            sh:nodeKind sh:IRI ;
+            sh:order 1 ;
+            sh:path trusted-cloud:certificate ],
+        [ skos:example "'Freetext'" ;
+            sh:datatype xsd:string ;
+            sh:description "Details zur Relevanz des Zertifikats für diesen Bereich."@de,
+                "Details about relevance of the certificate for this scope."@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "scope" ;
+            sh:order 2 ;
+            sh:path trusted-cloud:scope ] ;
+    sh:targetClass trusted-cloud:CertificateScope .
+
+gax-validation:AgentShapeTC a sh:NodeShape ;
+    sh:property [ skos:example "'example-family-name'" ;
+            sh:datatype xsd:string ;
+            sh:description "Das V-Name V: VERFAMILIE NAME GESEHEN Sie den Familiennamen des Familiennamens."@de,
+                "The v:family-name property specifies the family name part of a persons name."@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "family-name" ;
+            sh:order 2 ;
+            sh:path vcard:family-name ],
+        [ skos:example "'example-nickname'" ;
+            sh:datatype xsd:string ;
+            sh:description "Die V -Spitzname gibt den Spitznamen einer Person an."@de,
+                "The v:nickname property specifies the nickname of a person."@en ;
+            sh:maxCount 1 ;
+            sh:name "nickname" ;
+            sh:order 3 ;
+            sh:path vcard:nickname ],
+        [ skos:example "'example-nickname'" ;
+            sh:datatype xsd:string ;
+            sh:description "Die V: Position Eigenschaft gibt die Position einer Person an."@de,
+                "The v:position property specifies the position of a person."@en ;
+            sh:maxCount 1 ;
+            sh:name "position" ;
+            sh:order 4 ;
+            sh:path vcard:position ],
+        [ skos:example "'example-Email'" ;
+            sh:datatype xsd:anyURI ;
+            sh:description "Die V: E -Mail -Eigenschaft gibt eine E -Mail -Adresse an."@de,
+                "The v:email property specifies an email address."@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "email" ;
+            sh:order 5 ;
+            sh:path vcard:email ],
+        [ skos:example "'+49 030 12324567'" ;
+            sh:datatype xsd:string ;
+            sh:description "Die V: Tel -Eigenschaft gibt eine Telefonennummer an."@de,
+                "The v:tel property specifies a telefon number."@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "tel" ;
+            sh:order 6 ;
+            sh:path vcard:tel ],
+        [ skos:example "'+49 030 12324567'" ;
+            sh:datatype xsd:string ;
+            sh:description "Die V: Bildeigenschaft gibt ein Bild eine Person an."@de,
+                "The v:image property specifies an image a person."@en ;
+            sh:maxCount 1 ;
+            sh:name "image" ;
+            sh:order 7 ;
+            sh:path vcard:image ],
+        [ skos:example "'(ACME street 1, 12345 city, Germany)'" ;
+            sh:datatype xsd:string ;
+            sh:description "Die V: Adresseigenschaft gibt die Adresse einer Person an."@de,
+                "The v:address property specifies the address of a person."@en ;
+            sh:maxCount 1 ;
+            sh:name "address" ;
+            sh:order 8 ;
+            sh:path vcard:address ],
+        [ skos:example "'example-given-name'" ;
+            sh:datatype xsd:string ;
+            sh:description "Die Eigenschaft V: Vornamen gibt den Vornamen Teil eines Personennamens an."@de,
+                "The v:given-name property specifies the given name part of a persons name."@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "given-name" ;
+            sh:order 1 ;
+            sh:path vcard:given-name ],
+        [ skos:example "'example-given-name'" ;
+            sh:datatype xsd:string ;
+            sh:description "Die Eigenschaft V: Vornamen gibt den Vornamen Teil eines Personennamens an."@de,
+                "The v:given-name property specifies the given name part of a persons name."@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "given-name" ;
+            sh:order 1 ;
+            sh:path vcard:given-name ],
+        [ skos:example "'example-family-name'" ;
+            sh:datatype xsd:string ;
+            sh:description "Das V-Name V: VERFAMILIE NAME GESEHEN Sie den Familiennamen des Familiennamens."@de,
+                "The v:family-name property specifies the family name part of a persons name."@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "family-name" ;
+            sh:order 2 ;
+            sh:path vcard:family-name ],
+        [ skos:example "'example-nickname'" ;
+            sh:datatype xsd:string ;
+            sh:description "Die V -Spitzname gibt den Spitznamen einer Person an."@de,
+                "The v:nickname property specifies the nickname of a person."@en ;
+            sh:maxCount 1 ;
+            sh:name "nickname" ;
+            sh:order 3 ;
+            sh:path vcard:nickname ],
+        [ skos:example "'example-nickname'" ;
+            sh:datatype xsd:string ;
+            sh:description "Die V: Position Eigenschaft gibt die Position einer Person an."@de,
+                "The v:position property specifies the position of a person."@en ;
+            sh:maxCount 1 ;
+            sh:name "position" ;
+            sh:order 4 ;
+            sh:path vcard:position ],
+        [ skos:example "'example-Email'" ;
+            sh:datatype xsd:anyURI ;
+            sh:description "Die V: E -Mail -Eigenschaft gibt eine E -Mail -Adresse an."@de,
+                "The v:email property specifies an email address."@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "email" ;
+            sh:order 5 ;
+            sh:path vcard:email ],
+        [ skos:example "'+49 030 12324567'" ;
+            sh:datatype xsd:string ;
+            sh:description "Die V: Tel -Eigenschaft gibt eine Telefonennummer an."@de,
+                "The v:tel property specifies a telefon number."@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "tel" ;
+            sh:order 6 ;
+            sh:path vcard:tel ],
+        [ skos:example "'+49 030 12324567'" ;
+            sh:datatype xsd:string ;
+            sh:description "Die V: Bildeigenschaft gibt ein Bild eine Person an."@de,
+                "The v:image property specifies an image a person."@en ;
+            sh:maxCount 1 ;
+            sh:name "image" ;
+            sh:order 7 ;
+            sh:path vcard:image ],
+        [ skos:example "'(ACME street 1, 12345 city, Germany)'" ;
+            sh:datatype xsd:string ;
+            sh:description "Die V: Adresseigenschaft gibt die Adresse einer Person an."@de,
+                "The v:address property specifies the address of a person."@en ;
+            sh:maxCount 1 ;
+            sh:name "address" ;
+            sh:order 8 ;
+            sh:path vcard:address ],
+        [ skos:example "'example-nickname'" ;
+            sh:datatype xsd:string ;
+            sh:description "Die V: Position Eigenschaft gibt die Position einer Person an."@de,
+                "The v:position property specifies the position of a person."@en ;
+            sh:maxCount 1 ;
+            sh:name "position" ;
+            sh:order 4 ;
+            sh:path vcard:position ],
+        [ skos:example "'example-Email'" ;
+            sh:datatype xsd:anyURI ;
+            sh:description "Die V: E -Mail -Eigenschaft gibt eine E -Mail -Adresse an."@de,
+                "The v:email property specifies an email address."@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "email" ;
+            sh:order 5 ;
+            sh:path vcard:email ],
+        [ skos:example "'+49 030 12324567'" ;
+            sh:datatype xsd:string ;
+            sh:description "Die V: Tel -Eigenschaft gibt eine Telefonennummer an."@de,
+                "The v:tel property specifies a telefon number."@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "tel" ;
+            sh:order 6 ;
+            sh:path vcard:tel ],
+        [ skos:example "'+49 030 12324567'" ;
+            sh:datatype xsd:string ;
+            sh:description "Die V: Bildeigenschaft gibt ein Bild eine Person an."@de,
+                "The v:image property specifies an image a person."@en ;
+            sh:maxCount 1 ;
+            sh:name "image" ;
+            sh:order 7 ;
+            sh:path vcard:image ],
+        [ skos:example "'(ACME street 1, 12345 city, Germany)'" ;
+            sh:datatype xsd:string ;
+            sh:description "Die V: Adresseigenschaft gibt die Adresse einer Person an."@de,
+                "The v:address property specifies the address of a person."@en ;
+            sh:maxCount 1 ;
+            sh:name "address" ;
+            sh:order 8 ;
+            sh:path vcard:address ],
+        [ skos:example "'example-given-name'" ;
+            sh:datatype xsd:string ;
+            sh:description "Die Eigenschaft V: Vornamen gibt den Vornamen Teil eines Personennamens an."@de,
+                "The v:given-name property specifies the given name part of a persons name."@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "given-name" ;
+            sh:order 1 ;
+            sh:path vcard:given-name ],
+        [ skos:example "'example-family-name'" ;
+            sh:datatype xsd:string ;
+            sh:description "Das V-Name V: VERFAMILIE NAME GESEHEN Sie den Familiennamen des Familiennamens."@de,
+                "The v:family-name property specifies the family name part of a persons name."@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "family-name" ;
+            sh:order 2 ;
+            sh:path vcard:family-name ],
+        [ skos:example "'example-nickname'" ;
+            sh:datatype xsd:string ;
+            sh:description "Die V -Spitzname gibt den Spitznamen einer Person an."@de,
+                "The v:nickname property specifies the nickname of a person."@en ;
+            sh:maxCount 1 ;
+            sh:name "nickname" ;
+            sh:order 3 ;
+            sh:path vcard:nickname ],
+        [ skos:example "'example-given-name'" ;
+            sh:datatype xsd:string ;
+            sh:description "Die Eigenschaft V: Vornamen gibt den Vornamen Teil eines Personennamens an."@de,
+                "The v:given-name property specifies the given name part of a persons name."@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "given-name" ;
+            sh:order 1 ;
+            sh:path vcard:given-name ],
+        [ skos:example "'example-family-name'" ;
+            sh:datatype xsd:string ;
+            sh:description "Das V-Name V: VERFAMILIE NAME GESEHEN Sie den Familiennamen des Familiennamens."@de,
+                "The v:family-name property specifies the family name part of a persons name."@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "family-name" ;
+            sh:order 2 ;
+            sh:path vcard:family-name ],
+        [ skos:example "'example-nickname'" ;
+            sh:datatype xsd:string ;
+            sh:description "Die V -Spitzname gibt den Spitznamen einer Person an."@de,
+                "The v:nickname property specifies the nickname of a person."@en ;
+            sh:maxCount 1 ;
+            sh:name "nickname" ;
+            sh:order 3 ;
+            sh:path vcard:nickname ],
+        [ skos:example "'example-nickname'" ;
+            sh:datatype xsd:string ;
+            sh:description "Die V: Position Eigenschaft gibt die Position einer Person an."@de,
+                "The v:position property specifies the position of a person."@en ;
+            sh:maxCount 1 ;
+            sh:name "position" ;
+            sh:order 4 ;
+            sh:path vcard:position ],
+        [ skos:example "'example-Email'" ;
+            sh:datatype xsd:anyURI ;
+            sh:description "Die V: E -Mail -Eigenschaft gibt eine E -Mail -Adresse an."@de,
+                "The v:email property specifies an email address."@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "email" ;
+            sh:order 5 ;
+            sh:path vcard:email ],
+        [ skos:example "'+49 030 12324567'" ;
+            sh:datatype xsd:string ;
+            sh:description "Die V: Tel -Eigenschaft gibt eine Telefonennummer an."@de,
+                "The v:tel property specifies a telefon number."@en ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "tel" ;
+            sh:order 6 ;
+            sh:path vcard:tel ],
+        [ skos:example "'+49 030 12324567'" ;
+            sh:datatype xsd:string ;
+            sh:description "Die V: Bildeigenschaft gibt ein Bild eine Person an."@de,
+                "The v:image property specifies an image a person."@en ;
+            sh:maxCount 1 ;
+            sh:name "image" ;
+            sh:order 7 ;
+            sh:path vcard:image ],
+        [ skos:example "'(ACME street 1, 12345 city, Germany)'" ;
+            sh:datatype xsd:string ;
+            sh:description "Die V: Adresseigenschaft gibt die Adresse einer Person an."@de,
+                "The v:address property specifies the address of a person."@en ;
+            sh:maxCount 1 ;
+            sh:name "address" ;
+            sh:order 8 ;
+            sh:path vcard:address ] ;
+    sh:targetClass vcard:Agent .
+

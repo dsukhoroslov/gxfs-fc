@@ -1,0 +1,133 @@
+{
+    "@id": "http://example.edu/verifiablePresentation/self-description19",
+    "proof": {
+        "created": "2023-03-01T15:40:19Z",
+        "jws": "eyJiNjQiOmZhbHNlLCJjcml0IjpbImI2NCJdLCJhbGciOiJQUzI1NiJ9..aFjeX1Ppmvum5_wEFNh_Gp3yxBeLMLmss97fChMHbJ1WLzak88AU_oqK3pCbz_e6C_kj7vc5yz7M3_RjunSJuP1GvM4b7cvYXaIjksJaAcxRIcTouTM7c4ZMvjr7nFo1wvQpU6xWSgsfC2WZelYIsX1lXs7zP3BOFDVBKPHQa1g7sZkHKTPGuQ0QyA5USlpmCUv_rfar48DJmQWtUkxZmGCLpuPuiULSBpkNxWiA4931UJY_sxuNDmurQyPAoNCD7d2auytoeV3N52GUG_IrPetwnnKDYO0KLqjaFZisgNuk0aL5NbF3kYCs05RfW4N2pWe_QmgCWdrswapsG7MF9PXusaFe6brwx2SqdiBwl9GZIkoykgu3H-om1-Nw4iTURr5LASxViXPTxMNKdDnB0i7m9fjqtC3Nxhe04rW4b1wts15puOD_4sa-T83EkQ8GTi5wee1wRAHq10d8WDzxyCNVaoZv4STqKbq3e0aU_2qlWnEwxYyoea-8hz2YQfXbCe_74KZBZU7vHyl_srqDCi6gpRdzI-mZq-7bIVb9uXP26ngQln-r-eExKmjkehz2zIlW6sLW9TtU0LVuW2MYzfbI5L1mhtic-LAEckcFn4crjA02nQByeFJZlJqM_DFIXI8Xj6RNti8X1lhqN36f9XrvL7yumSCtk16WHJuj9uE",
+        "proofPurpose": "assertionMethod",
+        "type": "JsonWebSignature2020",
+        "verificationMethod": "did:web:compliance.lab.gaia-x.eu"
+    },
+    "type": ["VerifiablePresentation"],
+    "@context": ["https://www.w3.org/2018/credentials/v1"],
+    "verifiableCredential": {
+        "issuanceDate": "2022-10-19T18:48:09Z",
+        "credentialSubject": {
+            "trusted-cloud:mainContact": {
+                "vcard:given-name": {
+                    "@value": "Alexander",
+                    "@type": "xsd:string"
+                },
+                "vcard:family-name": {
+                    "@value": "Vierschrodt",
+                    "@type": "xsd:string"
+                },
+                "@type": "vcard:Agent",
+                "vcard:tel": {
+                    "@value": "+49 721 913746494",
+                    "@type": "xsd:string"
+                },
+                "vcard:email": {
+                    "@value": "alexander.vierschrodt@ionos.com",
+                    "@type": "xsd:anyURI"
+                },
+                "vcard:address": {
+                    "@value": "Elgendorfer Str. 57,  56410 Montabaur,  Deutschland",
+                    "@type": "xsd:string"
+                }
+            },
+            "trusted-cloud:security": {"@id": "did:web:ionos.com:Security"},
+            "trusted-cloud:dataProtection": {"@id": "did:web:ionos.com:DataProtection"},
+            "@type": "trusted-cloud:ServiceOffering",
+            "trusted-cloud:dataCentres": {"@id": "did:web:ionos.com:DataCentre"},
+            "trusted-cloud:generalInformation": {
+                "trusted-cloud:provisionType": "public",
+                "@type": "trusted-cloud:GeneralInformationService",
+                "trusted-cloud:serviceModel": "IaaS",
+                "trusted-cloud:name": {
+                    "@value": "IONOS Cloud",
+                    "@type": "xsd:string"
+                },
+                "trusted-cloud:website": {
+                    "@value": "https://www.ionos.de/pro/ionos-cloud/",
+                    "@type": "xsd:anyURI"
+                }
+            },
+            "@context": {
+                "cc": "http://creativecommons.org/ns#",
+                "schema": "http://schema.org/",
+                "void": "http://rdfs.org/ns/void#",
+                "owl": "http://www.w3.org/2002/07/owl#",
+                "xsd": "http://www.w3.org/2001/XMLSchema#",
+                "trusted-cloud": "http://w3id.org/gaia-x/trusted-cloud#",
+                "gax-validation": "http://w3id.org/gaia-x/validation#",
+                "skos": "http://www.w3.org/2004/02/skos/core#",
+                "voaf": "http://purl.org/vocommons/voaf#",
+                "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
+                "vcard": "http://www.w3.org/2006/vcard/ns#",
+                "gax-core": "https://w3id.org/gaia-x/core#",
+                "dct": "http://purl.org/dc/terms/",
+                "sh": "http://www.w3.org/ns/shacl#",
+                "rdf": "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
+                "ids": "https://w3id.org/idsa/core/",
+                "dcat": "http://www.w3.org/ns/dcat#",
+                "vann": "http://purl.org/vocab/vann/",
+                "foaf": "http://xmlns.com/foaf/0.1/",
+                "did": "https://www.w3.org/TR/did-core/#"
+            },
+            "trusted-cloud:typeOfProcessedData": {
+                "@value": "personal data according to GDPR",
+                "@type": "xsd:string"
+            },
+            "trusted-cloud:serviceArchitecture": {"@id": "did:web:ionos.com:ServiceArchitecture"},
+            "trusted-cloud:contracts": {"@id": "did:web:ionos.com:Contract"},
+            "trusted-cloud:operativeProcesses": {"@id": "did:web:ionos.com:OperativeProcesses"},
+            "trusted-cloud:functionalDescription": {
+                "trusted-cloud:briefDescription": {
+                    "@value": "no information",
+                    "@type": "xsd:string"
+                },
+                "@type": "trusted-cloud:FunctionalDescriptionService",
+                "trusted-cloud:description": {
+                    "@value": "Die Ionos Cloud ist eine öffentliche (public) IaaS-Lösung. Zugeschnitten auf die Bedürfnisse von KMU, Entwicklern und Value Added Resellern, vereint die Ionos Cloud alle Vorteile eines physischen Servers mit den erweiterten Möglichkeiten der Cloud. ",
+                    "@type": "xsd:string"
+                }
+            },
+            "trusted-cloud:interoperability": {"@id": "did:web:ionos.com:Interoperability"},
+            "gax-core:offeredBy": [{"@id": "did:web:ionos.com/Provider"}],
+            "@id": "did:web:ionos.com:ServiceOffering",
+            "trusted-cloud:certificates": [
+                {
+                    "@type": "trusted-cloud:CertificateScope",
+                    "trusted-cloud:certificate": {"@id": "did:web:ionos.com:Certificate"},
+                    "trusted-cloud:scope": {
+                        "@value": "Zertifikate des Anbieters/Services",
+                        "@type": "xsd:string"
+                    }
+                },
+                {
+                    "@type": "trusted-cloud:CertificateScope",
+                    "trusted-cloud:certificate": {"@id": "did:web:ionos.com:Certificate"},
+                    "trusted-cloud:scope": {
+                        "@value": "Zertifikat der Subunternehmen/Rechenzentren",
+                        "@type": "xsd:string"
+                    }
+                }
+            ],
+            "trusted-cloud:subContractors": [
+                {"@id": "did:web:ionos.com:SubContractor:Arsys"},
+                {"@id": "did:web:ionos.com:SubContractor:Fasthosts"}
+            ]
+        },
+        "@type": ["VerifiableCredential"],
+        "@id": "https://www.example.org/IonosCloudServiceOffering.json",
+        "proof": {
+            "created": "2023-03-01T15:40:19Z",
+            "jws": "eyJiNjQiOmZhbHNlLCJjcml0IjpbImI2NCJdLCJhbGciOiJQUzI1NiJ9..IBwAhfF0sw2JFqZE0XDhkDRB3jZ_qwBaafx45c9OEmiaf2BfZm9NdUEYKjp3Q7XKg0fm066wkUo5Xvr7xksWCYgm0nIyZftcg-fF9ko0vdS420NfDZa1KYHYmANGHp0hZP6vNUeqtVBc2GcQitn0mBYtx9UhOt7nQvB908QuL2M9fAdGPSzFLe7fsemb3UrpDkt0omBOmzHvpyXt-mi22hCPp9lvinDAgGN1ntrUEpOe0cMzXJ5tF-BmN9sKbzEE4wzfPjFRHl_-Ja_ZLmgFAorxhMqDegPlUxG1iYYRKyYQWsErcMiLIr7Pz9TpnEZKHDTEiegJOkFYe9xuaiTXrKwIBP8SuAJymvKSJMQqW71_sB56mFoyOV6YevMH8vgpoZ7eQ_aoLxGlyCoX2Sfc0Glz-gXKGei4T-dkU2c_DNUBEZ5fYbBg_b8s4KkzTBuecTTfoNHKLA6KbBOJugdr1jLKEzp5OX4JT8Rgm3vkMfQr5SecQl6IFOh0Qp-iYgiMlam8hTvH_eXK9KnOysCPrb52_Artsf3Ts0v13l9jcT_LXFMQNbd15YkcZ6TJf5uLTJZKUzwgsfocNFRqurqUvqcm4f_p_vojVkoQSTxxoFSrW7fqOusMYWtgszcly04cWcS-HrGBTfON4UTJNb3zt2puMOReUfU9oCxVAJOgFbA",
+            "proofPurpose": "assertionMethod",
+            "type": "JsonWebSignature2020",
+            "verificationMethod": "did:web:compliance.lab.gaia-x.eu"
+        },
+        "@context": ["https://www.w3.org/2018/credentials/v1"],
+        "issuer": "http://gaiax.de"
+    }
+}
