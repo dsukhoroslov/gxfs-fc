@@ -1,0 +1,206 @@
+{
+    "id": "urn:uuid:3978344f-8596-4c3a-a978-8fcaba3903c5",
+    "proof": {
+        "created": "2023-03-13T16:17:01Z",
+        "jws": "eyJiNjQiOmZhbHNlLCJjcml0IjpbImI2NCJdLCJhbGciOiJQUzI1NiJ9..E4SrB5hrV_1GIDY84H75ij93PMIhV79tzEThk16r1_oECvVkRDYqb46TgdrKX7ppE6ZqQnEQtcWwDCui17B18u0BXPxj105QQxdAVz4lEXxrZC6KErHq1pCRHB12ukqSVG_-Wdkpk-eKUb-J3a0rAfjokkz0Q2-C_t6AC9gTfbhYEQsHKvyRZtRe6dTbTvarZLlQvcySU09MXNrLV4vPjXt-QznzZcrng_mhHAfG4fvtpt0JKU89k3Iy1tqd6V0SFFfonbnlil5hqcXEiSy0Ilaa_-sjgnP8bRVUoj_GyeokvG1wm7suoyFAzyRnnvNyFE5FFDvqpt-d33myvD7YPaVF5oHyjBwLbyCgaTYWvEvRgcGTYBIm_3h-pVca6XA4SprRuTN5ThoUMeEeW2D0FvDgi6UOow68UgUkeExjSeZ_gAC9ZXcaBjTHzjtDRJTpC4nL6lxnKDurIk5wLgkHjFlnXm0USN8DkZrvkxCSivQ3od2E3agmJGFD0Wcy3xzmuJckzZArw_acHcizjy89iZoYIyjVpuBRciDmhGJTeI0sDTFERJEU_e9YIDHjM_SYTnHO-7tzvLtq038EiTDcp8i7NgmKKxMsno9WmRiyjhOBb6jHdjRdYp_xWG2c7ZNVg444BJtUoS2nGUWZPHxRNFJnVL17CDbdkQnr40SnjzI",
+        "proofPurpose": "assertionMethod",
+        "type": "JsonWebSignature2020",
+        "verificationMethod": "did:web:compliance.lab.gaia-x.eu"
+    },
+    "type": ["VerifiablePresentation"],
+    "@context": ["https://www.w3.org/2018/credentials/v1"],
+    "verifiableCredential": {
+        "issuanceDate": "2010-01-01T19:23:24Z",
+        "credentialSubject": {
+            "@type": ["trusted-cloud:Provider"],
+            "trusted-cloud:companyProfile": {
+                "trusted-cloud:employeeCountForCloudServices": 110,
+                "trusted-cloud:salesVolume": 999999,
+                "@type": "trusted-cloud:CompanyProfileProvider",
+                "trusted-cloud:category": "Cloud Service Provider",
+                "trusted-cloud:experienceCloudServices": ">5 year",
+                "trusted-cloud:numberOfPublicCloudServices": 2,
+                "@id": "did:web:ionos.com:CompanyProfileProvider",
+                "trusted-cloud:employeeCount": 2230
+            },
+            "@id": "did:web:ionos.com:Provider",
+            "trusted-cloud:auditabilityProfile": {
+                "trusted-cloud:audits": "<placeholder value>",
+                "@type": "trusted-cloud:AuditabilityProfile",
+                "@id": "did:web:ionos.com:AuditabilityProfile",
+                "trusted-cloud:auditability": false,
+                "trusted-cloud:auditor": "by the user"
+            },
+            "@context": {
+                "xsd": "http://www.w3.org/2001/XMLSchema#",
+                "trusted-cloud": "http://w3id.org/gaia-x/trusted-cloud#",
+                "vcard": "http://www.w3.org/2006/vcard/ns#",
+                "gax-core": "https://w3id.org/gaia-x/core#"
+            },
+            "trusted-cloud:legalInformation": {
+                "trusted-cloud:mainContact": {
+                    "vcard:given-name": {
+                        "@value": "Alexander",
+                        "@type": "xsd:string"
+                    },
+                    "vcard:family-name": {
+                        "@value": "Vierschrodt",
+                        "@type": "xsd:string"
+                    },
+                    "@type": "vcard:Agent",
+                    "vcard:tel": {
+                        "@value": "+49 721 913746494",
+                        "@type": "xsd:string"
+                    },
+                    "vcard:email": {
+                        "@value": "alexander.vierschrodt@ionos.com",
+                        "@type": "xsd:anyURI"
+                    },
+                    "vcard:address": {
+                        "@value": "Elgendorfer Str. 57, 56410 Montabaur, Deutschland",
+                        "@type": "xsd:string"
+                    }
+                },
+                "trusted-cloud:registrationDate": {
+                    "@value": "2016-04-19T09:00:00Z",
+                    "@type": "xsd:dateTimeStamp"
+                },
+                "@type": [
+                    "trusted-cloud:LegalInformationProvider",
+                    "gax-core:Participant"
+                ],
+                "trusted-cloud:registrationNumber": {
+                    "@value": "44121160247",
+                    "@type": "xsd:string"
+                },
+                "trusted-cloud:SME": false,
+                "trusted-cloud:IT_DepartmentContact": {
+                    "vcard:given-name": {
+                        "@value": "Henning",
+                        "@type": "xsd:string"
+                    },
+                    "vcard:family-name": {
+                        "@value": "Kettler",
+                        "@type": "xsd:string"
+                    },
+                    "@type": "vcard:Agent",
+                    "vcard:tel": {
+                        "@value": "0721 913744140",
+                        "@type": "xsd:string"
+                    },
+                    "vcard:email": {
+                        "@value": "henning.kettler@ionos.com",
+                        "@type": "xsd:anyURI"
+                    }
+                },
+                "trusted-cloud:logo": {
+                    "@value": "https://www.trusted-cloud.de/sites/default/files/service_logos/2261_logo_1u1_ionos_blue.jpg",
+                    "@type": "xsd:anyURI"
+                },
+                "trusted-cloud:legalName": {
+                    "@value": "1&1 Ionos SE",
+                    "@type": "xsd:string"
+                },
+                "trusted-cloud:headquarterAddress": {
+                    "vcard:country-name": {
+                        "@value": "Deutschland",
+                        "@type": "xsd:string"
+                    },
+                    "vcard:number": 57,
+                    "@type": "vcard:Address",
+                    "vcard:street-address": {
+                        "@value": "Elgendorfer Str. ",
+                        "@type": "xsd:string"
+                    },
+                    "vcard:postal-code": {
+                        "@value": "56410",
+                        "@type": "xsd:string"
+                    }
+                },
+                "trusted-cloud:dataProtectionOfficer": {
+                    "vcard:given-name": {
+                        "@value": "Lorenz",
+                        "@type": "xsd:string"
+                    },
+                    "vcard:family-name": {
+                        "@value": "Kappei",
+                        "@type": "xsd:string"
+                    },
+                    "@type": "vcard:Agent",
+                    "vcard:tel": {
+                        "@value": "+49 721 91374 4946",
+                        "@type": "xsd:string"
+                    },
+                    "vcard:email": {
+                        "@value": "lkappei@united-internet.de",
+                        "@type": "xsd:anyURI"
+                    }
+                },
+                "@id": "did:web:ionos.com:LegalInformationProvider",
+                "trusted-cloud:legalForm": {
+                    "@value": "not specified",
+                    "@type": "xsd:string"
+                },
+                "trusted-cloud:legalContact": {
+                    "vcard:given-name": {
+                        "@value": "Lorenz",
+                        "@type": "xsd:string"
+                    },
+                    "vcard:family-name": {
+                        "@value": "Kappei",
+                        "@type": "xsd:string"
+                    },
+                    "@type": "vcard:Agent",
+                    "vcard:tel": {
+                        "@value": "+49 721 91374 4946",
+                        "@type": "xsd:string"
+                    },
+                    "vcard:email": {
+                        "@value": "lkappei@united-internet.de",
+                        "@type": "xsd:anyURI"
+                    }
+                },
+                "trusted-cloud:managingDirector": {
+                    "vcard:given-name": {
+                        "@value": "Alexander",
+                        "@type": "xsd:string"
+                    },
+                    "vcard:family-name": {
+                        "@value": "Vierschrodt",
+                        "@type": "xsd:string"
+                    },
+                    "@type": "vcard:Agent",
+                    "vcard:tel": {
+                        "@value": "+49 721 913746494",
+                        "@type": "xsd:string"
+                    },
+                    "vcard:email": {
+                        "@value": "alexander.vierschrodt@ionos.com",
+                        "@type": "xsd:anyURI"
+                    },
+                    "vcard:address": {
+                        "@value": "Elgendorfer Str. 57, 56410 Montabaur, Deutschland",
+                        "@type": "xsd:string"
+                    }
+                },
+                "trusted-cloud:webAddress": {
+                    "@value": "https://www.ionos.de/cloud/cloud-server",
+                    "@type": "xsd:anyURI"
+                }
+            }
+        },
+        "proof": {
+            "created": "2023-03-13T16:17:01Z",
+            "jws": "eyJiNjQiOmZhbHNlLCJjcml0IjpbImI2NCJdLCJhbGciOiJQUzI1NiJ9..mQVUpb5fAbmqhTZXtY4jkjukiTEhcY03yjYeTrwfYy4F2LsiBL_Jd8EJ95A86nb3txxhSE8Kdv5nmCN-3NcOtnvMKqwhEHlvz7AS0SqWcjtTzNcSBnrJtHZawjP-XwQOlb7wVhIqNHWtyznF3alVOwe0iCpL7lg7gXr1tPJ8pvoYX9LzE0_gbCF1LRHIKtHZWZgNHPCM5USJId13WryEZmT13gEGZb0pJdwcfgqIWtiYujkXPGlczwElADiDyfFvTqEb_mUJ3JrGzMMnYvJV0yrnYrhDXNwkcerMqJuT6Xe7CtUFVf_WcD3z_sYk8VzKAo2mWHMKbINT2GjE8sVD9BjAbZGrwMrvNsNyiO83XN8PGRbiooW-kspsWpkbx3LBm5DWUVBatlqgTbjHFaMhyVWhdsXG6XH4MNpoVCQpwaDpN9ljxtFgAEEkgwEz2P3oLTKyfQEdkUsVpfg_kpN3AqMWWDI-bgVkEWok-Eo8hRG5yljSiQBV3gnBUCPszcr4KHlt90Xjcud8Y06wG7a5vy9IfiEHw35irDGvoZzPKFMe_uUmJCCQ5I_j_tLyNDhgaeB0VgZ3lHvkeoPXqaosMVkHplzJWQM2r2AasvCb8NW_zYqBLzPQpc2uy4zgjCtfApxGQhcXTQ4K_PPDqltZpDAUv1UKThKqnMTzpQUxLaE",
+            "proofPurpose": "assertionMethod",
+            "type": "JsonWebSignature2020",
+            "verificationMethod": "did:web:compliance.lab.gaia-x.eu"
+        },
+        "type": [
+            "VerifiableCredential",
+            "trusted-cloud:ProviderLegalInformationCredential"
+        ],
+        "@context": ["https://www.w3.org/2018/credentials/v1"],
+        "issuer": "https://example.edu/issuers/565049"
+    }
+}
