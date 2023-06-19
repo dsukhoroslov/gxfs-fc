@@ -1,0 +1,245 @@
+{
+    "@id": "http://example.edu/verifiablePresentation/self-description-with-asset",
+    "proof": {
+        "created": "2023-06-19T19:22:07Z",
+        "jws": "eyJiNjQiOmZhbHNlLCJjcml0IjpbImI2NCJdLCJhbGciOiJQUzI1NiJ9..AiX7VhUa8LdUPygJLWTOM1s_LVZaz6riolfviYf6t8zvUM4NMcZj1VPxVJGXEgRDdLKw1Kw-CQ-Z7ldmFWp1EVRPHrYVe_uSEqhAvCndvAJVnvlw0lReXrfxMEnoJraKPv2RGGWCZ8rINDgwX002vByEUqr1ka_wC0M51WySo7uArN4Eyt2PG2grtHb_RHzoR-DcI4YZ0VsDZ5tucPEuRC0LsaDHHABPWhILwtUFn2tVa6oz2nV0y7D9iyxaTd0KKTaAUAH3CP9TT7QNXxVAgUvePdUwiL4tyEIriF-isfMn2eK8bDT_CjpTRVinePVCI54CBMvgGChVfHvX4T5YwnDuRv6Cvmy4a4mvbaiChI7YmF7FDgtpJgNRXw-yJYekH7y_kGzRDPC9T4KcBNSEhavcnAivn6E7ruoIRSslomG-14_mTN8rnh1L3amaJKmPLNTfH0oz0XtpHdtrbZi9guc69-xj2YYE5N7BLPULCxKlE-ay4hCtovk0XiqvkGbidb2gOCbeQvyIcrT4iyrOfBFzsXPzcASXbdjehde2cb9yt2T6C7FXP6tOggyC2pqh960ySDDmmRW_A6X9b1mCthigFhM_NmRZj_8E3HB5lP7-BEPC73VztbUfsV0wbiYykJIO4bcvbjt7I5atm-5LhKFsMw68WYR1Zp4V9oL6zT0",
+        "proofPurpose": "assertionMethod",
+        "type": "JsonWebSignature2020",
+        "verificationMethod": "did:web:compliance.lab.gaia-x.eu"
+    },
+    "type": ["VerifiablePresentation"],
+    "@context": ["https://www.w3.org/2018/credentials/v1"],
+    "verifiableCredential": {
+        "issuanceDate": "2022-10-19T18:48:09Z",
+        "credentialSubject": {
+            "gax-trust-framework:dependsOn": [
+                {
+                    "@value": "https://www.acme.com/compute",
+                    "@type": "xsd:anyURI"
+                },
+                {
+                    "@value": "https://www.acme.com/storage",
+                    "@type": "xsd:anyURI"
+                },
+                {
+                    "@value": "https://www.acme.com/network",
+                    "@type": "xsd:anyURI"
+                }
+            ],
+            "gax-trust-framework:policy": {
+                "gx:choiceOfLaw": "gx-country:DE",
+                "gx:generalTerms": "Example text for the general terms",
+                "@type": "odrl:Offer",
+                "gx:loggingMode": "gx:LoggingMandatory",
+                "gx:confirmationRequired": true,
+                "odrl:permission": [{
+                    "odrl:constraint": {
+                        "@type": "odrl:Constraint",
+                        "odrl:leftOperand": "odrl:payAmount",
+                        "odrl:rightOperand": {
+                            "@value": "?price",
+                            "@type": "http://www.w3.org/2001/XMLSchema#double"
+                        },
+                        "odrl:operator": "odrl:eq"
+                    },
+                    "odrl:target": "?ResourceURI",
+                    "@type": "odrl:Permission",
+                    "gx:negotiable": true,
+                    "odrl:assigner": "?providerDID",
+                    "odrl:action": "odrl:compensate"
+                }],
+                "gx:circulationDetails": "Example text for the circulation details"
+            },
+            "gax-trust-framework:aggregationOf": [
+                {
+                    "@type": "gax-trust-framework:PhysicalResource",
+                    "gax-trust-framework:locationAddress": {
+                        "vcard:country-name": "DE",
+                        "@type": "vcard:Address"
+                    },
+                    "gax-core:operatedBy": {"@id": "ex:ACMEProvider"},
+                    "@id": "ex:DataCenter",
+                    "gax-trust-framework:maintainedBy": {"@id": "ex:ACMEProvider"}
+                },
+                {
+                    "dct:issued": "2020-01-01T12:00:00Z",
+                    "ex:hasUpdateInterval": "PT1H",
+                    "gax-trust-framework:producedBy": {"@id": "ex:ACMEProvider"},
+                    "gax-trust-framework:license": "Apache 2.0",
+                    "gax-trust-framework:policy": {
+                        "gx:choiceOfLaw": "gx-country:DE",
+                        "gx:generalTerms": "Example text for the general terms",
+                        "@type": "odrl:Offer",
+                        "gx:loggingMode": "gx:LoggingMandatory",
+                        "gx:confirmationRequired": true,
+                        "odrl:permission": [{
+                            "odrl:constraint": {
+                                "@type": "odrl:Constraint",
+                                "odrl:leftOperand": "odrl:payAmount",
+                                "odrl:rightOperand": {
+                                    "@value": "?price",
+                                    "@type": "http://www.w3.org/2001/XMLSchema#double"
+                                },
+                                "odrl:operator": "odrl:eq"
+                            },
+                            "odrl:target": "?ResourceURI",
+                            "@type": "odrl:Permission",
+                            "gx:negotiable": true,
+                            "odrl:assigner": "?providerDID",
+                            "odrl:action": "odrl:compensate"
+                        }],
+                        "gx:circulationDetails": "Example text for the circulation details"
+                    },
+                    "dcat:keyword": [
+                        "INSPIRE compliant",
+                        "air quality",
+                        "time series data",
+                        "measurements",
+                        "NO",
+                        "NO2",
+                        "O3",
+                        "CO",
+                        "PM10",
+                        "PM2.5"
+                    ],
+                    "gax-trust-framework:obsoleteDateTime": {
+                        "@value": "2024-01-01T12:00:00Z",
+                        "@type": "xsd:dateTime"
+                    },
+                    "dct:spatial": "POLYGON((-11.18 36.6,-25.59 65.8,26.25 71.58,42.6 67.74,28.89 59.71,24.5 53.44,22.39 48.23,29.07 48.34,30.3 45.21,27.84 40.05,26.08 34.45,10.79 37.58,-11.18 36.60,-11.18 36.6))",
+                    "@type": "gax-trust-framework:DataResource",
+                    "gax-trust-framework:distribution": {
+                        "dcat:mediaType": "http://www.iana.org/assignments/media-types/text/csv",
+                        "@type": "gax-trust-framework:Distribution",
+                        "dct:title": "Download as data dump (CSV)",
+                        "dcat:byteSize": "12983567"
+                    },
+                    "dct:identifier": "8cff0fa9-460f-4d03-8137-0c65082fd24a",
+                    "gax-trust-framework:expirationDateTime": {
+                        "@value": "2024-01-01T12:00:00Z",
+                        "@type": "xsd:dateTime"
+                    },
+                    "gax-trust-framework:containsPII": {
+                        "@value": "false",
+                        "@type": "xsd:boolean"
+                    },
+                    "gax-trust-framework:exposedThrough": {
+                        "@type": "gax-trust-framework:DataExchangeComponent",
+                        "@id": "ex:DataExchangeComponent",
+                        "gax-trust-framework:standardConformity": [
+                            {
+                                "gax-trust-framework:title": "OGC SensorThings API",
+                                "@type": "ex:DataAccessStandard",
+                                "gax-trust-framework:standardReference": {
+                                    "@value": "http://www.opengis.net/doc/is/sensorthings/1.1",
+                                    "@type": "xsd:anyURI"
+                                },
+                                "@id": "ex:OGCSensorThings",
+                                "gax-trust-framework:publisher": "Open Geospatial Consortium"
+                            },
+                            {
+                                "gax-trust-framework:title": "OGC Observations, Measurements and Samples",
+                                "@type": "ex:DataModellingStandard",
+                                "gax-trust-framework:standardReference": {
+                                    "@value": "https://www.ogc.org/standards/om",
+                                    "@type": "xsd:anyURI"
+                                },
+                                "@id": "ex:OGCOMS",
+                                "gax-trust-framework:publisher": "Open Geospatial Consortium",
+                                "gax-service:modelType": "conceptual"
+                            }
+                        ]
+                    },
+                    "sosa:observedProperty": [
+                        "http://dd.eionet.europa.eu/vocabulary/aq/pollutant/1",
+                        "http://dd.eionet.europa.eu/vocabulary/aq/pollutant/6001",
+                        "http://dd.eionet.europa.eu/vocabulary/aq/pollutant/5",
+                        "http://dd.eionet.europa.eu/vocabulary/aq/pollutant/38",
+                        "http://dd.eionet.europa.eu/vocabulary/aq/pollutant/7",
+                        "http://dd.eionet.europa.eu/vocabulary/aq/pollutant/8",
+                        "http://dd.eionet.europa.eu/vocabulary/aq/pollutant/9",
+                        "http://dd.eionet.europa.eu/vocabulary/aq/pollutant/10"
+                    ],
+                    "gax-trust-framework:copyrightOwnedBy": {
+                        "foaf:name": "ACME Provider",
+                        "@type": "foaf:Agent"
+                    },
+                    "gax-core:operatedBy": {"@id": "ex:ACMEProvider"}
+                }
+            ],
+            "@type": "gax-core:ServiceOffering",
+            "gax-core:offeredBy": {"@id": "ex:ACMEProvider"},
+            "gax-trust-framework:endpoint": {
+                "ex:endpointDocumentation": "https://datacoveeu.github.io/API4INSPIRE/datanests/ad-hoc.html#ad-hoc-austrian-air-quality-api",
+                "gax-trust-framework:endPointURL": {
+                    "@value": "https://airquality-frost.k8s.ilt-dmz.iosb.fraunhofer.de/v1.1",
+                    "@type": "xsd:anyURI"
+                },
+                "gax-trust-framework:endpointDescription": {
+                    "@value": "https://airquality-frost.k8s.ilt-dmz.iosb.fraunhofer.de/v1.1/api",
+                    "@type": "xsd:anyURI"
+                },
+                "@type": "gax-trust-framework:Endpoint",
+                "gax-trust-framework:standardConformity": [
+                    {
+                        "gax-trust-framework:title": "OGC Sensor Things",
+                        "@type": "gax-trust-framework:Standard",
+                        "gax-trust-framework:standardReference": {
+                            "@value": "ex:OGCSensorThings",
+                            "@type": "xsd:anyURI"
+                        }
+                    },
+                    {
+                        "gax-trust-framework:title": "OGCOMS",
+                        "@type": "gax-trust-framework:Standard",
+                        "gax-trust-framework:standardReference": {
+                            "@value": "ex:OGCOMS",
+                            "@type": "xsd:anyURI"
+                        }
+                    }
+                ]
+            },
+            "dct:description": "European Air Quality Service.  A service providing airquality data around europe.",
+            "@id": "ex:AirQualityDataService",
+            "@context": {
+                "ex": "http://example.org/",
+                "dct": "http://purl.org/dc/terms/",
+                "gax-trust-framework": "https://w3id.org/gaia-x/gax-trust-framework#",
+                "xsd": "http://www.w3.org/2001/XMLSchema#",
+                "ids": "https://w3id.org/idsa/core/",
+                "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
+                "vcard": "http://www.w3.org/2006/vcard/ns#",
+                "dcat": "http://www.w3.org/ns/dcat#",
+                "odrl": "http://www.w3.org/ns/odrl/2/",
+                "gax-core": "https://w3id.org/gaia-x/core#",
+                "foaf": "http://xmlns.com/foaf/0.1/",
+                "sosa": "http://www.w3.org/ns/sosa/"
+            },
+            "gax-trust-framework:termsAndConditions": {
+                "gax-trust-framework:content": {
+                    "@value": "https://www.acme.com/IaaS/tac.pdf",
+                    "@type": "xsd:anyURI"
+                },
+                "@type": "gax-trust-framework:TermsAndConditions",
+                "gax-trust-framework:hash": "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad"
+            },
+            "gax-trust-framework:dataAccountExport": {
+                "gax-trust-framework:formatType": "digital",
+                "@type": "gax-trust-framework:DataAccountExport",
+                "gax-trust-framework:accessType": "API",
+                "gax-trust-framework:requestType": "application/json"
+            }
+        },
+        "@type": ["VerifiableCredential"],
+        "@id": "https://www.example.org/IonosCloudServiceOffering.json",
+        "proof": {
+            "created": "2023-06-19T19:22:06Z",
+            "jws": "eyJiNjQiOmZhbHNlLCJjcml0IjpbImI2NCJdLCJhbGciOiJQUzI1NiJ9..tVZToLakeCZyA9iPsgHM_XyPA9_d0Cq6rfMmXMYHdkoJCP7jryYfacJfGArZ_BDBNc25MTfyYLVtpYyk_hqFb-e_cQFJuPrVLRRd_iL2XxKb9aZLWHsDOYdCy4P8gC3P09YQmx3a6NMA0f0XSyLmgmphKsmpnNJsrawfdNTqw8U44XfYn_xwV_azrPOqU--QKoqXjA0a5QY2qEWSsUQeXerikaACcUTduDPcFxuT0InV5a3O_fVghp3p8kys5d6FucnXj-8P7T34H27QHGP5R2BI6dZJu9H9--_TVTd1Jmn7N5nD48UgSta36bqF6HUfKOk9cq_l-NGyZzzSX3RuX-CFLOMLTfI2KYoIhgExk4FYH912y_YFOilaedjRnJvPhFqSzi8zqVvSItHeU7j-wb3-xShij7cN2wN1IiRe4ntVUFFglhqYk3Qwd6sqjuftIP-K0LiTMndjiDEP4b-7swF86_Dyx1U2MAqk6AVIPex7CfAyJPXhgeyz1LJRdAaM7Ur1XMPnzb3rjYf-ieABUZSr0kfHPGfMKQBF_y9BX5CFQuuvAiKu-Tso--nmUB_Off3-1G6KXDEXvizXlmwxQWQKdof-2pCPX7b0fIWSeNj2DewMAn0Stn-h5h6mzey4x0UJFLZQ5uMUCzGAaVwxbXeQqxCfuTgYbNAFvqG37CE",
+            "proofPurpose": "assertionMethod",
+            "type": "JsonWebSignature2020",
+            "verificationMethod": "did:web:compliance.lab.gaia-x.eu"
+        },
+        "@context": ["https://www.w3.org/2018/credentials/v1"],
+        "issuer": "http://gaiax.de"
+    }
+}

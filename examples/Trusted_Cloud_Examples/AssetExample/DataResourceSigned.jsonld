@@ -1,0 +1,131 @@
+{
+    "@id": "http://example.edu/verifiablePresentation/self-description-with-asset",
+    "proof": {
+        "created": "2023-06-19T19:53:41Z",
+        "jws": "eyJiNjQiOmZhbHNlLCJjcml0IjpbImI2NCJdLCJhbGciOiJQUzI1NiJ9..Ekr6Qs3_bo-U2_tq3qM6tm_-NgNQIvEml856yvxwNDOMmUXviljCeSuJq0R8LoSIEP-dlV95dcccCxMC3bGSV3afGNGMqrCyUcU3-zr2zN5jb-lJM_Wc-yioJxIMqLoH6Bais89Edq5MHTggDRRns8xiZDg2RXev9oQJeh9l_v9i-w385yMmeXJd3XPpbNeuiUGb6-WrWm1mDkOhybzgbz6WLEUW4bmmdUpX19mgMFwOzgH99Dw-mOdTn4F2_4B7Zs4EAZ9-7r_4lnX-QANNZbJT29rzE-BKtzVgd4TFVPAk448U1n-raozW8IXnAZvWzekBEQ5u9D5vj6FvbKg-XDXZWHpz_3IaJ_I1h1V3UchyNpPsOlHxpeyoxQ3Wqh4j3PH_MYD69wgZ9YH-Zu3mMTssbBZD4OSanOgXGV8hG8FOMCSUh6_9TEvaq0s6jgMPxrricHAvrYI8UQI8bnOgYRWuxY6rC5g_Lknw9z-Fld_wHmVY8pzJqHy4kqzzQqc7CbhIVaZJLxlAbu7HoAOHCbv9Qs73uwhWyhIpQMbcTvWe6DNujGyqUeaoD8NazHzoE2TpPmRqFBpisycfjfmvFeO0KDSlnQeL2HUVzEC43EjbU9PSLLjr9DHa6saiyGE7g3PjL6-_rStEiw2EwSdvPZ5PYAv9t5pvwcyAdQgw2uY",
+        "proofPurpose": "assertionMethod",
+        "type": "JsonWebSignature2020",
+        "verificationMethod": "did:web:compliance.lab.gaia-x.eu"
+    },
+    "type": ["VerifiablePresentation"],
+    "@context": ["https://www.w3.org/2018/credentials/v1"],
+    "verifiableCredential": {
+        "issuanceDate": "2022-10-19T18:48:09Z",
+        "credentialSubject": {
+            "dct:issued": "2020-01-01T12:00:00Z",
+            "ex:hasUpdateInterval": "PT1H",
+            "gax-trust-framework:producedBy": {"@id": "ex:ACMEProvider"},
+            "gax-trust-framework:license": "Apache 2.0",
+            "gax-trust-framework:policy": {
+                "gx:choiceOfLaw": "gx-country:DE",
+                "gx:generalTerms": "Example text for the general terms",
+                "@type": "odrl:Offer",
+                "gx:loggingMode": "gx:LoggingMandatory",
+                "gx:confirmationRequired": true,
+                "odrl:permission": [{
+                    "odrl:constraint": {
+                        "@type": "odrl:Constraint",
+                        "odrl:leftOperand": "odrl:payAmount",
+                        "odrl:rightOperand": {
+                            "@value": "?price",
+                            "@type": "http://www.w3.org/2001/XMLSchema#double"
+                        },
+                        "odrl:operator": "odrl:eq"
+                    },
+                    "odrl:target": "?ResourceURI",
+                    "@type": "odrl:Permission",
+                    "gx:negotiable": true,
+                    "odrl:assigner": "?providerDID",
+                    "odrl:action": "odrl:compensate"
+                }],
+                "gx:circulationDetails": "Example text for the circulation details"
+            },
+            "dcat:keyword": [
+                "INSPIRE compliant",
+                "air quality",
+                "time series data",
+                "measurements",
+                "NO",
+                "NO2",
+                "O3",
+                "CO",
+                "PM10",
+                "PM2.5"
+            ],
+            "gax-trust-framework:obsoleteDateTime": {
+                "@value": "2024-01-01T12:00:00Z",
+                "@type": "xsd:dateTime"
+            },
+            "dct:spatial": "POLYGON((-11.18 36.6,-25.59 65.8,26.25 71.58,42.6 67.74,28.89 59.71,24.5 53.44,22.39 48.23,29.07 48.34,30.3 45.21,27.84 40.05,26.08 34.45,10.79 37.58,-11.18 36.60,-11.18 36.6))",
+            "@type": "gax-trust-framework:DataResource",
+            "gax-trust-framework:distribution": {
+                "dcat:mediaType": "http://www.iana.org/assignments/media-types/text/csv",
+                "@type": "gax-trust-framework:Distribution",
+                "dct:title": "Download as data dump (CSV)",
+                "dcat:byteSize": "12983567"
+            },
+            "dct:identifier": "8cff0fa9-460f-4d03-8137-0c65082fd24a",
+            "gax-trust-framework:expirationDateTime": {
+                "@value": "2024-01-01T12:00:00Z",
+                "@type": "xsd:dateTime"
+            },
+            "gax-trust-framework:containsPII": {
+                "@value": "false",
+                "@type": "xsd:boolean"
+            },
+            "gax-trust-framework:exposedThrough": {
+                "@type": "gax-trust-framework:DataExchangeComponent",
+                "@id": "ex:DataExchangeComponent",
+                "gax-trust-framework:standardConformity": [
+                    {
+                        "gax-trust-framework:title": "OGC SensorThings API",
+                        "@type": "ex:DataAccessStandard",
+                        "gax-trust-framework:standardReference": {
+                            "@value": "http://www.opengis.net/doc/is/sensorthings/1.1",
+                            "@type": "xsd:anyURI"
+                        },
+                        "@id": "ex:OGCSensorThings",
+                        "gax-trust-framework:publisher": "Open Geospatial Consortium"
+                    },
+                    {
+                        "gax-trust-framework:title": "OGC Observations, Measurements and Samples",
+                        "@type": "ex:DataModellingStandard",
+                        "gax-trust-framework:standardReference": {
+                            "@value": "https://www.ogc.org/standards/om",
+                            "@type": "xsd:anyURI"
+                        },
+                        "@id": "ex:OGCOMS",
+                        "gax-trust-framework:publisher": "Open Geospatial Consortium",
+                        "gax-service:modelType": "conceptual"
+                    }
+                ]
+            },
+            "sosa:observedProperty": [
+                "http://dd.eionet.europa.eu/vocabulary/aq/pollutant/1",
+                "http://dd.eionet.europa.eu/vocabulary/aq/pollutant/6001",
+                "http://dd.eionet.europa.eu/vocabulary/aq/pollutant/5",
+                "http://dd.eionet.europa.eu/vocabulary/aq/pollutant/38",
+                "http://dd.eionet.europa.eu/vocabulary/aq/pollutant/7",
+                "http://dd.eionet.europa.eu/vocabulary/aq/pollutant/8",
+                "http://dd.eionet.europa.eu/vocabulary/aq/pollutant/9",
+                "http://dd.eionet.europa.eu/vocabulary/aq/pollutant/10"
+            ],
+            "gax-trust-framework:copyrightOwnedBy": {
+                "foaf:name": "ACME Provider",
+                "@type": "foaf:Agent"
+            },
+            "gax-core:operatedBy": {"@id": "ex:ACMEProvider"}
+        },
+        "@type": ["VerifiableCredential"],
+        "@id": "https://www.example.org/IonosCloudServiceOffering.json",
+        "proof": {
+            "created": "2023-06-19T19:53:40Z",
+            "jws": "eyJiNjQiOmZhbHNlLCJjcml0IjpbImI2NCJdLCJhbGciOiJQUzI1NiJ9..Fad4q0VncS-ljzdm-TEfNBrMse5Kq6snXRh0AU8uFh3Nz33AdxqQqd7WFnuR7Vgpuxve2AnUDvtGobPSgDXPpPO7sRavWew3db4J6OFZ1GVSC7bmxl73gTkTnMcCqHn4VYrgYorY4KxYjUooTB4I62FuARpLGkpLNdSqrnY1VlR2OmoYvlhet2UVoMWvkNxXYXm0Dr4SVBSOztgXlVy5GazGp5WOEmayi95boVDrFVJ4v4MQ6SMZPFYMOz93-ml5h1irHte4REEQqPH_61G5lqXsPOjfGhtuaZ7-FnBz8BqKGPa_6iv_p9DtdhtSWtpJ-AjwXcVgF80BD6frYOHOU4YvUbxkiyRmyHOis2SsaCGkrafPF8-VeXuQmFQAZy7t_zDu6T0Yqv2QkufG0jh-XnoOcRxWpEi-Mx-bgViAdYNOaRNW5Qy5fC31oJRxU3woiTahiji1jGkEjipDjJKgrtJ_OkGh0mwAfOcwHp5HQqfMyrdfhFWim0Q41h1edqFK6uRtJEV9Luzi6HufwgONtyDKgZp2ezPa6Ivv2b0dGXK_hJvfdPbkKTqywHjd9mUxAxj-9hcVYnYg9PgUo1awygq6HSPttz8bfSHB6SNI01HQG5fYKn4zQ7aJpgC4Zbk9_VXRwewMpGtlDnEw3Y0YzsOtnDdwFohfxfxZioxeFJk",
+            "proofPurpose": "assertionMethod",
+            "type": "JsonWebSignature2020",
+            "verificationMethod": "did:web:compliance.lab.gaia-x.eu"
+        },
+        "@context": ["https://www.w3.org/2018/credentials/v1"],
+        "issuer": "http://gaiax.de"
+    }
+}
