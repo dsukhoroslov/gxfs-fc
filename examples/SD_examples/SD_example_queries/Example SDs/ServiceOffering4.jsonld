@@ -1,0 +1,58 @@
+{
+    "@id": "http://example.edu/verifiablePresentation/serviceOffering4",
+    "proof": {
+        "created": "2023-03-14T12:53:33Z",
+        "jws": "eyJiNjQiOmZhbHNlLCJjcml0IjpbImI2NCJdLCJhbGciOiJQUzI1NiJ9..P8jGkrndp_NEFcMWN7-gsMe880geyRU7N4ZFFyWCdwx_K6rPXRqM2Oh56qp0cwPOfSftvYvqkyY1AZnUidBmr1zvNUUVv-oSwgZpgw9LO5FYGA1J9FhAcw_Z-17wszqgHqGy3-RL0UiCrqch-N3uN1mmxNfQGfrZK1hvEgZI8wrllvZznd8i8cB4BPsYmyUzq5-xtYR67SkZ27CL6OUk3v1KsqcHdjTqghuIiW-srpxebkUsT2XBpTmm8rEHZvXpt2RrN-YSlThddXbO4YZETd9VykHTNbMXHnN4doud5EuJAwjg3di5V1iUc8QWxZgFmnNIvgP8zrRgaw9hCdr-i4ane5oSz3mDtTm8rdsSl7MkwP9mJgSp-FON66m2iiKmKbXRsKO6e38YkwIs_8h6XrV_s_DvacR6a2kXp58fqRnf2vIrderS3m5dk4xrUu283yFdSUFnnd3JdqDywBudJXVKnWec0f4Zf7XSk2z8v6K3u7Tae23Xxe6ZANCS4C5B1A4PltzrN--Tw09IRXqZVmyZgy1PoFP86nYk2SbuvRT7Nqsy6QlEBoEo233sfCIB_1ro_AX50C0MGkfnHKcoRsCh9NncCURKGb84Q6xmFnVvxLrPUT0eP279euF8_xBhEFi3iYQUS62b1np2UwQuwyVZ_MJx_Xu-iQgayhbvySo",
+        "proofPurpose": "assertionMethod",
+        "type": "JsonWebSignature2020",
+        "verificationMethod": "did:web:compliance.lab.gaia-x.eu"
+    },
+    "type": ["VerifiablePresentation"],
+    "@context": ["https://www.w3.org/2018/credentials/v1"],
+    "verifiableCredential": {
+        "issuanceDate": "2022-10-19T18:48:09Z",
+        "credentialSubject": {
+            "gax-trust-framework:policy": "list of policy",
+            "gax-trust-framework:dependsOn": {"@id": "https://www.example.org/ServiceOffering6.json"},
+            "dcat:keyword": [
+                "Service",
+                "Data Service"
+            ],
+            "@type": "gax-trust-framework:ServiceOffering",
+            "gax-trust-framework:name": "Service Offering 4",
+            "gax-core:offeredBy": {"@id": "https://w3id.org/gaia-x/gax-trust-framework#Provider3"},
+            "@id": "https://www.example.org/myServiceOffering4",
+            "@context": {
+                "gax-trust-framework": "https://w3id.org/gaia-x/gax-trust-framework#",
+                "xsd": "http://www.w3.org/2001/XMLSchema#",
+                "dcat": "http://www.w3.org/ns/dcat#",
+                "gax-core": "https://w3id.org/gaia-x/core#"
+            },
+            "gax-trust-framework:dataAccountExport": {
+                "gax-trust-framework:formatType": "https://www.iana.org/assignments/media-types/application/json",
+                "@type": "gax-trust-framework:DataAccountExport",
+                "gax-trust-framework:accessType": "digital",
+                "gax-trust-framework:requestType": "API"
+            },
+            "gax-trust-framework:termsAndConditions": {
+                "gax-trust-framework:content": {
+                    "@value": "http://example.org/tac",
+                    "@type": "xsd:anyURI"
+                },
+                "@type": "gax-core:TermsAndConditions",
+                "gax-trust-framework:hash": "1234"
+            }
+        },
+        "@type": ["VerifiableCredential"],
+        "@id": "https://www.example.org/ServiceOffering4.json",
+        "proof": {
+            "created": "2023-03-14T12:53:32Z",
+            "jws": "eyJiNjQiOmZhbHNlLCJjcml0IjpbImI2NCJdLCJhbGciOiJQUzI1NiJ9..Y5sCNh9kggKeC7EcT3JrvagXIm6_ppubnaErdPxN6R02B5_-ntgdBXMN0IqoEGit-mVBU4ZfPghrrvUF4mFIdMiN-by9zt86_7efZaQoYnHdI4tNb6gnZdhOFOaGPKk2y0-RU2cSEltB8YWkfqK8G7kAwIZewcuZEUpc8Bjy3DJ1Tu_kSYxDB1QHrHsV1MPcGjh4BIGFaAujMZhx3v23br4fSqB58kzaybHQlPycEJREBY6viE85SW-CtSdtsK-Ub7b3Lvq5-zSwyTYY6l8c_EbGOSMsn-ermQBDy0MU0C_cxiJYykkVpb6QY6A6EVXzptIKIKqd9s6n973T3GLQO_Vk5M8BtpSuuFe-MBd528QEAR9AeAKuBFLtvNJEIL1CmO47uQqZZwcVNBReM17HSP1vjjCOTZ942Ni983BZeahEj5Q9mK-wTGAIK7gxQl30rVwbN7hkYzIO-pJStXVIQiWOEYFKPwM-Ll_ZcfSOHlQmlKzRWKPaEHkz3GrsDbjwq-oHk5dD__AFC2OAx5IlGPcWaNZhfHx9pwZTyITGsC7pmStz4urKTa44vZCFHitvc8tuqVcd5sh-2Azqhisk24k12bsq1b1SwIzold_YQyJIWS9k6O3ksHa8lBESCsNhW0V0cr1GqNeyTATAj8r6SjQMjKpsDuUx_GxVYRk-8z4",
+            "proofPurpose": "assertionMethod",
+            "type": "JsonWebSignature2020",
+            "verificationMethod": "did:web:compliance.lab.gaia-x.eu"
+        },
+        "@context": ["https://www.w3.org/2018/credentials/v1"],
+        "issuer": "http://gaiax.de"
+    }
+}

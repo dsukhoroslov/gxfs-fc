@@ -1,0 +1,57 @@
+{
+    "@id": "http://example.edu/verifiablePresentation/serviceOffering6",
+    "proof": {
+        "created": "2023-03-14T11:47:30Z",
+        "jws": "eyJiNjQiOmZhbHNlLCJjcml0IjpbImI2NCJdLCJhbGciOiJQUzI1NiJ9..Yam9NALIjmNfFaRLliJ1chOND4oOmI_mDhIDXUB5JD43zLwhK55y_h_3Co7GEXURg9t50UID-rCbec3WiTQVjWbkId8DWNQWEsJ5qGjFZkEGo2Vh1D-7hoS92NpsRNGCqNzbcAjtCGR6ZeFvJvUPZ2sEQmuvWNmDh5KXuxoMlqGW-fL_F3PzKMaiKgDmIy9p4OZRtRlpYcTgUn_yqQRj6wirWlOXLAZPjbCw7tqPDMKRa7svpH-OxdjNcPdDFN8oTgNb6oufiKFLuuz9jsQqfMzu_MSkTIh_FxIGSnG3W6NTJY53KVIOrRLQD_nXkbsuJ04jtaTwh2_6AaTG2J-R0g2Ai-o55muVeyjAOgNx5vbayGV7qx7P9zVh1z1ohUSwWbFvKz65kyJUsdRBQ1Z7cy81ZsYH5IZPWJVOhL3_TqPzm2N0X02gYhdFCvNOh_kuqEAnPpZYRnYF3TQrkSpWOsxHeRBCT0eh5GT_TnQAa8xpJxvGASUsi8XMO_mPbhy6g-KCCtzcWwnfsfF3ZYhbE10L6ggEjOFUNRD3RdGZmS7PG1Vyx-iCuAzbgfrLZJ_vAkqz1jNXpUWfjmDDg0s8s7siEpKDA-L12W9-Ph321omt6wXqHnvtYvFLgQZZQRc9DTqIY009ZmL9eEegXDR0ZBDna6p2IdMyM9l4XOY3iOw",
+        "proofPurpose": "assertionMethod",
+        "type": "JsonWebSignature2020",
+        "verificationMethod": "did:web:compliance.lab.gaia-x.eu"
+    },
+    "type": ["VerifiablePresentation"],
+    "@context": ["https://www.w3.org/2018/credentials/v1"],
+    "verifiableCredential": {
+        "issuanceDate": "2022-10-19T18:48:09Z",
+        "credentialSubject": {
+            "gax-trust-framework:policy": "list of policy",
+            "dcat:keyword": [
+                "Service",
+                "Data Service"
+            ],
+            "@type": "gax-trust-framework:ServiceOffering",
+            "gax-trust-framework:name": "Service Offering 6",
+            "gax-core:offeredBy": {"@id": "https://w3id.org/gaia-x/gax-trust-framework#Provider3"},
+            "@id": "https://www.example.org/myServiceOffering6",
+            "@context": {
+                "gax-trust-framework": "https://w3id.org/gaia-x/gax-trust-framework#",
+                "xsd": "http://www.w3.org/2001/XMLSchema#",
+                "dcat": "http://www.w3.org/ns/dcat#",
+                "gax-core": "https://w3id.org/gaia-x/core#"
+            },
+            "gax-trust-framework:dataAccountExport": {
+                "gax-trust-framework:formatType": "https://www.iana.org/assignments/media-types/application/json",
+                "@type": "gax-trust-framework:DataAccountExport",
+                "gax-trust-framework:accessType": "digital",
+                "gax-trust-framework:requestType": "API"
+            },
+            "gax-trust-framework:termsAndConditions": {
+                "gax-trust-framework:content": {
+                    "@value": "http://example.org/tac",
+                    "@type": "xsd:anyURI"
+                },
+                "@type": "gax-core:TermsAndConditions",
+                "gax-trust-framework:hash": "1234"
+            }
+        },
+        "@type": ["VerifiableCredential"],
+        "@id": "https://www.example.org/ServiceOffering6.json",
+        "proof": {
+            "created": "2023-03-14T11:47:30Z",
+            "jws": "eyJiNjQiOmZhbHNlLCJjcml0IjpbImI2NCJdLCJhbGciOiJQUzI1NiJ9..0XD7FMCAwWtTD0vv363kcLlOjL52dss1HZT9wnJI-6QY4EHQknZ_TaIfnw-BvMQy4sjwUWcvNJrtL55stOPYvcDT9A7DBGxvmYr5MXRBkE5P-VE0kzCdqe2aPdRYTwvdPVNg4rFfUeQV8sp1GOK8pGMJ4jObDD7qzw2lIfseCO9PP7C73URsljeGsWOKwOVSSXx5X0zoFT67-_odA37kiSIttAGRwvZHvC0Yj1wHMyPWM1JXgQdhJ4TwBJmjtQMCWcAypwkmP-XXDnl4OSG7jflLZEOgIfMEX1Yh778n3v_LFFLatO23ytmuIO-F6HFiza2HSwzJJbpA77QG01nEmvRKlcfRXtq-5L9_k42nhYeuVArWwZYEMEsVw_HOpJunPnGQgAS8PFV0y91zU0tdCs_xP8gWtza7qFp-59TVlpljv6ZtV5oNfuPg7U0Xr00iuK2bWftTri7rw-xyYs-phhBInZsG90EPdjZJulQH3khvw0kaayjiKSorKnZ3GMOyXrQ77WSur9TIsTVwzAdT-dHF5rvXQ0VW3aa0n_DHDwVtIARh8WPpGhiEcxoGN5R3gjaATPIGvtEzTwvyUxpB7wSAWv67EFercKTOYz0lr-lC4dAODvyznDv_VrPi6un32v1GNQ3GyXFmBPnGufy9KQ4fjs7HfttbFZKjVXCWEQE",
+            "proofPurpose": "assertionMethod",
+            "type": "JsonWebSignature2020",
+            "verificationMethod": "did:web:compliance.lab.gaia-x.eu"
+        },
+        "@context": ["https://www.w3.org/2018/credentials/v1"],
+        "issuer": "http://gaiax.de"
+    }
+}

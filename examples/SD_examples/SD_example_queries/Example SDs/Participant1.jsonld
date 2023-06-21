@@ -1,0 +1,54 @@
+{
+    "@id": "http://example.edu/verifiablePresentation/self-description1",
+    "proof": {
+        "created": "2023-03-14T13:28:48Z",
+        "jws": "eyJiNjQiOmZhbHNlLCJjcml0IjpbImI2NCJdLCJhbGciOiJQUzI1NiJ9..oSkX1MC7GcAC67ZDIF2YBn_cHVRb9hOzYDWE8_97IaeBfbop3-7B_B6Lap5kWUwP5psnoKyXY6NLMcdEMqux7ej_UHGmrcwpaG7nWjfa3MaqTpU1u-F89ZPRalRjk-ruYlTl1wvE8Mayjh0MwKeKW1mQSWr4G_Wk2H7Wn2N0UFK9uAp7XFU6hWd6Aq3ugI5w_SUxeb8jCg5Z954ZXjW4NMmPz78YN1YtZoNhXSz1tcxfeeFs2dQj8lwnIxt16orGpJT9fm5OE83qgFICKziF5BS3p7z8NJ1icEZfojE6tr7b8m6swTKMLqDXVec0NOtpGxa9SDOIas8NgOrb1lLrKk37_f5HhWU7enxVG0uxms5Mg2WoBb5wwiBHivmTZDbrJRbRY1ziBM3D-MrNHWsIG8NAUZ-gy0ddzl7tfUs1p8ub_HjWeVSuvRuLmDuoa70izYOp-eEMF8bKizwsF-Q6-RlePAnMPIS8YcXHrjbZZ8c4FmQq45dZZW8ggpixu2NM3pnOk9Rr2LHNgI0Hej-86CfnSQIMkoMddBktSAzvy4z8y0qH7zEKedMUX2VahhLaittq6KexDnfy7oqvZJJQ5TEmwgcQvaj1WL9t7lxNHz5Pb6OgpqQgpHKqoTJLOCLFC8IRXhF0wkER9rZUaQnmimZ6cb21zUEV75ygnjmKnkg",
+        "proofPurpose": "assertionMethod",
+        "type": "JsonWebSignature2020",
+        "verificationMethod": "did:web:compliance.lab.gaia-x.eu"
+    },
+    "type": ["VerifiablePresentation"],
+    "@context": ["https://www.w3.org/2018/credentials/v1"],
+    "verifiableCredential": {
+        "issuanceDate": "2022-10-19T18:48:09Z",
+        "credentialSubject": {
+            "https://w3id.org/gaia-x/gax-trust-framework#termsAndConditions": [{
+                "https://w3id.org/gaia-x/gax-trust-framework#content": [{
+                    "@value": "http://example.org/tac",
+                    "@type": "http://www.w3.org/2001/XMLSchema#anyURI"
+                }],
+                "https://w3id.org/gaia-x/gax-trust-framework#hash": [{"@value": "1234"}],
+                "@type": ["https://w3id.org/gaia-x/gax-trust-framework#TermsAndConditions"]
+            }],
+            "https://w3id.org/gaia-x/gax-trust-framework#legalName": [{"@value": "Example Participant 1"}],
+            "@type": ["https://w3id.org/gaia-x/gax-trust-framework#LegalPerson"],
+            "@id": "https://w3id.org/gaia-x/gax-trust-framework#Provider1",
+            "https://w3id.org/gaia-x/gax-trust-framework#registrationNumber": [{"@value": "1234"}],
+            "https://w3id.org/gaia-x/gax-trust-framework#headquarterAddress": [{
+                "http://www.w3.org/2006/vcard/ns#country-name": [{"@value": "Germany"}],
+                "http://www.w3.org/2006/vcard/ns#street-address": [{"@value": "Musterstraße 1"}],
+                "@type": ["http://www.w3.org/2006/vcard/ns#Address"],
+                "http://www.w3.org/2006/vcard/ns#locality": [{"@value": "Berlin"}],
+                "http://www.w3.org/2006/vcard/ns#postal-code": [{"@value": "10115"}]
+            }],
+            "https://w3id.org/gaia-x/gax-trust-framework#legalAddress": [{
+                "http://www.w3.org/2006/vcard/ns#country-name": [{"@value": "Germany"}],
+                "http://www.w3.org/2006/vcard/ns#street-address": [{"@value": "Musterstraße 1"}],
+                "@type": ["http://www.w3.org/2006/vcard/ns#Address"],
+                "http://www.w3.org/2006/vcard/ns#locality": [{"@value": "Berlin"}],
+                "http://www.w3.org/2006/vcard/ns#postal-code": [{"@value": "10115"}]
+            }]
+        },
+        "@type": ["VerifiableCredential"],
+        "@id": "https://www.example.org/legalPerson1.json",
+        "proof": {
+            "created": "2023-03-14T13:28:48Z",
+            "jws": "eyJiNjQiOmZhbHNlLCJjcml0IjpbImI2NCJdLCJhbGciOiJQUzI1NiJ9..gc3jjkEh5hoDjYCJ9QCmKUvJz3X27vprkMDkWR-j80eZ-GzgoQlSVGHx4JOPgQv89yhvxjUAlNyTM-QrYQ5rEhrqFtaxWB7o-Bc79LKFlWCVpEvUi9elAnFeCH3XTkNUI7Jo6KSpAt9nNpw1NfBgNdFKILRdXq_QW24_dskE97ooSR4COlgqtMiqVTEA6JeebozGq_UUG3FBN4BTkjudrUcA5ECSaNs7rBn5mWVbhTN1KkchBB94LIeO-3AP11qHq1ZOAvZYDXRmdDLS0B_zAyXTqYSD7jxRZWKa-K1YfHQFtQlRzNCbsAG6CClH96g2WG-0KqJkYL20k-69yLytx8wzaLYNAbzFw_6OaSBoDoFZjhEyrj69nU0-og8YHh4YraSgEaAwk9PPPhcGDRBO-JclyqqrUVouVXuZWrnDTQbtqINYWwj7gVfabp9vY3T4ownchGj1eECQO8IwljubE9BIn3YOV-8STYmheJGbneUJ5DIuA5axPlPe2poYXN7eaDbxUAmeEHT0qyVg_4NezLBUttPj2dM5ytyVF2jiZSTXKWt6ervO2gDMJ_kpP1c5BdLUs1U1JOzo1gSoKNnCX2PrqPMtx7CcKvS0ldm6H9aZ05COvf0hZXZnum-u-wBWNtLCbBhuA-CJND_UT3btQAck-_ge1UJohyPzG2UxL00",
+            "proofPurpose": "assertionMethod",
+            "type": "JsonWebSignature2020",
+            "verificationMethod": "did:web:compliance.lab.gaia-x.eu"
+        },
+        "@context": ["https://www.w3.org/2018/credentials/v1"],
+        "issuer": "http://gaiax.de/participant1"
+    }
+}
