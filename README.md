@@ -1,5 +1,5 @@
 # Federated Catalogue
-
+This project has been migrated to Eclipse Foundation, and it can be found under https://gitlab.eclipse.org/eclipse/xfsc/
 
 ## Description
 The Gaia-X Catalogue Service makes Self-Descriptions of Providers and their Service Offerings available to Consumers.
